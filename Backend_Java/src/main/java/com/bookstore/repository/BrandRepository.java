@@ -18,6 +18,8 @@ public interface BrandRepository extends JpaRepository<Brand, Long> {
     @Query("SELECT b FROM Brand b WHERE b.isActive = true ORDER BY b.name ASC")
     List<Brand> findAllActiveBrands();
 
+    long countById(Long id);
+
     @Query("SELECT b FROM Brand b WHERE b.isActive = true AND b.name LIKE %:keyword%")
     List<Brand> searchBrands(String keyword);
 }

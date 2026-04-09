@@ -19,34 +19,34 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     boolean existsByIsbn(String isbn);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.createdAt DESC")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true ORDER BY p.createdAt DESC")
     Page<Product> findAllActiveProducts(Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isFeatured = true")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.isFeatured = true")
     List<Product> findFeaturedProducts();
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isBestseller = true")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.isBestseller = true")
     List<Product> findBestsellerProducts();
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isNew = true")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.isNew = true")
     List<Product> findNewProducts();
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.category.id = :categoryId")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.category.id = :categoryId")
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.brand.id = :brandId")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.brand.id = :brandId")
     Page<Product> findByBrandId(Long brandId, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.stockQuantity <= :threshold")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.stockQuantity <= :threshold")
     List<Product> findLowStockProducts(int threshold);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND (p.name LIKE %:keyword% OR p.author LIKE %:keyword% OR p.description LIKE %:keyword%)")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND (p.name LIKE %:keyword% OR p.author LIKE %:keyword% OR p.description LIKE %:keyword%)")
     Page<Product> searchProducts(String keyword, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.category.id = :categoryId ORDER BY p.soldCount DESC")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.category.id = :categoryId ORDER BY p.soldCount DESC")
     List<Product> findTopSellingByCategory(Long categoryId, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.id != :productId AND p.category.id = :categoryId")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.id != :productId AND p.category.id = :categoryId")
     List<Product> findRelatedProducts(Long productId, Long categoryId, Pageable pageable);
 
     @Modifying
@@ -56,9 +56,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true")
     long countActiveProducts();
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.viewCount DESC")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true ORDER BY p.viewCount DESC")
     Page<Product> findMostViewedProducts(Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.soldCount DESC")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true ORDER BY p.soldCount DESC")
     Page<Product> findMostSoldProducts(Pageable pageable);
 }

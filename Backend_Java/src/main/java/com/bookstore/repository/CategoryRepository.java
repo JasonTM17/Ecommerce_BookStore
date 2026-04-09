@@ -27,4 +27,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("SELECT c FROM Category c WHERE c.isActive = true AND c.parent.id = :parentId ORDER BY c.displayOrder ASC")
     List<Category> findActiveSubcategories(Long parentId);
+
+    @Query("SELECT c.parent.name FROM Category c WHERE c.id = :id AND c.parent IS NOT NULL")
+    Optional<String> findParentNameById(Long id);
+
+    Optional<Category> findById(Long id);
 }
