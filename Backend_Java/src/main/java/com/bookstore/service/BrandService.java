@@ -88,7 +88,17 @@ public class BrandService {
     }
 
     private BrandResponse mapToBrandResponse(Brand brand) {
-        int productCount = brand.getProducts() != null ? brand.getProducts().size() : 0;
+        int productCount = 0;
+        try {
+            if (brand.getProducts() != null) {
+                productCount = brand.getProducts().size();
+            }
+        } catch (Exception e) {
+            // Fallback: use count query if products collection is not initialized
+            try {
+                productCount = (int) brandRepository.countById(brand.getId());
+            } catch (Exception ignored) {}
+        }
 
         return BrandResponse.builder()
                 .id(brand.getId())

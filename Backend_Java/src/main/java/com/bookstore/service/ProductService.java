@@ -6,6 +6,7 @@ import com.bookstore.dto.response.ProductResponse;
 import com.bookstore.entity.Category;
 import com.bookstore.entity.Product;
 import com.bookstore.exception.ResourceNotFoundException;
+import com.bookstore.repository.BrandRepository;
 import com.bookstore.repository.CategoryRepository;
 import com.bookstore.repository.ProductRepository;
 import com.bookstore.repository.ReviewRepository;
@@ -20,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.hibernate.Hibernate;
 import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final BrandRepository brandRepository;
     private final ReviewRepository reviewRepository;
 
     @Transactional
@@ -127,7 +130,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> getAllProducts(int page, int size, String sortBy, String direction) {
-        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Sort sort = buildProductSort(sortBy, direction);
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Product> products = productRepository.findAllActiveProducts(pageable);
@@ -151,29 +154,30 @@ public class ProductService {
     @Transactional(readOnly = true)
     @Cacheable(value = "products", key = "'featured'")
     public List<ProductResponse> getFeaturedProducts() {
-        return productRepository.findFeaturedProducts().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        List<Product> list = productRepository.findFeaturedProducts();
+        list.forEach(p -> Hibernate.initialize(p.getImages()));
+        return list.stream().map(this::mapToProductResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getBestsellerProducts() {
-        return productRepository.findBestsellerProducts().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        List<Product> list = productRepository.findBestsellerProducts();
+        list.forEach(p -> Hibernate.initialize(p.getImages()));
+        return list.stream().map(this::mapToProductResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getNewProducts() {
-        return productRepository.findNewProducts().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        List<Product> list = productRepository.findNewProducts();
+        list.forEach(p -> Hibernate.initialize(p.getImages()));
+        return list.stream().map(this::mapToProductResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> getProductsByCategory(Long categoryId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productRepository.findByCategoryId(categoryId, pageable);
+        products.getContent().forEach(p -> Hibernate.initialize(p.getImages()));
         List<ProductResponse> content = products.getContent().stream()
                 .map(this::mapToProductResponse)
                 .toList();
@@ -235,10 +239,16 @@ public class ProductService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Sort sort = buildProductSort(sortBy, direction);
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Product> products = productRepository.findAll(spec, pageable);
+        // Force initialization of lazy collections before leaving transaction
+        products.getContent().forEach(p -> {
+            Hibernate.initialize(p.getImages());
+            Hibernate.initialize(p.getCategory());
+            Hibernate.initialize(p.getBrand());
+        });
         List<ProductResponse> content = products.getContent().stream()
                 .map(this::mapToProductResponse)
                 .toList();
@@ -282,6 +292,32 @@ public class ProductService {
     @Transactional(readOnly = true)
     public long countActiveProducts() {
         return productRepository.countActiveProducts();
+    }
+
+    /**
+     * Map UI sort tokens (newest, price_asc, …) to JPA field names; unknown values fall back safely.
+     */
+    private Sort buildProductSort(String sortBy, String direction) {
+        String dirStr = (direction != null && !direction.isBlank()) ? direction : "DESC";
+        Sort.Direction dir;
+        try {
+            dir = Sort.Direction.fromString(dirStr);
+        } catch (IllegalArgumentException e) {
+            dir = Sort.Direction.DESC;
+        }
+
+        if (sortBy == null || sortBy.isBlank()) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+
+        return switch (sortBy.trim()) {
+            case "newest" -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case "price_asc" -> Sort.by(Sort.Direction.ASC, "price");
+            case "price_desc" -> Sort.by(Sort.Direction.DESC, "price");
+            case "name_asc" -> Sort.by(Sort.Direction.ASC, "name");
+            case "createdAt", "price", "name", "soldCount", "viewCount", "avgRating" -> Sort.by(dir, sortBy.trim());
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
     }
 
     private void updateProductRating(Long productId) {
@@ -332,6 +368,10 @@ public class ProductService {
     }
 
     private com.bookstore.dto.response.CategoryResponse mapToCategoryResponse(Category category) {
+        String parentName = null;
+        if (category.getParent() != null) {
+            parentName = categoryRepository.findParentNameById(category.getId()).orElse(null);
+        }
         return com.bookstore.dto.response.CategoryResponse.builder()
                 .id(category.getId())
                 .name(category.getName())
@@ -339,7 +379,7 @@ public class ProductService {
                 .iconUrl(category.getIconUrl())
                 .imageUrl(category.getImageUrl())
                 .parentId(category.getParent() != null ? category.getParent().getId() : null)
-                .parentName(category.getParent() != null ? category.getParent().getName() : null)
+                .parentName(parentName)
                 .isActive(category.getIsActive())
                 .build();
     }
