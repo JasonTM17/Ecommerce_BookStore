@@ -25,13 +25,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <>{children}</>;
 }
 
 export function useAuth() {
-  const { user, isAuthenticated, isLoading, logout } = useAuthStore();
+  const { user, isAuthenticated, isLoading, logout, setUser } = useAuthStore();
 
   const isAdmin = user?.roles?.includes("ADMIN") || user?.roles?.includes("MANAGER");
 
@@ -41,5 +42,6 @@ export function useAuth() {
     isLoading,
     isAdmin,
     logout,
+    setUser,
   };
 }

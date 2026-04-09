@@ -38,9 +38,9 @@ public class ReviewService {
 
         boolean hasPurchased = orderRepository.findByUserId(user.getId(), PageRequest.of(0, 100))
                 .getContent().stream()
+                .filter(order -> order.getOrderStatus() == com.bookstore.entity.OrderStatus.DELIVERED)
                 .flatMap(order -> order.getOrderItems().stream())
-                .anyMatch(item -> item.getProduct().getId().equals(product.getId()) &&
-                                  order.getOrderStatus() == com.bookstore.entity.OrderStatus.DELIVERED);
+                .anyMatch(item -> item.getProduct().getId().equals(product.getId()));
 
         Review review = Review.builder()
                 .user(user)

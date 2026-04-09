@@ -3,6 +3,7 @@ package com.bookstore.service;
 import com.bookstore.dto.request.LoginRequest;
 import com.bookstore.dto.request.RegisterRequest;
 import com.bookstore.dto.response.AuthResponse;
+import com.bookstore.dto.response.UserResponse;
 import com.bookstore.entity.Role;
 import com.bookstore.entity.User;
 import com.bookstore.exception.ConflictException;
@@ -139,7 +140,7 @@ class AuthServiceTest {
 
     @Test
     void getCurrentUser_ReturnsCorrectUserResponse() {
-        AuthResponse response = authService.getCurrentUser(testUser);
+        UserResponse response = authService.getCurrentUser(testUser);
 
         assertNotNull(response);
         assertEquals(1L, response.getId());

@@ -1,11 +1,12 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
-      className={`skeleton rounded-md bg-muted ${className}`}
+      className={cn("skeleton rounded-md bg-muted", className)}
       {...props}
     />
   );

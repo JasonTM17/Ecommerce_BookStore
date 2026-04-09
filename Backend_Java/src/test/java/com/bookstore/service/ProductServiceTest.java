@@ -105,7 +105,7 @@ class ProductServiceTest {
         assertEquals("Đắc Nhân Tâm", response.getName());
         assertEquals("Dale Carnegie", response.getAuthor());
         assertEquals(new BigDecimal("45000"), response.getCurrentPrice());
-        assertTrue(response.getInStock());
+        assertTrue(response.isInStock());
 
         verify(categoryRepository).findById(1L);
         verify(productRepository).save(any(Product.class));

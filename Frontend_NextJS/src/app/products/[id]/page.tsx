@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +12,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toaster";
+import { toast } from "@/components/ui/toaster";
 import { useCartStore } from "@/lib/store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Star, ShoppingCart, Minus, Plus, Heart, Share2, Truck, Shield, RotateCcw } from "lucide-react";
@@ -19,7 +21,6 @@ import Image from "next/image";
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { setCart } = useCartStore();
   const { isAuthenticated } = useAuth();
@@ -62,18 +63,11 @@ export default function ProductDetailPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      toast({
-        title: "Thêm vào giỏ hàng",
-        description: `${quantity} x ${product?.name} đã được thêm vào giỏ hàng`,
-      });
+      toast.success(`${quantity} x ${product?.name} đã được thêm vào giỏ hàng`);
       setCart(data.items, data.totalItems, data.total);
     },
     onError: () => {
-      toast({
-        title: "Lỗi",
-        description: "Không thể thêm sản phẩm vào giỏ hàng",
-        variant: "destructive",
-      });
+      toast.error("Không thể thêm sản phẩm vào giỏ hàng");
     },
   });
 

@@ -7,10 +7,13 @@ import com.bookstore.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -31,7 +34,23 @@ public class UserController {
     @Operation(summary = "Cập nhật thông tin người dùng hiện tại")
     public ResponseEntity<UserResponse> updateProfile(
             @AuthenticationPrincipal User user,
-            @RequestBody UserUpdateRequest request) {
+            @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(authService.updateProfile(user, request));
+    }
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Đổi mật khẩu")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal User user,
+            @RequestBody Map<String, String> passwordData) {
+        String currentPassword = passwordData.get("currentPassword");
+        String newPassword = passwordData.get("newPassword");
+
+        if (currentPassword == null || newPassword == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        authService.changePassword(user, currentPassword, newPassword);
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,289 +1,225 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams, useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import type { Product, Category, Brand } from "@/lib/types";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductCard } from "@/components/product-card";
-import { ProductGridSkeleton } from "@/components/product-skeleton";
-import { api } from "@/lib/api";
-import { Product, Category, Brand, PageResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, SlidersHorizontal, Grid3X3, Grid2X2, X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function ProductsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  const [page, setPage] = useState(0);
-  const [sortBy, setSortBy] = useState(searchParams.get("sortBy") || "createdAt");
-  const [direction, setDirection] = useState(searchParams.get("direction") || "DESC");
-  const [showFilters, setShowFilters] = useState(false);
-  
-  const keyword = searchParams.get("keyword") || "";
-  const categoryId = searchParams.get("categoryId");
-  const brandId = searchParams.get("brandId");
-  const minPrice = searchParams.get("minPrice");
-  const maxPrice = searchParams.get("maxPrice");
-  const inStock = searchParams.get("inStock") === "true";
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
 
-  const { data: productsData, isLoading } = useQuery({
-    queryKey: ["products", page, sortBy, direction, keyword, categoryId, brandId, minPrice, maxPrice, inStock],
+function ProductsContent() {
+  const searchParams = useSearchParams();
+  const [searchKeyword, setSearchKeyword] = useState(searchParams.get("keyword") || "");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("categoryId") || "all");
+  const [selectedBrand, setSelectedBrand] = useState(searchParams.get("brandId") || "all");
+  const [sortBy, setSortBy] = useState(searchParams.get("sortBy") || "newest");
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "0"));
+  const [pageSize] = useState(12);
+  const [gridSize, setGridSize] = useState<"2x2" | "3x3">("3x3");
+
+  const { data: productsData, isLoading: productsLoading } = useQuery<PageResponse<Product>>({
+    queryKey: ["products", searchKeyword, selectedCategory, selectedBrand, sortBy, currentPage, pageSize],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.set("page", page.toString());
-      params.set("size", "12");
-      params.set("sortBy", sortBy);
-      params.set("direction", direction);
-      if (keyword) params.set("keyword", keyword);
-      if (categoryId) params.set("categoryId", categoryId);
-      if (brandId) params.set("brandId", brandId);
-      if (minPrice) params.set("minPrice", minPrice);
-      if (maxPrice) params.set("maxPrice", maxPrice);
-      if (inStock) params.set("inStock", "true");
-      
+      if (searchKeyword) params.append("keyword", searchKeyword);
+      if (selectedCategory && selectedCategory !== "all") params.append("categoryId", selectedCategory);
+      if (selectedBrand && selectedBrand !== "all") params.append("brandId", selectedBrand);
+      params.append("sortBy", sortBy);
+      params.append("page", currentPage.toString());
+      params.append("size", pageSize.toString());
       const response = await api.get(`/products?${params.toString()}`);
-      return response.data as PageResponse<Product>;
+      return response.data;
     },
   });
 
-  const { data: categories } = useQuery({
+  const { data: categoriesData } = useQuery<PageResponse<Category>>({
     queryKey: ["categories"],
     queryFn: async () => {
-      const response = await api.get("/categories");
-      return response.data as Category[];
+      const response = await api.get("/categories?page=0&size=100");
+      return response.data;
     },
   });
 
-  const { data: brands } = useQuery({
+  const { data: brandsData } = useQuery<PageResponse<Brand>>({
     queryKey: ["brands"],
     queryFn: async () => {
-      const response = await api.get("/brands");
-      return response.data as Brand[];
+      const response = await api.get("/brands?page=0&size=100");
+      return response.data;
     },
   });
 
-  const clearFilters = () => {
-    router.push("/products");
-    setPage(0);
+  const handleClearFilters = () => {
+    setSearchKeyword("");
+    setSelectedCategory("all");
+    setSelectedBrand("all");
+    setSortBy("newest");
+    setCurrentPage(0);
   };
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+  const hasActiveFilters = searchKeyword || (selectedCategory && selectedCategory !== "all") || (selectedBrand && selectedBrand !== "all");
+  const totalPages = productsData?.totalPages || 0;
+  const totalElements = productsData?.totalElements || 0;
+  const products = productsData?.content || [];
 
-      <main className="flex-1 py-8">
-        <div className="container mx-auto px-4">
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Sản Phẩm</h1>
-            <p className="text-gray-600">
-              {productsData?.totalElements || 0} sản phẩm
-            </p>
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Header />
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tất cả sản phẩm</h1>
+          <p className="text-gray-600">Khám phá {totalElements} cuốn sách hay nhất</p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <SlidersHorizontal className="w-5 h-5 text-gray-500" />
+            <span className="font-medium text-gray-700">Bộ lọc</span>
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={handleClearFilters} className="ml-auto text-gray-500 hover:text-gray-700">
+                <X className="w-4 h-4 mr-1" />
+                Xóa bộ lọc
+              </Button>
+            )}
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Filters Sidebar */}
-            <aside className={`lg:w-64 ${showFilters ? "block" : "hidden"} lg:block`}>
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-semibold text-gray-900">Bộ Lọc</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowFilters(false)}
-                    className="lg:hidden"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Categories */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Danh Mục</h3>
-                  <div className="space-y-2">
-                    {categories?.map((category) => (
-                      <Link
-                        key={category.id}
-                        href={`/products?categoryId=${category.id}`}
-                        className={`block text-sm ${
-                          categoryId === category.id.toString()
-                            ? "text-primary font-medium"
-                            : "text-gray-600 hover:text-primary"
-                        }`}
-                      >
-                        {category.name}
-                        {category.productCount && (
-                          <span className="text-gray-400 ml-1">({category.productCount})</span>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Price Range */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Khoảng Giá</h3>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      placeholder="Từ"
-                      className="w-full px-3 py-2 border rounded-md text-sm"
-                      onChange={(e) => {
-                        const params = new URLSearchParams(searchParams.toString());
-                        if (e.target.value) {
-                          params.set("minPrice", e.target.value);
-                        } else {
-                          params.delete("minPrice");
-                        }
-                        router.push(`/products?${params.toString()}`);
-                      }}
-                    />
-                    <span className="text-gray-400">-</span>
-                    <input
-                      type="number"
-                      placeholder="Đến"
-                      className="w-full px-3 py-2 border rounded-md text-sm"
-                      onChange={(e) => {
-                        const params = new URLSearchParams(searchParams.toString());
-                        if (e.target.value) {
-                          params.set("maxPrice", e.target.value);
-                        } else {
-                          params.delete("maxPrice");
-                        }
-                        router.push(`/products?${params.toString()}`);
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* In Stock */}
-                <div className="mb-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={inStock}
-                      onChange={(e) => {
-                        const params = new URLSearchParams(searchParams.toString());
-                        if (e.target.checked) {
-                          params.set("inStock", "true");
-                        } else {
-                          params.delete("inStock");
-                        }
-                        router.push(`/products?${params.toString()}`);
-                      }}
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                    <span className="text-sm text-gray-600">Chỉ hiển thị sản phẩm còn hàng</span>
-                  </label>
-                </div>
-
-                {/* Clear Filters */}
-                {(categoryId || brandId || minPrice || maxPrice || inStock) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="w-full"
-                  >
-                    Xóa Bộ Lọc
-                  </Button>
-                )}
-              </div>
-            </aside>
-
-            {/* Products Grid */}
-            <div className="flex-1">
-              {/* Toolbar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFilters(true)}
-                  className="lg:hidden"
-                >
-                  <SlidersHorizontal className="h-4 w-4 mr-2" />
-                  Bộ Lọc
-                </Button>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Sắp xếp theo:</span>
-                  <select
-                    value={`${sortBy}-${direction}`}
-                    onChange={(e) => {
-                      const [newSortBy, newDirection] = e.target.value.split("-");
-                      setSortBy(newSortBy);
-                      setDirection(newDirection);
-                      const params = new URLSearchParams(searchParams.toString());
-                      params.set("sortBy", newSortBy);
-                      params.set("direction", newDirection);
-                      router.push(`/products?${params.toString()}`);
-                    }}
-                    className="border rounded-md px-3 py-2 text-sm"
-                  >
-                    <option value="createdAt-DESC">Mới nhất</option>
-                    <option value="price-ASC">Giá: Thấp đến Cao</option>
-                    <option value="price-DESC">Giá: Cao đến Thấp</option>
-                    <option value="name-ASC">Tên: A-Z</option>
-                    <option value="soldCount-DESC">Bán chạy nhất</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Products */}
-              {isLoading ? (
-                <ProductGridSkeleton />
-              ) : productsData?.content.length === 0 ? (
-                <div className="text-center py-12">
-                  <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy sản phẩm</h3>
-                  <p className="text-gray-600 mb-4">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
-                  <Button variant="outline" onClick={clearFilters}>
-                    Xóa Bộ Lọc
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {productsData?.content.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-
-                  {/* Pagination */}
-                  {productsData && productsData.totalPages > 1 && (
-                    <div className="flex justify-center mt-8 gap-2">
-                      <Button
-                        variant="outline"
-                        disabled={!productsData.hasPrevious}
-                        onClick={() => setPage(page - 1)}
-                      >
-                        Trước
-                      </Button>
-                      <div className="flex items-center px-4">
-                        <span className="text-sm text-gray-600">
-                          Trang {productsData.page + 1} / {productsData.totalPages}
-                        </span>
-                      </div>
-                      <Button
-                        variant="outline"
-                        disabled={!productsData.hasNext}
-                        onClick={() => setPage(page + 1)}
-                      >
-                        Sau
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Tìm kiếm sách..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setCurrentPage(0)}
+                className="pl-10"
+              />
             </div>
+
+            <Select value={selectedCategory} onValueChange={(v) => { setSelectedCategory(v); setCurrentPage(0); }}>
+              <SelectTrigger><SelectValue placeholder="Danh mục" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả danh mục</SelectItem>
+                {categoriesData?.content.map((c) => <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedBrand} onValueChange={(v) => { setSelectedBrand(v); setCurrentPage(0); }}>
+              <SelectTrigger><SelectValue placeholder="Nhà xuất bản" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả NXB</SelectItem>
+                {brandsData?.content.map((b) => <SelectItem key={b.id} value={b.id.toString()}>{b.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(0); }}>
+              <SelectTrigger><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Mới nhất</SelectItem>
+                <SelectItem value="price_asc">Giá: Thấp đến Cao</SelectItem>
+                <SelectItem value="price_desc">Giá: Cao đến Thấp</SelectItem>
+                <SelectItem value="name_asc">Tên: A-Z</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      </main>
 
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-gray-600">Tìm thấy <span className="font-semibold text-gray-900">{totalElements}</span> sản phẩm</p>
+          <div className="flex items-center gap-2">
+            <Button variant={gridSize === "3x3" ? "default" : "outline"} size="icon" onClick={() => setGridSize("3x3")} className="w-10 h-10"><Grid3X3 className="w-4 h-4" /></Button>
+            <Button variant={gridSize === "2x2" ? "default" : "outline"} size="icon" onClick={() => setGridSize("2x2")} className="w-10 h-10"><Grid2X2 className="w-4 h-4" /></Button>
+          </div>
+        </div>
+
+        {productsLoading ? (
+          <div className={gridSize === "3x3" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"}>
+            {Array.from({ length: pageSize }).map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <Skeleton className="h-48 w-full" />
+                <div className="p-4 space-y-3">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-6 w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <SlidersHorizontal className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy sản phẩm</h3>
+            {hasActiveFilters && <Button onClick={handleClearFilters} variant="outline">Xóa bộ lọc</Button>}
+          </div>
+        ) : (
+          <div className={gridSize === "3x3" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"}>
+            {products.map((product) => (
+              <Link key={product.id} href={`/products/${product.id}`}>
+                <ProductCard product={product} />
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {!productsLoading && products.length > 0 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <Button variant="outline" onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0}>Trước</Button>
+            <span className="text-sm text-gray-600">Trang {currentPage + 1} / {totalPages}</span>
+            <Button variant="outline" onClick={() => setCurrentPage((p) => p + 1)} disabled={currentPage >= totalPages - 1}>Sau</Button>
+          </div>
+        )}
+      </main>
       <Footer />
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <Skeleton className="h-10 w-64 mb-2" />
+          <Skeleton className="h-5 w-48 mb-8" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <Skeleton className="h-48 w-full" />
+                <div className="p-4 space-y-3">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-6 w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   );
 }
