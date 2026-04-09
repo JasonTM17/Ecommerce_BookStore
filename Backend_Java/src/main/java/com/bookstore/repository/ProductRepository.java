@@ -1,0 +1,64 @@
+package com.bookstore.repository;
+
+import com.bookstore.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+
+    Optional<Product> findByIsbn(String isbn);
+
+    boolean existsByIsbn(String isbn);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.createdAt DESC")
+    Page<Product> findAllActiveProducts(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isFeatured = true")
+    List<Product> findFeaturedProducts();
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isBestseller = true")
+    List<Product> findBestsellerProducts();
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.isNew = true")
+    List<Product> findNewProducts();
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.category.id = :categoryId")
+    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.brand.id = :brandId")
+    Page<Product> findByBrandId(Long brandId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.stockQuantity <= :threshold")
+    List<Product> findLowStockProducts(int threshold);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND (p.name LIKE %:keyword% OR p.author LIKE %:keyword% OR p.description LIKE %:keyword%)")
+    Page<Product> searchProducts(String keyword, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.category.id = :categoryId ORDER BY p.soldCount DESC")
+    List<Product> findTopSellingByCategory(Long categoryId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.id != :productId AND p.category.id = :categoryId")
+    List<Product> findRelatedProducts(Long productId, Long categoryId, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Product p SET p.viewCount = p.viewCount + 1 WHERE p.id = :productId")
+    void incrementViewCount(Long productId);
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true")
+    long countActiveProducts();
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.viewCount DESC")
+    Page<Product> findMostViewedProducts(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.soldCount DESC")
+    Page<Product> findMostSoldProducts(Pageable pageable);
+}
