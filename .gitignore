@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build
+.next/
+out/
+build/
+dist/
+
+# Testing
+coverage/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend
+Backend_Java/target/
+Backend_Java/logs/
+*.class
+*.jar
+*.war
+*.ear
+*.logs
+
+# Uploads
+uploads/
+
+# Docker
+.dockerignore
+
+# Misc
+*.log
+*.tmp
+*.temp
+.cache/
