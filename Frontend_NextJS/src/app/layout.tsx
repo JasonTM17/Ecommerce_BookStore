@@ -5,6 +5,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 import { WebVitals } from "@/components/seo/WebVitals";
+import { OrganizationSchema, WebSiteSchema } from "@/components/seo/JsonLd";
+import { SkipLink } from "@/components/a11y/SkipLink";
 // Dynamic imports for performance - load below the fold
 const ChatbotWidget = dynamic(
   () => import("@/components/chatbot").then((m) => ({ default: m.ChatbotWidget })),
@@ -112,12 +114,15 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={inter.className}>
+        <SkipLink />
         <OrganizationSchema />
         <WebSiteSchema />
         <WebVitals />
         <Providers>
           <FlashSaleBanner />
-          {children}
+          <main id="main-content" role="main" aria-label="Nội dung chính">
+            {children}
+          </main>
           <ChatbotWidget />
           <Toaster />
         </Providers>

@@ -5,14 +5,19 @@ import { BookOpen, Mail, Phone, MapPin, Clock, Facebook, Instagram, Twitter } fr
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950 text-gray-300 relative overflow-hidden">
+    <footer
+      role="contentinfo"
+      className="bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950 text-gray-300 relative overflow-hidden"
+      aria-label="Chân trang website"
+    >
       {/* Decorative top border gradient */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600" />
       
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Section */}
-          <div className="space-y-6">
+          <div className="space-y-6" role="region" aria-labelledby="footer-brand">
+            <h2 id="footer-brand" className="sr-only">Giới thiệu về BookStore</h2>
             <Link href="/" className="flex items-center group">
               <div className="relative w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 group-hover:scale-105 transition-all duration-300">
                 <BookOpen className="h-7 w-7 text-white" />
@@ -25,22 +30,25 @@ export function Footer() {
               Nền tảng thương mại điện tử hàng đầu Việt Nam về sách và tài liệu. 
               Mua sắm dễ dàng, giao hàng nhanh chóng.
             </p>
-            {/* Social Links */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3" role="list" aria-label="Mạng xã hội">
               <a
                 href="#"
+                aria-label="Theo dõi BookStore trên Facebook"
+
                 className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
                 href="#"
+                aria-label="Theo dõi BookStore trên Instagram"
                 className="w-10 h-10 bg-gray-800 hover:bg-pink-600 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-pink-500/30"
               >
                 <Instagram className="h-5 w-5" />
               </a>
               <a
                 href="#"
+                aria-label="Theo dõi BookStore trên Twitter/X"
                 className="w-10 h-10 bg-gray-800 hover:bg-blue-500 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30"
               >
                 <Twitter className="h-5 w-5" />
@@ -49,8 +57,8 @@ export function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-6">
-            <h3 className="font-semibold text-white text-lg relative inline-block">
+          <nav aria-labelledby="footer-nav-heading" className="space-y-6">
+            <h2 id="footer-nav-heading" className="font-semibold text-white text-lg relative inline-block">
               Liên Kết Nhanh
               <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-600 to-transparent" />
             </h3>
@@ -73,11 +81,11 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* Customer Service */}
-          <div className="space-y-6">
-            <h3 className="font-semibold text-white text-lg relative inline-block">
+          <nav aria-labelledby="footer-service-heading" className="space-y-6">
+            <h2 id="footer-service-heading" className="font-semibold text-white text-lg relative inline-block">
               Dịch Vụ Khách Hàng
               <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-600 to-transparent" />
             </h3>
@@ -100,11 +108,11 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* Contact */}
-          <div className="space-y-6">
-            <h3 className="font-semibold text-white text-lg relative inline-block">
+          <section aria-labelledby="footer-contact-heading" className="space-y-6">
+            <h2 id="footer-contact-heading" className="font-semibold text-white text-lg relative inline-block">
               Liên Hệ
               <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-600 to-transparent" />
             </h3>
@@ -134,27 +142,30 @@ export function Footer() {
                 <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Thứ 2 - Thứ 7: 8:00 - 20:00</span>
               </li>
             </ul>
-          </div>
+          </section>
         </div>
 
         {/* Newsletter */}
         <div className="mt-16 p-8 bg-gradient-to-r from-gray-800/50 via-gray-800 to-gray-800/50 rounded-2xl border border-gray-700/50">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-2">Đăng Ký Nhận Tin</h3>
-              <p className="text-gray-400">Nhận thông tin về sách mới và ưu đãi đặc biệt</p>
-            </div>
-            <div className="flex w-full md:w-auto">
-              <input
-                type="email"
-                placeholder="Nhập email của bạn"
-                className="flex-1 md:w-80 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-l-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-gray-500 transition-all duration-300"
-              />
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-r-lg transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50">
-                Đăng Ký
-              </button>
-            </div>
-          </div>
+          <h2 className="text-xl font-semibold text-white mb-2">Đăng Ký Nhận Tin</h2>
+          <p className="text-gray-400 mb-4">Nhận thông tin về sách mới và ưu đãi đặc biệt</p>
+          <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e) => e.preventDefault()}>
+            <label htmlFor="newsletter-email" className="sr-only">Email của bạn</label>
+            <input
+              id="newsletter-email"
+              type="email"
+              placeholder="Nhập email của bạn"
+              aria-label="Nhập email để đăng ký nhận tin"
+              className="flex-1 sm:flex-none sm:w-80 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-gray-500 transition-all duration-300"
+            />
+            <button
+              type="submit"
+              aria-label="Đăng ký nhận tin"
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
+            >
+              Đăng Ký
+            </button>
+          </form>
         </div>
 
         {/* Bottom Bar */}
