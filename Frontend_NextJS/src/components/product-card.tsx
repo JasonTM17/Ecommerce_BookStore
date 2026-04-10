@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Product } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
-import { Star, ShoppingCart, Heart, Eye } from "lucide-react";
+import { Star, ShoppingCart, Heart, Eye, BookOpen } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +58,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-8xl opacity-50">📚</span>
+            <BookOpen className="h-16 w-16 text-gray-300" />
             </div>
           )}
 
