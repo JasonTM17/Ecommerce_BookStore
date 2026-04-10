@@ -32,7 +32,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
   return (
     <div 
-      className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500"
+      className="group relative bg-white/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-sm border border-white/50 hover:shadow-xl transition-all duration-500"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
