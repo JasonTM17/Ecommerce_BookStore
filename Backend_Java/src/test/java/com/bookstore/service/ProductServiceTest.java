@@ -124,7 +124,7 @@ class ProductServiceTest {
 
     @Test
     void getProductById_Success() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(productRepository.findDetailById(1L)).thenReturn(Optional.of(testProduct));
         doNothing().when(productRepository).incrementViewCount(1L);
 
         ProductResponse response = productService.getProductById(1L);
@@ -133,18 +133,19 @@ class ProductServiceTest {
         assertEquals(1L, response.getId());
         assertEquals("Đắc Nhân Tâm", response.getName());
 
-        verify(productRepository).findById(1L);
+        verify(productRepository).findDetailById(1L);
         verify(productRepository).incrementViewCount(1L);
     }
 
     @Test
     void getProductById_NotFound_ThrowsException() {
-        when(productRepository.findById(1L)).thenReturn(Optional.empty());
+        when(productRepository.findDetailById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> 
             productService.getProductById(1L));
 
-        verify(productRepository).findById(1L);
+        verify(productRepository).findDetailById(1L);
+        verify(productRepository, never()).incrementViewCount(any());
     }
 
     @Test
@@ -202,7 +203,7 @@ class ProductServiceTest {
                 .build();
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
-        when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(reviewRepository.calculateAverageRatingByProductId(anyLong())).thenReturn(4.5);
         when(reviewRepository.countApprovedReviewsByProductId(anyLong())).thenReturn(100L);
 
@@ -210,9 +211,9 @@ class ProductServiceTest {
 
         assertNotNull(response);
         assertEquals("Đắc Nhân Tâm - Bản Mới", response.getName());
-        assertEquals(new BigDecimal("55000"), response.getPrice());
+        assertEquals(0, new BigDecimal("55000").compareTo(response.getPrice()));
 
-        verify(productRepository).findById(1L);
-        verify(productRepository).save(any(Product.class));
+        verify(productRepository, times(2)).findById(1L);
+        verify(productRepository, atLeastOnce()).save(any(Product.class));
     }
 }

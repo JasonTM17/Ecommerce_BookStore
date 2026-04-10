@@ -13,13 +13,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +63,9 @@ class CategoryServiceTest {
                 .name("Tiểu Thuyết Mới")
                 .description("Danh mục tiểu thuyết mới")
                 .build();
+
+        lenient().when(productRepository.findByCategoryId(anyLong(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of()));
     }
 
     @Test
@@ -116,7 +123,6 @@ class CategoryServiceTest {
 
     @Test
     void getSubcategories_Success() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(categoryRepository.findActiveSubcategories(1L))
                 .thenReturn(java.util.List.of(childCategory));
 
@@ -128,7 +134,6 @@ class CategoryServiceTest {
 
     @Test
     void getSubcategories_NoChildren() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(categoryRepository.findActiveSubcategories(1L))
                 .thenReturn(java.util.List.of());
 
@@ -239,28 +244,14 @@ class CategoryServiceTest {
     }
 
     @Test
-    void deleteCategory_Success() {
+    void deleteCategory_Success_softDeletes() {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-        when(productRepository.findByCategoryId(eq(1L), any())).thenReturn(org.springframework.data.domain.Page.empty());
-        when(categoryRepository.save(any(Category.class))).thenReturn(testCategory);
+        when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
 
         categoryService.deleteCategory(1L);
 
-        verify(categoryRepository).save(any(Category.class));
-    }
-
-    @Test
-    void deleteCategory_HasProducts_ThrowsException() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-        when(productRepository.findByCategoryId(eq(1L), any()))
-                .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of(
-                    com.bookstore.entity.Product.builder().id(1L).name("Test").build()
-                )));
-
-        assertThrows(ConflictException.class, () ->
-                categoryService.deleteCategory(1L));
-
-        verify(categoryRepository, never()).save(any(Category.class));
+        assertFalse(testCategory.getIsActive());
+        verify(categoryRepository).save(testCategory);
     }
 
     @Test

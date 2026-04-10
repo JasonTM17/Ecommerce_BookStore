@@ -240,7 +240,7 @@ class EmailServiceTest {
         void shouldHandleMessagingException() {
             when(templateEngine.process(anyString(), any(Context.class)))
                     .thenReturn("<html>Test</html>");
-            doThrow(new MailSendException(new MessagingException("Invalid address")))
+            doThrow(new MailSendException("Messaging failed: Invalid address"))
                     .when(mailSender).send(any(MimeMessage.class));
 
             // Should not throw exception

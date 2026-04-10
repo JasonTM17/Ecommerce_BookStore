@@ -106,7 +106,7 @@ class CartServiceTest {
 
     @Test
     void getCart_Success() {
-        when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testCart));
+        when(cartRepository.findByUserIdWithItems(testUser.getId())).thenReturn(Optional.of(testCart));
 
         CartResponse response = cartService.getCart(testUser);
 
@@ -115,12 +115,16 @@ class CartServiceTest {
     }
 
     @Test
-    void getCart_EmptyCart() {
-        when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.empty());
+    void getCart_EmptyCart_ReturnsEmptyCart() {
+        when(cartRepository.findByUserIdWithItems(testUser.getId())).thenReturn(Optional.empty());
 
         CartResponse response = cartService.getCart(testUser);
 
         assertNotNull(response);
+        assertNull(response.getId());
+        assertTrue(response.getItems().isEmpty());
+        assertEquals(0, response.getTotalItems());
+        verify(cartRepository, never()).save(any(Cart.class));
     }
 
     @Test
@@ -131,10 +135,15 @@ class CartServiceTest {
                 .build();
 
         when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testCart));
+        when(cartRepository.findByUserIdWithItems(testUser.getId())).thenReturn(Optional.of(testCart));
         when(productRepository.findById(2L)).thenReturn(Optional.of(testProduct2));
         when(cartItemRepository.findByCartIdAndProductId(testCart.getId(), 2L))
                 .thenReturn(Optional.empty());
-        when(cartItemRepository.save(any(CartItem.class))).thenAnswer(i -> i.getArgument(0));
+        when(cartItemRepository.save(any(CartItem.class))).thenAnswer(i -> {
+            CartItem ci = i.getArgument(0);
+            testCart.getCartItems().add(ci);
+            return ci;
+        });
 
         CartResponse response = cartService.addToCart(testUser, request);
 
@@ -149,7 +158,6 @@ class CartServiceTest {
                 .quantity(1)
                 .build();
 
-        when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testCart));
         when(productRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () ->
@@ -164,7 +172,6 @@ class CartServiceTest {
                 .quantity(1)
                 .build();
 
-        when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testCart));
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct1));
 
         assertThrows(BadRequestException.class, () ->
@@ -179,7 +186,6 @@ class CartServiceTest {
                 .quantity(1)
                 .build();
 
-        when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testCart));
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct1));
 
         assertThrows(BadRequestException.class, () ->
@@ -193,7 +199,6 @@ class CartServiceTest {
                 .quantity(150)
                 .build();
 
-        when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testCart));
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct1));
 
         assertThrows(BadRequestException.class, () ->
@@ -204,7 +209,11 @@ class CartServiceTest {
     void removeFromCart_Success() {
         when(cartRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testCart));
         when(cartItemRepository.findById(1L)).thenReturn(Optional.of(testCartItem));
-        when(cartRepository.save(any(Cart.class))).thenReturn(testCart);
+        doAnswer(inv -> {
+            testCart.getCartItems().remove(testCartItem);
+            return null;
+        }).when(cartItemRepository).delete(testCartItem);
+        when(cartRepository.findByUserIdWithItems(testUser.getId())).thenReturn(Optional.of(testCart));
 
         CartResponse response = cartService.removeFromCart(testUser, 1L);
 

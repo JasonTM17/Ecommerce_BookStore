@@ -187,6 +187,7 @@ class ReviewServiceTest {
         when(reviewRepository.findById(1L)).thenReturn(Optional.of(testReview));
         when(reviewRepository.calculateAverageRatingByProductId(anyLong())).thenReturn(0.0);
         when(reviewRepository.countApprovedReviewsByProductId(anyLong())).thenReturn(0L);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         doNothing().when(reviewRepository).delete(any(Review.class));
         when(productRepository.save(any(Product.class))).thenReturn(testProduct);
 
@@ -200,6 +201,7 @@ class ReviewServiceTest {
         when(reviewRepository.findById(1L)).thenReturn(Optional.of(testReview));
         when(reviewRepository.calculateAverageRatingByProductId(anyLong())).thenReturn(0.0);
         when(reviewRepository.countApprovedReviewsByProductId(anyLong())).thenReturn(0L);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         doNothing().when(reviewRepository).delete(any(Review.class));
         when(productRepository.save(any(Product.class))).thenReturn(testProduct);
 

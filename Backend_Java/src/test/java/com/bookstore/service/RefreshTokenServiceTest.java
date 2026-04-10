@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -21,6 +20,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,17 +73,25 @@ class RefreshTokenServiceTest {
 
     @Test
     void createRefreshToken_MaxTokensExceeded_CleansUpOldest() {
+        RefreshToken oldest = RefreshToken.builder()
+                .id(10L)
+                .token("oldest")
+                .user(testUser)
+                .expiryDate(LocalDateTime.now().plusDays(1))
+                .createdAt(LocalDateTime.now().minusDays(10))
+                .build();
         when(refreshTokenRepository.countByUser(testUser)).thenReturn(5L);
+        when(refreshTokenRepository.findAll()).thenReturn(java.util.List.of(oldest));
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(testRefreshToken);
 
         refreshTokenService.createRefreshToken(testUser, "Chrome Browser", "127.0.0.1");
 
-        verify(refreshTokenRepository).delete(any(RefreshToken.class));
+        verify(refreshTokenRepository).delete(oldest);
     }
 
     @Test
     void verifyToken_ValidToken() {
-        when(refreshTokenRepository.findValidToken("validRefreshToken123", any(LocalDateTime.class)))
+        when(refreshTokenRepository.findValidToken(eq("validRefreshToken123"), any(LocalDateTime.class)))
                 .thenReturn(Optional.of(testRefreshToken));
 
         RefreshToken result = refreshTokenService.verifyToken("validRefreshToken123");
@@ -94,7 +102,7 @@ class RefreshTokenServiceTest {
 
     @Test
     void verifyToken_InvalidToken_ThrowsException() {
-        when(refreshTokenRepository.findValidToken("invalidToken", any(LocalDateTime.class)))
+        when(refreshTokenRepository.findValidToken(eq("invalidToken"), any(LocalDateTime.class)))
                 .thenReturn(Optional.empty());
 
         assertThrows(BadRequestException.class, () ->
@@ -113,7 +121,7 @@ class RefreshTokenServiceTest {
                 .isRevoked(false)
                 .build();
 
-        when(refreshTokenRepository.findValidToken("validRefreshToken123", any(LocalDateTime.class)))
+        when(refreshTokenRepository.findValidToken(eq("validRefreshToken123"), any(LocalDateTime.class)))
                 .thenReturn(Optional.of(testRefreshToken));
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(newToken);
         when(refreshTokenRepository.countByUser(testUser)).thenReturn(1L);
@@ -182,8 +190,6 @@ class RefreshTokenServiceTest {
                 .build();
 
         when(refreshTokenRepository.findAll()).thenReturn(java.util.List.of(oldToken, newToken));
-        when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(testRefreshToken);
-        when(refreshTokenRepository.countByUser(testUser)).thenReturn(1L);
 
         int result = refreshTokenService.cleanupOldestToken(testUser);
 

@@ -176,7 +176,7 @@ class OrderServiceTest {
 
     @Test
     void getOrderById_Success() {
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+        when(orderRepository.findByIdWithUserAndItems(1L)).thenReturn(Optional.of(testOrder));
 
         OrderResponse response = orderService.getOrderById(testUser, 1L);
 
@@ -187,9 +187,9 @@ class OrderServiceTest {
 
     @Test
     void getOrderById_NotFound_ThrowsException() {
-        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+        when(orderRepository.findByIdWithUserAndItems(1L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> 
+        assertThrows(ResourceNotFoundException.class, () ->
             orderService.getOrderById(testUser, 1L));
     }
 
