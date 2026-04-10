@@ -216,7 +216,7 @@ function CategoriesContent() {
                   <button
                     key={category.id}
                     onClick={() => handleCategoryClick(category.id)}
-                    className="group relative h-40 rounded-2xl overflow-hidden"
+                    className="group relative h-40 rounded-2xl overflow-hidden transition-all duration-300 hover:ring-2 hover:ring-blue-500/50 hover:shadow-lg"
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]} transition-transform duration-500 group-hover:scale-110`} />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
