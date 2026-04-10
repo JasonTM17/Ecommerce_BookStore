@@ -12,7 +12,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Sparkles, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function CartPage() {
@@ -208,9 +208,7 @@ export default function CartPage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-4xl text-gray-300">
-                        📚
-                      </div>
+                      <BookOpen className="h-8 w-8 text-gray-300" />
                     )}
                   </div>
                 </Link>
@@ -361,7 +359,8 @@ export default function CartPage() {
                 {/* Promotional Banner */}
                 <div className="bg-primary/5 rounded-lg p-4 text-center">
                   <p className="text-sm font-medium text-primary">
-                    🎉 Mua thêm {formatCurrency(200000 - subtotal)} để được miễn phí vận chuyển!
+                    <Sparkles className="w-4 h-4 mr-1 inline-block" />
+                    Mua thêm {formatCurrency(200000 - subtotal)} để được miễn phí vận chuyển!
                   </p>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div
