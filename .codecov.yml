@@ -1,0 +1,49 @@
+codecov:
+  require_ci_to_pass: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "25...75"
+
+  status:
+    project:
+      default:
+        target: 25%
+        threshold: 2%
+        if_ci_failed: error
+    backend:
+      target: 30%
+      flags:
+        - backend
+    frontend:
+      target: 20%
+      flags:
+        - frontend
+
+flags:
+  backend:
+    paths:
+      - Backend_Java/src/main/java
+    carryforward: true
+  frontend:
+    paths:
+      - Frontend_NextJS/src
+    carryforward: true
+
+parsers:
+  go:
+    enabled: no
+  gcov:
+    enabled: no
+  javascript:
+    enabled: yes
+    partials_as_hits: true
+
+comment:
+  layout: "reach, diff, flags, files, footer"
+  behavior: default
+  require_changes: no
+  branches:
+    - main
+    - develop
