@@ -133,6 +133,9 @@ public class Product {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Version
+    private Long version;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -47,4 +47,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT MONTH(o.createdAt), SUM(o.totalAmount) FROM Order o WHERE YEAR(o.createdAt) = :year AND o.paymentStatus = 'PAID' GROUP BY MONTH(o.createdAt)")
     List<Object[]> getMonthlyRevenue(int year);
+
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.product WHERE o.id = :id")
+    Optional<Order> findByIdWithUser(Long id);
+
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.product WHERE o.id = :id")
+    Optional<Order> findByIdWithUserAndItems(Long id);
 }
