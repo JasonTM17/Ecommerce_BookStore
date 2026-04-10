@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { WebVitals } from "@/components/seo/WebVitals";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/JsonLd";
 import { SkipLink } from "@/components/a11y/SkipLink";
+import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 // Dynamic imports for performance - load below the fold
 const ChatbotWidget = dynamic(
   () => import("@/components/chatbot").then((m) => ({ default: m.ChatbotWidget })),
@@ -90,6 +91,7 @@ export const metadata: Metadata = {
       vi: BASE_URL,
     },
   },
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -118,6 +120,7 @@ export default function RootLayout({
         <OrganizationSchema />
         <WebSiteSchema />
         <WebVitals />
+        <ServiceWorkerRegistration />
         <Providers>
           <FlashSaleBanner />
           <main id="main-content" role="main" aria-label="Nội dung chính">
