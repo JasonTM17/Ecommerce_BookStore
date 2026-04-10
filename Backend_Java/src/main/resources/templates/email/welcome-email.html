@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${subject}">Chào mừng đến với BookStore</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header .logo {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .content p {
+            color: #666666;
+            line-height: 1.8;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .content .greeting {
+            color: #667eea;
+            font-size: 18px;
+        }
+        .feature-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .feature-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .feature-box li {
+            color: #555555;
+            line-height: 2;
+            font-size: 15px;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff !important;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #2d3748;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer p {
+            color: #a0aec0;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .footer .social-links {
+            margin-top: 15px;
+        }
+        .footer .social-links a {
+            color: #667eea;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">📚</div>
+            <h1>BookStore</h1>
+        </div>
+        
+        <div class="content">
+            <p class="greeting">Xin chào <span th:text="${firstName}">bạn</span>!</p>
+            
+            <h2>Chào mừng đến với BookStore 🎉</h2>
+            
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>BookStore</strong> - nền tảng bookstore hàng đầu Việt Nam.</p>
+            
+            <div class="feature-box">
+                <ul>
+                    <li>📖 Khám phá hàng ngàn đầu sách hay từ nhiều thể loại</li>
+                    <li>🛒 Mua sắm với giá ưu đãi và nhiều khuyến mãi hấp dẫn</li>
+                    <li>🚚 Theo dõi đơn hàng dễ dàng và nhanh chóng</li>
+                    <li>⭐ Đánh giá và phản hồi sản phẩm để nhận ưu đãi</li>
+                    <li>💬 Hỗ trợ 24/7 từ đội ngũ chăm sóc khách hàng</li>
+                </ul>
+            </div>
+            
+            <p>Bắt đầu hành trình khám phá thế giới sách cùng chúng tôi ngay hôm nay!</p>
+            
+            <center>
+                <a th:href="${baseUrl}" class="cta-button">Khám phá ngay</a>
+            </center>
+            
+            <p>Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi qua email <a href="mailto:support@bookstore.com">support@bookstore.com</a>.</p>
+            
+            <p>Chúc bạn có những trải nghiệm tuyệt vời!</p>
+            
+            <p>Trân trọng,<br><strong>Đội ngũ BookStore</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 BookStore. Tất cả các quyền được bảo lưu.</p>
+            <p>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
+            <div class="social-links">
+                <a href="#">Facebook</a>
+                <a href="#">Instagram</a>
+                <a href="#">Twitter</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

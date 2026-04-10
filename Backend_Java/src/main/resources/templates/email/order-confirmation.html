@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${subject}">Xác nhận đơn hàng</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+        }
+        .success-badge {
+            background-color: #48bb78;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+        }
+        .order-info {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .order-info .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .order-info .info-row:last-child {
+            border-bottom: none;
+        }
+        .order-info .label {
+            color: #718096;
+            font-size: 14px;
+        }
+        .order-info .value {
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .order-items {
+            margin: 25px 0;
+        }
+        .order-items h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .item-row:last-child {
+            border-bottom: none;
+        }
+        .item-name {
+            color: #333;
+            font-weight: 500;
+        }
+        .item-qty {
+            color: #718096;
+            font-size: 14px;
+        }
+        .item-price {
+            color: #667eea;
+            font-weight: 600;
+        }
+        .total-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        .total-row.final {
+            font-size: 20px;
+            font-weight: 700;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .next-steps {
+            background-color: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .next-steps h4 {
+            color: #2b6cb0;
+            margin: 0 0 10px 0;
+        }
+        .next-steps p {
+            color: #4a5568;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .footer {
+            background-color: #2d3748;
+            padding: 25px;
+            text-align: center;
+        }
+        .footer p {
+            color: #a0aec0;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="success-badge">✓ ĐẶT HÀNG THÀNH CÔNG</div>
+            <h1>Xác nhận đơn hàng BookStore</h1>
+        </div>
+        
+        <div class="content">
+            <p>Xin chào <strong th:text="${customerName}">Khách hàng</strong>,</p>
+            <p>Cảm ơn bạn đã đặt hàng tại <strong>BookStore</strong>! Đơn hàng của bạn đã được tiếp nhận và đang trong quá trình xử lý.</p>
+            
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="label">Mã đơn hàng</span>
+                    <span class="value" th:text="${orderNumber}">#BK123456</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Ngày đặt</span>
+                    <span class="value" th:text="${orderDate}">10/04/2026</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Phương thức thanh toán</span>
+                    <span class="value" th:text="${paymentMethod}">COD</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Địa chỉ giao hàng</span>
+                    <span class="value" th:text="${shippingAddress}">123 Đường ABC</span>
+                </div>
+            </div>
+            
+            <div class="order-items">
+                <h3>📦 Chi tiết đơn hàng</h3>
+                <th:block th:each="item : ${orderItems}">
+                    <div class="item-row">
+                        <div>
+                            <div class="item-name" th:text="${item.productName}">Tên sản phẩm</div>
+                            <div class="item-qty">Số lượng: <span th:text="${item.quantity}">1</span></div>
+                        </div>
+                        <div class="item-price" th:text="${item.totalPrice}">100.000đ</div>
+                    </div>
+                </th:block>
+            </div>
+            
+            <div class="total-section">
+                <div class="total-row">
+                    <span>Tạm tính</span>
+                    <span th:text="${subtotal}">200.000đ</span>
+                </div>
+                <div class="total-row">
+                    <span>Phí vận chuyển</span>
+                    <span th:text="${shippingFee}">20.000đ</span>
+                </div>
+                <div class="total-row final">
+                    <span>Tổng cộng</span>
+                    <span th:text="${totalAmount}">220.000đ</span>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h4>📋 Các bước tiếp theo</h4>
+                <p>1. Chúng tôi sẽ xác nhận đơn hàng trong vòng 24 giờ</p>
+                <p>2. Bạn sẽ nhận được email thông báo khi đơn hàng được gửi đi</p>
+                <p>3. Theo dõi đơn hàng tại trang "Đơn hàng của tôi" trên website</p>
+            </div>
+            
+            <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ <a href="mailto:support@bookstore.com">support@bookstore.com</a>.</p>
+            
+            <p>Trân trọng,<br><strong>Đội ngũ BookStore</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 BookStore. Tất cả các quyền được bảo lưu.</p>
+            <p>Email này được gửi tự động, vui lòng không trả lời trực tiếp.</p>
+        </div>
+    </div>
+</body>
+</html>

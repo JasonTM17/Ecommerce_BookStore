@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${subject}">Bản tin BookStore</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 650px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 35px 30px;
+            text-align: center;
+        }
+        .header .logo {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header .tagline {
+            color: rgba(255,255,255,0.9);
+            font-size: 15px;
+            margin-top: 10px;
+        }
+        .greeting-bar {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        .greeting-bar p {
+            color: #4a5568;
+            margin: 0;
+            font-size: 15px;
+        }
+        .greeting-bar strong {
+            color: #667eea;
+        }
+        .content {
+            padding: 30px;
+        }
+        .featured-section {
+            margin-bottom: 35px;
+        }
+        .section-title {
+            color: #2d3748;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .featured-book {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+        .featured-image {
+            width: 120px;
+            height: 160px;
+            background-color: #cbd5e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            flex-shrink: 0;
+        }
+        .featured-details {
+            flex: 1;
+        }
+        .featured-details .badge {
+            background-color: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .featured-details h3 {
+            color: #2d3748;
+            margin: 5px 0 10px 0;
+            font-size: 18px;
+        }
+        .featured-details .author {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .featured-details .description {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .featured-details .price {
+            color: #667eea;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .featured-details .original-price {
+            color: #a0aec0;
+            text-decoration: line-through;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .product-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .product-card .product-image {
+            width: 100%;
+            height: 120px;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+        .product-card h4 {
+            color: #2d3748;
+            margin: 0 0 5px 0;
+            font-size: 14px;
+        }
+        .product-card .author {
+            color: #718096;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .product-card .price {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .promo-banner {
+            background: linear-gradient(135deg, #fbd38d 0%, #f6ad55 100%);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .promo-banner h3 {
+            color: #744210;
+            margin: 0 0 10px 0;
+            font-size: 22px;
+        }
+        .promo-banner p {
+            color: #975a16;
+            margin: 0;
+            font-size: 15px;
+        }
+        .promo-banner .code {
+            background-color: white;
+            color: #e53e3e;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 18px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        .news-section {
+            margin: 25px 0;
+        }
+        .news-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .news-item h4 {
+            color: #2d3748;
+            margin: 0 0 5px 0;
+            font-size: 15px;
+        }
+        .news-item p {
+            color: #718096;
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .unsubscribe {
+            text-align: center;
+            padding: 30px;
+            background-color: #f7fafc;
+        }
+        .unsubscribe p {
+            color: #a0aec0;
+            font-size: 13px;
+            margin: 0;
+        }
+        .unsubscribe a {
+            color: #667eea;
+        }
+        .footer {
+            background-color: #2d3748;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer p {
+            color: #a0aec0;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .footer .social-links {
+            margin: 15px 0;
+        }
+        .footer .social-links a {
+            color: #667eea;
+            margin: 0 10px;
+            text-decoration: none;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">📚</div>
+            <h1>BookStore Newsletter</h1>
+            <p class="tagline">Khám phá thế giới sách - Mỗi tuần một điều mới mẻ!</p>
+        </div>
+        
+        <div class="greeting-bar">
+            <p>Xin chào <strong th:text="${subscriberName}">bạn</strong>! Tuần này có gì hot? 👋</p>
+        </div>
+        
+        <div class="content">
+            <!-- Featured Book -->
+            <div class="featured-section">
+                <h2 class="section-title">⭐ Sách nổi bật tuần này</h2>
+                <div class="featured-book">
+                    <div class="featured-image" th:text="${featuredBookEmoji ?: '📖'}">📖</div>
+                    <div class="featured-details">
+                        <span class="badge">BESTSELLER</span>
+                        <h3 th:text="${featuredBookTitle}">Tên sách nổi bật</h3>
+                        <p class="author" th:text="${featuredBookAuthor}">Tác giả</p>
+                        <p class="description" th:text="${featuredBookDescription}">Mô tả sách...</p>
+                        <span class="price" th:text="${featuredBookPrice}">199.000đ</span>
+                        <span class="original-price" th:text="${featuredBookOriginalPrice}">299.000đ</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="featured-section">
+                <h2 class="section-title">🔥 Sách bán chạy</h2>
+                <div class="products-grid">
+                    <th:block th:each="product : ${topProducts}">
+                        <div class="product-card">
+                            <div class="product-image" th:text="${product.emoji ?: '📚'}">📚</div>
+                            <h4 th:text="${product.title}">Tên sản phẩm</h4>
+                            <p class="author" th:text="${product.author}">Tác giả</p>
+                            <div class="price" th:text="${product.price}">150.000đ</div>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+            
+            <!-- Promo Banner -->
+            <div class="promo-banner" th:if="${promoCode != null}">
+                <h3 th:text="${promoTitle}">🎁 Mã giảm giá độc quyền!</h3>
+                <p th:text="${promoDescription}">Sử dụng mã bên dưới để được giảm 20% cho đơn hàng đầu tiên</p>
+                <div class="code" th:text="${promoCode}">WELCOME20</div>
+            </div>
+            
+            <!-- News Section -->
+            <div class="news-section" th:if="${!#lists.isEmpty(newsItems)}">
+                <h2 class="section-title">📰 Tin tức & Sự kiện</h2>
+                <th:block th:each="news : ${newsItems}">
+                    <div class="news-item">
+                        <h4 th:text="${news.title}">Tiêu đề tin tức</h4>
+                        <p th:text="${news.summary}">Tóm tắt tin tức...</p>
+                    </div>
+                </th:block>
+            </div>
+            
+            <center>
+                <a th:href="${shopUrl}" style="
+                    display: inline-block;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: #ffffff !important;
+                    padding: 15px 40px;
+                    text-decoration: none;
+                    border-radius: 30px;
+                    font-weight: 600;
+                    margin: 20px 0;
+                ">Khám phá ngay</a>
+            </center>
+        </div>
+        
+        <div class="unsubscribe">
+            <p>Bạn nhận được email này vì đã đăng ký nhận bản tin từ BookStore.</p>
+            <p>Nếu không muốn nhận email, <a th:href="${unsubscribeUrl}">hủy đăng ký tại đây</a>.</p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 BookStore. Tất cả các quyền được bảo lưu.</p>
+            <p>Hotline: 1900-1234 | Email: support@bookstore.com</p>
+            <div class="social-links">
+                <a href="#">Facebook</a>
+                <a href="#">Instagram</a>
+                <a href="#">Twitter</a>
+                <a href="#">Youtube</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
