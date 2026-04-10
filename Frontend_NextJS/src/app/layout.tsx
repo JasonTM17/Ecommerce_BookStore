@@ -1,12 +1,26 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
-import { ChatbotWidget } from "@/components/chatbot";
-import { FlashSaleBanner } from "@/components/flashsale";
-import { OrganizationSchema, WebSiteSchema } from "@/components/seo/JsonLd";
 import { WebVitals } from "@/components/seo/WebVitals";
+// Dynamic imports for performance - load below the fold
+const ChatbotWidget = dynamic(
+  () => import("@/components/chatbot").then((m) => ({ default: m.ChatbotWidget })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
+
+const FlashSaleBanner = dynamic(
+  () => import("@/components/flashsale").then((m) => ({ default: m.FlashSaleBanner })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 const inter = Inter({ subsets: ["latin"] });
 
