@@ -9,7 +9,7 @@ import { useAuthStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, BookOpen, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, BookOpen, ArrowRight, User, ShieldCheck } from "lucide-react";
 import { toast } from "@/components/ui/toaster";
 
 export default function LoginPage() {
@@ -128,8 +128,8 @@ export default function LoginPage() {
           <div className="mt-8 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm font-medium text-gray-700 mb-2">Tài khoản demo:</p>
             <div className="space-y-1 text-sm text-gray-600">
-              <p>👤 Admin: <span className="font-mono">admin@bookstore.com</span> / <span className="font-mono">Admin123!</span></p>
-              <p>👤 Customer: <span className="font-mono">customer@example.com</span> / <span className="font-mono">Customer123!</span></p>
+              <p className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-blue-600" /> Admin: <span className="font-mono">admin@bookstore.com</span> / <span className="font-mono">Admin123!</span></p>
+              <p className="flex items-center gap-2"><User className="w-4 h-4 text-blue-600" /> Customer: <span className="font-mono">customer@example.com</span> / <span className="font-mono">Customer123!</span></p>
             </div>
           </div>
         </div>
