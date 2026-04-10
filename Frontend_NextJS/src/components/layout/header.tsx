@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 export function Header() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -114,6 +115,9 @@ export function Header() {
                 )}
               </Button>
             </Link>
+
+            {/* Language Switcher */}
+            <LanguageSwitcher currentLocale="vi" />
 
             {/* User Menu */}
             {isAuthenticated ? (

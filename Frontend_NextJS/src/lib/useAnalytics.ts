@@ -7,21 +7,17 @@ import { trackEvent } from "@/lib/analytics";
 export function useAnalytics() {
   const pathname = usePathname();
 
-  // Track page views on route change
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     trackEvent("page_view", "navigation", pathname);
   }, [pathname]);
 
   const trackProductView = (productId: number, productName: string, price: number) => {
     trackEvent("view_item", "ecommerce", productName);
-    trackEvent("product_view", "product", `${productId}`, price);
   };
 
   const trackAddToCart = (productId: number, productName: string, price: number, quantity: number) => {
     trackEvent("add_to_cart", "ecommerce", productName);
-    trackEvent("add_to_cart", "cart", `${productId}`, quantity);
   };
 
   const trackRemoveFromCart = (productId: number, productName: string) => {
@@ -30,31 +26,22 @@ export function useAnalytics() {
 
   const trackCheckout = (total: number, itemCount: number) => {
     trackEvent("begin_checkout", "ecommerce", `${itemCount} items`);
-    trackEvent("checkout", "cart", `${itemCount} items`, total);
   };
 
-  const trackPurchase = (orderId: string, total: number, itemCount: number) => {
-    trackEvent("purchase", "ecommerce", orderId, total);
+  const trackPurchase = (orderId: string, total: number) => {
+    trackEvent("purchase", "ecommerce", orderId);
   };
 
   const trackSearch = (keyword: string, resultCount: number) => {
-    trackEvent("search", "site", keyword, resultCount);
+    trackEvent("search", "site", keyword);
   };
 
-  const trackWishlistAdd = (productId: number, productName: string) => {
-    trackEvent("add_to_wishlist", "ecommerce", productName);
+  const trackLogin = (method: string) => {
+    trackEvent("login", "auth", method);
   };
 
-  const trackCouponApply = (couponCode: string, discount: number) => {
-    trackEvent("apply_coupon", "promotion", couponCode, discount);
-  };
-
-  const trackLogin = (method: "email" | "google" | "facebook") => {
-    trackEvent("login", "authentication", method);
-  };
-
-  const trackRegister = (method: "email" | "google" | "facebook") => {
-    trackEvent("sign_up", "authentication", method);
+  const trackRegister = (method: string) => {
+    trackEvent("sign_up", "auth", method);
   };
 
   return {
@@ -64,8 +51,6 @@ export function useAnalytics() {
     trackCheckout,
     trackPurchase,
     trackSearch,
-    trackWishlistAdd,
-    trackCouponApply,
     trackLogin,
     trackRegister,
   };
