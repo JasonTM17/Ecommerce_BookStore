@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -119,11 +120,17 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public CartResponse getCart(User user) {
-        Cart cart = cartRepository.findByUserIdWithItems(user.getId())
-                .orElseGet(() -> {
-                    Cart newCart = Cart.builder().user(user).build();
-                    return cartRepository.save(newCart);
-                });
+        Cart cart = cartRepository.findByUserIdWithItems(user.getId()).orElse(null);
+
+        if (cart == null) {
+            return CartResponse.builder()
+                    .user(mapToUserResponse(user))
+                    .items(List.of())
+                    .totalItems(0)
+                    .subtotal(BigDecimal.ZERO)
+                    .total(BigDecimal.ZERO)
+                    .build();
+        }
 
         List<CartItemResponse> items = cart.getCartItems().stream()
                 .map(this::mapToCartItemResponse)

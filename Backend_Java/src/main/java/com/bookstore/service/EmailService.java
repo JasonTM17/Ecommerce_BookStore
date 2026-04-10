@@ -13,10 +13,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.exceptions.TemplateInputException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +26,19 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine emailTemplateEngine;
 
+    // Email validation pattern (RFC 5322 simplified)
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    );
+
     @Value("${spring.mail.username:noreply@bookstore.com}")
     private String fromEmail;
 
     @Value("${app.base-url:http://localhost:3000}")
     private String appBaseUrl;
+
+    @Value("${app.email.sender-name:BookStore Team}")
+    private String senderName;
 
     private static final String WELCOME_TEMPLATE = "welcome-email";
     private static final String ORDER_CONFIRMATION_TEMPLATE = "order-confirmation";
@@ -40,21 +48,54 @@ public class EmailService {
 
     private void sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
+            // Validate email address
+            if (!isValidEmail(to)) {
+                log.error("Invalid email address: {}", to);
+                return;
+            }
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromEmail);
+            
+            // Set from with sender name
+            helper.setFrom(fromEmail, senderName);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
+            
+            // Add headers for better deliverability
+            message.setHeader("X-Mailer", "BookStore-Email-Service");
+            message.setHeader("X-Priority", "3");
+            
             mailSender.send(message);
-            log.info("HTML email sent successfully to: {}", to);
+            log.info("✅ HTML email sent successfully to: {}", maskEmail(to));
         } catch (MessagingException e) {
-            log.error("Failed to send HTML email to {}: Messaging error - {}", to, e.getMessage());
+            log.error("❌ Failed to send HTML email to {}: Messaging error - {}", maskEmail(to), e.getMessage());
         } catch (MailSendException e) {
-            log.error("Failed to send HTML email to {}: Mail server error - {}", to, e.getMessage());
+            log.error("❌ Failed to send HTML email to {}: Mail server error - {}", maskEmail(to), e.getMessage());
         } catch (Exception e) {
-            log.error("Failed to send HTML email to {}: {}", to, e.getMessage());
+            log.error("❌ Failed to send HTML email to {}: {}", maskEmail(to), e.getMessage());
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        return EMAIL_PATTERN.matcher(email.trim()).matches();
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return "***";
+        }
+        String[] parts = email.split("@");
+        String local = parts[0];
+        String domain = parts[1];
+        if (local.length() <= 2) {
+            return "**@" + domain;
+        }
+        return local.substring(0, 2) + "***@" + domain;
     }
 
     private String processThymeleafTemplate(String template, Map<String, Object> variables) {
@@ -63,9 +104,14 @@ public class EmailService {
             variables.forEach(context::setVariable);
         }
         try {
-            return emailTemplateEngine.process(template, context);
-        } catch (TemplateInputException e) {
-            log.warn("Template {} not found, using fallback plain text", template);
+            String html = emailTemplateEngine.process(template, context);
+            if (html == null || html.trim().isEmpty()) {
+                log.warn("⚠️ Template {} returned empty content, using fallback", template);
+                return buildFallbackContent(template, variables);
+            }
+            return html;
+        } catch (Exception e) {
+            log.warn("⚠️ Template {} not found, using fallback content. Error: {}", template, e.getMessage());
             return buildFallbackContent(template, variables);
         }
     }
@@ -165,15 +211,20 @@ public class EmailService {
     @Async
     public void sendSimpleEmail(String to, String subject, String text) {
         try {
+            if (!isValidEmail(to)) {
+                log.error("❌ Invalid email address: {}", to);
+                return;
+            }
+            
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject(subject);
             message.setText(text);
             mailSender.send(message);
-            log.info("Email sent successfully to: {}", to);
+            log.info("✅ Simple email sent successfully to: {}", maskEmail(to));
         } catch (Exception e) {
-            log.error("Failed to send email to {}: {}", to, e.getMessage());
+            log.error("❌ Failed to send email to {}: {}", maskEmail(to), e.getMessage());
         }
     }
 
@@ -221,21 +272,21 @@ public class EmailService {
 
     @Async
     public void sendOrderStatusUpdateEmail(String to, Map<String, Object> statusData) {
-        Map<String, Object> variables = Map.of(
-                "customerName", statusData.getOrDefault("customerName", "Khách hàng"),
-                "orderNumber", statusData.getOrDefault("orderNumber", ""),
-                "orderDate", statusData.getOrDefault("orderDate", ""),
-                "totalAmount", statusData.getOrDefault("totalAmount", "0đ"),
-                "paymentMethod", statusData.getOrDefault("paymentMethod", "COD"),
-                "status", statusData.getOrDefault("status", ""),
-                "trackingNumber", statusData.getOrDefault("trackingNumber", ""),
-                "shippingPartner", statusData.getOrDefault("shippingPartner", ""),
-                "estimatedDelivery", statusData.getOrDefault("estimatedDelivery", ""),
-                "trackingSteps", statusData.getOrDefault("trackingSteps", List.of()),
-                "additionalNote", statusData.getOrDefault("additionalNote", "Cảm ơn bạn đã tin tưởng BookStore!"),
-                "orderUrl", appBaseUrl + "/orders/" + statusData.getOrDefault("orderNumber", ""),
-                "subject", "Cập nhật trạng thái đơn hàng #" + statusData.getOrDefault("orderNumber", "")
-        );
+        Map<String, Object> variables = new java.util.HashMap<>();
+        variables.put("customerName", statusData.getOrDefault("customerName", "Khách hàng"));
+        variables.put("orderNumber", statusData.getOrDefault("orderNumber", ""));
+        variables.put("orderDate", statusData.getOrDefault("orderDate", ""));
+        variables.put("totalAmount", statusData.getOrDefault("totalAmount", "0đ"));
+        variables.put("paymentMethod", statusData.getOrDefault("paymentMethod", "COD"));
+        variables.put("status", statusData.getOrDefault("status", ""));
+        variables.put("trackingNumber", statusData.getOrDefault("trackingNumber", ""));
+        variables.put("shippingPartner", statusData.getOrDefault("shippingPartner", ""));
+        variables.put("estimatedDelivery", statusData.getOrDefault("estimatedDelivery", ""));
+        variables.put("trackingSteps", statusData.getOrDefault("trackingSteps", List.of()));
+        variables.put("additionalNote", statusData.getOrDefault("additionalNote", "Cảm ơn bạn đã tin tưởng BookStore!"));
+        variables.put("orderUrl", appBaseUrl + "/orders/" + statusData.getOrDefault("orderNumber", ""));
+        variables.put("subject", "Cập nhật trạng thái đơn hàng #" + statusData.getOrDefault("orderNumber", ""));
+        
         String htmlContent = processThymeleafTemplate(ORDER_STATUS_TEMPLATE, variables);
         sendHtmlEmail(to, "Cập nhật trạng thái đơn hàng #" + statusData.getOrDefault("orderNumber", ""), htmlContent);
     }
@@ -258,23 +309,23 @@ public class EmailService {
 
     @Async
     public void sendNewsletterEmail(String to, Map<String, Object> newsletterData) {
-        Map<String, Object> variables = Map.of(
-                "subscriberName", newsletterData.getOrDefault("subscriberName", "Bạn"),
-                "featuredBookTitle", newsletterData.getOrDefault("featuredBookTitle", "Sách nổi bật"),
-                "featuredBookAuthor", newsletterData.getOrDefault("featuredBookAuthor", "Tác giả"),
-                "featuredBookDescription", newsletterData.getOrDefault("featuredBookDescription", ""),
-                "featuredBookPrice", newsletterData.getOrDefault("featuredBookPrice", ""),
-                "featuredBookOriginalPrice", newsletterData.getOrDefault("featuredBookOriginalPrice", ""),
-                "featuredBookEmoji", newsletterData.getOrDefault("featuredBookEmoji", "📖"),
-                "topProducts", newsletterData.getOrDefault("topProducts", List.of()),
-                "promoCode", newsletterData.getOrDefault("promoCode", ""),
-                "promoTitle", newsletterData.getOrDefault("promoTitle", ""),
-                "promoDescription", newsletterData.getOrDefault("promoDescription", ""),
-                "newsItems", newsletterData.getOrDefault("newsItems", List.of()),
-                "shopUrl", appBaseUrl + "/products",
-                "unsubscribeUrl", appBaseUrl + "/unsubscribe?email=" + to,
-                "subject", newsletterData.getOrDefault("subject", "Bản tin BookStore - Tuần này có gì hot?")
-        );
+        Map<String, Object> variables = new java.util.HashMap<>();
+        variables.put("subscriberName", newsletterData.getOrDefault("subscriberName", "Bạn"));
+        variables.put("featuredBookTitle", newsletterData.getOrDefault("featuredBookTitle", "Sách nổi bật"));
+        variables.put("featuredBookAuthor", newsletterData.getOrDefault("featuredBookAuthor", "Tác giả"));
+        variables.put("featuredBookDescription", newsletterData.getOrDefault("featuredBookDescription", ""));
+        variables.put("featuredBookPrice", newsletterData.getOrDefault("featuredBookPrice", ""));
+        variables.put("featuredBookOriginalPrice", newsletterData.getOrDefault("featuredBookOriginalPrice", ""));
+        variables.put("featuredBookEmoji", newsletterData.getOrDefault("featuredBookEmoji", "📖"));
+        variables.put("topProducts", newsletterData.getOrDefault("topProducts", List.of()));
+        variables.put("promoCode", newsletterData.getOrDefault("promoCode", ""));
+        variables.put("promoTitle", newsletterData.getOrDefault("promoTitle", ""));
+        variables.put("promoDescription", newsletterData.getOrDefault("promoDescription", ""));
+        variables.put("newsItems", newsletterData.getOrDefault("newsItems", List.of()));
+        variables.put("shopUrl", appBaseUrl + "/products");
+        variables.put("unsubscribeUrl", appBaseUrl + "/unsubscribe?email=" + to);
+        variables.put("subject", newsletterData.getOrDefault("subject", "Bản tin BookStore - Tuần này có gì hot?"));
+        
         String htmlContent = processThymeleafTemplate(NEWSLETTER_TEMPLATE, variables);
         sendHtmlEmail(to, (String) newsletterData.getOrDefault("subject", "Bản tin BookStore - Tuần này có gì hot?"), htmlContent);
     }

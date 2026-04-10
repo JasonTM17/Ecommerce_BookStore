@@ -111,14 +111,22 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(User user, Long orderId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithUserAndItems(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
-        if (!order.getUser().getId().equals(user.getId()) && 
+        if (!order.getUser().getId().equals(user.getId()) &&
             !user.getRoles().contains(Role.ADMIN)) {
             throw new BadRequestException("Bạn không có quyền xem đơn hàng này");
         }
 
+        return mapToOrderResponse(order);
+    }
+
+    /** Admin-only: fetch order with user eagerly loaded to avoid LazyInitializationException. */
+    @Transactional(readOnly = true)
+    public OrderResponse getAdminOrderById(Long orderId) {
+        Order order = orderRepository.findByIdWithUser(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
         return mapToOrderResponse(order);
     }
 
@@ -185,8 +193,10 @@ public class OrderService {
             order.setCancelledAt(LocalDateTime.now());
             for (OrderItem item : order.getOrderItems()) {
                 Product product = item.getProduct();
-                product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
-                productRepository.save(product);
+                if (Boolean.TRUE.equals(product.getIsActive())) {
+                    product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+                    productRepository.save(product);
+                }
             }
         }
 

@@ -36,11 +36,15 @@ public class ReviewService {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getProductId()));
 
+        if (reviewRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
+            throw new BadRequestException("Bạn đã đánh giá sản phẩm này rồi");
+        }
+
         boolean hasPurchased = orderRepository.findByUserId(user.getId(), PageRequest.of(0, 100))
                 .getContent().stream()
                 .filter(order -> order.getOrderStatus() == com.bookstore.entity.OrderStatus.DELIVERED)
-                .flatMap(order -> order.getOrderItems().stream())
-                .anyMatch(item -> item.getProduct().getId().equals(product.getId()));
+                .anyMatch(order -> order.getOrderItems().stream()
+                        .anyMatch(item -> item.getProduct().getId().equals(product.getId())));
 
         Review review = Review.builder()
                 .user(user)

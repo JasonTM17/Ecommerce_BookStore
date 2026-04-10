@@ -28,6 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// ============================================================
+// PHẦN 1: EMAIL CHÀO MỪNG - TÍCH HỢP WELCOME EMAIL
+// ============================================================
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,6 +43,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
+    private final EmailService emailService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -66,6 +71,17 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, "Web Browser", null);
 
         log.info("New user registered: {}", user.getEmail());
+
+        // ============================================================
+        // PHẦN 1: GỬI EMAIL CHÀO MỪNG KHI ĐĂNG KÝ THÀNH CÔNG
+        // Email được gửi bất đồng bộ (Async), không ảnh hưởng đăng ký
+        // ============================================================
+        try {
+            emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
+            log.info("Welcome email queued for user: {}", user.getEmail());
+        } catch (Exception e) {
+            log.warn("Failed to send welcome email for {}: {}", user.getEmail(), e.getMessage());
+        }
 
         return AuthResponse.builder()
                 .accessToken(accessToken)

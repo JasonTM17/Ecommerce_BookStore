@@ -118,14 +118,16 @@ public class ProductService {
         return mapToProductResponse(product);
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * Read-write: {@link ProductRepository#incrementViewCount} runs an UPDATE and must not run inside a read-only transaction.
+     */
+    @Transactional
     public ProductResponse getProductById(Long id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findDetailById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-        
+        ProductResponse response = mapToProductResponse(product);
         productRepository.incrementViewCount(id);
-        
-        return mapToProductResponse(product);
+        return response;
     }
 
     @Transactional(readOnly = true)

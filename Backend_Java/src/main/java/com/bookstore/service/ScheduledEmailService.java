@@ -165,7 +165,7 @@ public class ScheduledEmailService {
             }
 
             for (User user : usersPage.getContent()) {
-                if (user.getEmail() != null && user.getEmailVerified()) {
+                if (user.getEmail() != null && Boolean.TRUE.equals(user.getIsEmailVerified())) {
                     try {
                         Map<String, Object> personalizedData = new HashMap<>(newsletterData);
                         personalizedData.put("subscriberName",
@@ -197,15 +197,25 @@ public class ScheduledEmailService {
         // Sách nổi bật
         if (!featuredProducts.isEmpty()) {
             Product featured = featuredProducts.get(0);
-            data.put("featuredBookTitle", featured.getTitle());
+            data.put("featuredBookTitle", featured.getName());
             data.put("featuredBookAuthor", featured.getAuthor() != null ? featured.getAuthor() : "Nhiều tác giả");
             data.put("featuredBookDescription", featured.getDescription() != null ?
                     (featured.getDescription().length() > 150 ?
                             featured.getDescription().substring(0, 150) + "..." :
                             featured.getDescription()) : "Một cuốn sách tuyệt vời");
-            data.put("featuredBookPrice", formatPrice(featured.getPrice()));
-            data.put("featuredBookOriginalPrice", featured.getOriginalPrice() != null && featured.getOriginalPrice() > featured.getPrice() ?
-                    formatPrice(featured.getOriginalPrice()) : "");
+            
+            // Format price from BigDecimal
+            java.math.BigDecimal price = featured.getCurrentPrice();
+            data.put("featuredBookPrice", price != null ? formatPrice(price.doubleValue()) : "Liên hệ");
+            
+            // Check for discount - compare with original price
+            if (featured.getDiscountPrice() != null && featured.getPrice() != null 
+                    && featured.getDiscountPrice().compareTo(featured.getPrice()) < 0) {
+                data.put("featuredBookOriginalPrice", formatPrice(featured.getPrice().doubleValue()));
+            } else {
+                data.put("featuredBookOriginalPrice", "");
+            }
+            
             data.put("featuredBookEmoji", getProductEmoji(featured.getCategory() != null ? featured.getCategory().getName() : ""));
         }
 
@@ -213,9 +223,10 @@ public class ScheduledEmailService {
         List<Map<String, String>> topProducts = bestSellers.stream()
                 .map(p -> {
                     Map<String, String> productMap = new HashMap<>();
-                    productMap.put("title", p.getTitle());
+                    productMap.put("title", p.getName());
                     productMap.put("author", p.getAuthor() != null ? p.getAuthor() : "Nhiều tác giả");
-                    productMap.put("price", formatPrice(p.getPrice()));
+                    java.math.BigDecimal pPrice = p.getCurrentPrice();
+                    productMap.put("price", pPrice != null ? formatPrice(pPrice.doubleValue()) : "Liên hệ");
                     productMap.put("emoji", getProductEmoji(p.getCategory() != null ? p.getCategory().getName() : ""));
                     return productMap;
                 })
