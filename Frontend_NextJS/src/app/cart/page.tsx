@@ -303,7 +303,7 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
+            <div className="bg-white/70 backdrop-blur-md border border-white/50 rounded-lg shadow-sm p-6 sticky top-24">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Tổng Quan Đơn Hàng</h2>
 
               <div className="space-y-4">
