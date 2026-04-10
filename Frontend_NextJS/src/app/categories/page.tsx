@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, ChevronRight, BookOpen, Filter } from "lucide-react";
+import { ArrowRight, ChevronRight, BookOpen, Filter, FlaskConical, Briefcase, Palette, Stethoscope, Laptop, Globe, Trophy } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -126,7 +126,7 @@ function CategoriesContent() {
                         : "hover:bg-gray-50 text-gray-700"
                     )}
                   >
-                    <span className="text-lg">📚</span>
+                    <BookOpen className="w-5 h-5" />
                     <span className="font-medium">Tất cả sách</span>
                   </button>
 
@@ -141,9 +141,11 @@ function CategoriesContent() {
                             : "hover:bg-gray-50 text-gray-700"
                         )}
                       >
-                        <span className="text-lg">
-                          {['📖', '🔬', '💼', '🎨', '🏥', '💻', '🌍', '⚽'][index % 8]}
-                        </span>
+                        {(() => {
+                          const icons = [BookOpen, FlaskConical, Briefcase, Palette, Stethoscope, Laptop, Globe, Trophy]
+                          const Icon = icons[index % 8]
+                          return <Icon className="w-5 h-5" />
+                        })()}
                         <div className="flex-1 text-left">
                           <span className="font-medium block">{category.name}</span>
                           {category.productCount && (
