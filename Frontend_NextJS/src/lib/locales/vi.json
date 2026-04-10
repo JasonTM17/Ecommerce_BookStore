@@ -1,0 +1,112 @@
+{
+  "common": {
+    "home": "Trang chủ",
+    "products": "Sản phẩm",
+    "categories": "Danh mục",
+    "about": "Giới thiệu",
+    "contact": "Liên hệ",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "search": "Tìm kiếm",
+    "cart": "Giỏ hàng",
+    "wishlist": "Yêu thích",
+    "account": "Tài khoản",
+    "orders": "Đơn hàng",
+    "loading": "Đang tải...",
+    "error": "Có lỗi xảy ra",
+    "success": "Thành công",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "save": "Lưu",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "add": "Thêm",
+    "view": "Xem",
+    "back": "Quay lại",
+    "next": "Tiếp tục",
+    "previous": "Trước",
+    "yes": "Có",
+    "no": "Không"
+  },
+  "home": {
+    "welcome": "Chào mừng đến với BookStore",
+    "featured": "Sách nổi bật",
+    "bestsellers": "Sách bán chạy",
+    "newReleases": "Sách mới",
+    "flashSale": "Flash Sale",
+    "explore": "Khám phá ngay"
+  },
+  "product": {
+    "price": "Giá",
+    "author": "Tác giả",
+    "publisher": "Nhà xuất bản",
+    "pages": "Số trang",
+    "category": "Danh mục",
+    "description": "Mô tả",
+    "reviews": "Đánh giá",
+    "addToCart": "Thêm vào giỏ hàng",
+    "addToWishlist": "Thêm vào wishlist",
+    "buyNow": "Mua ngay",
+    "outOfStock": "Hết hàng",
+    "inStock": "Còn hàng",
+    "rating": "Đánh giá"
+  },
+  "cart": {
+    "title": "Giỏ hàng",
+    "empty": "Giỏ hàng trống",
+    "subtotal": "Tạm tính",
+    "shipping": "Phí vận chuyển",
+    "total": "Tổng cộng",
+    "checkout": "Thanh toán",
+    "continueShopping": "Tiếp tục mua sắm",
+    "remove": "Xóa khỏi giỏ",
+    "quantity": "Số lượng"
+  },
+  "checkout": {
+    "title": "Thanh toán",
+    "shippingInfo": "Thông tin giao hàng",
+    "paymentMethod": "Phương thức thanh toán",
+    "confirm": "Xác nhận đơn hàng",
+    "placeOrder": "Đặt hàng ngay",
+    "orderSuccess": "Đặt hàng thành công!",
+    "coupon": "Mã giảm giá",
+    "applyCoupon": "Áp dụng"
+  },
+  "wishlist": {
+    "title": "Danh sách yêu thích",
+    "empty": "Chưa có sản phẩm yêu thích",
+    "addToCart": "Thêm vào giỏ",
+    "remove": "Xóa"
+  },
+  "account": {
+    "profile": "Hồ sơ",
+    "changePassword": "Đổi mật khẩu",
+    "addresses": "Địa chỉ",
+    "orderHistory": "Lịch sử đơn hàng"
+  },
+  "orders": {
+    "title": "Đơn hàng của tôi",
+    "status": {
+      "pending": "Chờ xác nhận",
+      "confirmed": "Đã xác nhận",
+      "shipping": "Đang giao",
+      "delivered": "Đã giao",
+      "cancelled": "Đã hủy"
+    }
+  },
+  "chatbot": {
+    "title": "Trợ lý BookStore",
+    "placeholder": "Nhập tin nhắn...",
+    "send": "Gửi",
+    "newChat": "Cuộc trò chuyện mới"
+  },
+  "footer": {
+    "about": "Về chúng tôi",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản sử dụng",
+    "shipping": "Chính sách vận chuyển",
+    "returns": "Chính sách đổi trả",
+    "copyright": "© 2024 BookStore. Mọi quyền được bảo lưu."
+  }
+}
