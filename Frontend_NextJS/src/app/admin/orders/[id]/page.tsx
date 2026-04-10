@@ -113,13 +113,14 @@ export default function AdminOrderDetailPage() {
   const queryClient = useQueryClient();
   const orderId = params.id as string;
 
-  const { data: order, isLoading } = useQuery<Order>({
+  const { data: order, isLoading, isError } = useQuery<Order>({
     queryKey: ["admin-order", orderId],
     queryFn: async () => {
-      const res = await api.get(`/orders/admin/${orderId}`);
+      const res = await api.get(`/admin/orders/${orderId}`);
       return res.data;
     },
     enabled: !!orderId,
+    retry: false,
   });
 
   const [newStatus, setNewStatus] = useState("");
@@ -128,10 +129,10 @@ export default function AdminOrderDetailPage() {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ status, paymentStatus }: { status?: string; paymentStatus?: string }) => {
       if (status) {
-        await api.put(`/admin/orders/${orderId}/status`, { status });
+        await api.put(`/admin/orders/${orderId}/status?status=${status}`);
       }
       if (paymentStatus) {
-        await api.put(`/admin/orders/${orderId}/payment`, { paymentStatus });
+        await api.put(`/admin/orders/${orderId}/payment?paymentStatus=${paymentStatus}`);
       }
     },
     onSuccess: () => {

@@ -3,9 +3,10 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
+import { isAxiosError } from "axios";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, apiPublic } from "@/lib/api";
 import { Product, Review, PageResponse } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
@@ -18,6 +19,11 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { Star, ShoppingCart, Minus, Plus, Heart, Share2, Truck, Shield, RotateCcw } from "lucide-react";
 import Image from "next/image";
 
+function normalizeRouteParam(id: string | string[] | undefined): string | undefined {
+  if (id === undefined || id === null) return undefined;
+  return Array.isArray(id) ? id[0] : String(id);
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -28,28 +34,44 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const productId = params.id as string;
+  const productId = normalizeRouteParam(params.id as string | string[] | undefined);
+  const numericId = productId !== undefined ? Number(productId) : NaN;
+  const idValid = Boolean(productId && !Number.isNaN(numericId) && numericId > 0);
 
-  const { data: product, isLoading } = useQuery({
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+    isFetched,
+  } = useQuery({
     queryKey: ["product", productId],
+    enabled: idValid,
     queryFn: async () => {
-      const response = await api.get(`/products/${productId}`);
+      const response = await apiPublic.get(`/products/${productId}`);
       return response.data as Product;
     },
   });
 
   const { data: relatedProducts } = useQuery({
-    queryKey: ["related-products", productId],
+    queryKey: ["related-products", productId, product?.category?.id],
+    enabled: idValid && Boolean(product?.category?.id),
     queryFn: async () => {
-      const response = await api.get(`/products/${productId}/related?categoryId=${product?.category?.id || 0}`);
+      const catId = product!.category!.id;
+      const response = await apiPublic.get(
+        `/products/${productId}/related?categoryId=${catId}`
+      );
       return response.data as Product[];
     },
   });
 
   const { data: reviewsData } = useQuery({
     queryKey: ["reviews", productId],
+    enabled: idValid,
     queryFn: async () => {
-      const response = await api.get(`/reviews/product/${productId}?page=0&size=5`);
+      const response = await apiPublic.get(
+        `/reviews/product/${productId}?page=0&size=5`
+      );
       return response.data as PageResponse<Review>;
     },
   });
@@ -57,7 +79,7 @@ export default function ProductDetailPage() {
   const addToCartMutation = useMutation({
     mutationFn: async (qty: number) => {
       const response = await api.post("/cart/items", {
-        productId: parseInt(productId),
+        productId: parseInt(productId!),
         quantity: qty,
       });
       return response.data;
@@ -94,17 +116,49 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (!product) {
+  if (!idValid) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 py-16">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Sản phẩm không tồn tại</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Đường dẫn sản phẩm không hợp lệ</h1>
             <Button onClick={() => router.push("/products")}>Quay lại trang sản phẩm</Button>
           </div>
         </main>
         <Footer />
+      </div>
+    );
+  }
+
+  if (isFetched && (isError || !product)) {
+    const status = isAxiosError(error) ? error.response?.status : undefined;
+    const notFound = status === 404;
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 py-16">
+          <div className="container mx-auto max-w-lg px-4 text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              {notFound ? "Sản phẩm không tồn tại" : "Không thể tải sản phẩm"}
+            </h1>
+            <p className="text-gray-600 mb-6">
+              {notFound
+                ? "Sản phẩm có thể đã ngừng kinh doanh hoặc đã bị gỡ."
+                : "Kiểm tra kết nối mạng và đảm bảo API backend đang chạy (NEXT_PUBLIC_API_URL)."}
+            </p>
+            <Button onClick={() => router.push("/products")}>Quay lại trang sản phẩm</Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Đang tải sản phẩm...</p>
       </div>
     );
   }

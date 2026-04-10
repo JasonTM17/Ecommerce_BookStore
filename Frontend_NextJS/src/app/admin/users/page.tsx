@@ -104,7 +104,7 @@ export default function AdminUsersPage() {
     }
   }, [isAdmin, router]);
 
-  const { data, isLoading } = useQuery<PageResponse<User>>({
+  const { data, isLoading, isError: queryError } = useQuery<PageResponse<User>>({
     queryKey: ["admin-users", page, search, roleFilter, statusFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -114,9 +114,13 @@ export default function AdminUsersPage() {
       if (search) params.set("keyword", search);
       if (roleFilter) params.set("role", roleFilter);
       if (statusFilter) params.set("status", statusFilter);
-      const res = await api.get(`/admin/users?${params}`);
+
+      // Dùng /admin/users/search khi có từ khóa, ngược lại dùng /admin/users
+      const endpoint = search ? "/admin/users/search" : "/admin/users";
+      const res = await api.get(`${endpoint}?${params}`);
       return res.data;
     },
+    retry: false,
   });
 
   const activateMutation = useMutation({

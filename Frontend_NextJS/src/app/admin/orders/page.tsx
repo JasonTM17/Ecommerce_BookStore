@@ -110,7 +110,7 @@ export default function AdminOrdersPage() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = useQuery<PageResponse<Order>>({
+  const { data, isLoading, isError } = useQuery<PageResponse<Order>>({
     queryKey: ["admin-orders", page, status],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -119,9 +119,10 @@ export default function AdminOrdersPage() {
       });
       if (status) params.append("status", status);
       if (search) params.append("search", search);
-      const res = await api.get(`/orders/admin?${params}`);
+      const res = await api.get(`/admin/orders?${params}`);
       return res.data;
     },
+    retry: false,
   });
 
   const orders = data?.content ?? [];

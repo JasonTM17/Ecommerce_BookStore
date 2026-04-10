@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, apiPublic } from "@/lib/api";
 import { Product, Category } from "@/lib/types";
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
@@ -23,7 +23,7 @@ export function FeaturedProducts() {
   const { data: products, isLoading } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
-      const response = await api.get("/products/featured");
+      const response = await apiPublic.get("/products/featured");
       return response.data as Product[];
     },
   });
@@ -90,7 +90,7 @@ export function NewProducts() {
   const { data: products, isLoading } = useQuery({
     queryKey: ["new-products"],
     queryFn: async () => {
-      const response = await api.get("/products/new");
+      const response = await apiPublic.get("/products/new");
       return response.data as Product[];
     },
   });
@@ -157,7 +157,7 @@ export function CategorySection() {
   const { data: categories, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const response = await api.get("/categories/root");
+      const response = await apiPublic.get("/categories/root");
       return response.data as Category[];
     },
   });

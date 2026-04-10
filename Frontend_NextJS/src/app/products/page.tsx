@@ -214,7 +214,7 @@ function ProductsContent() {
                   <span className="text-sm text-gray-500">Đang lọc:</span>
                   {searchKeyword && (
                     <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-sm px-3 py-1 rounded-full">
-                      "{searchKeyword}"
+                      &ldquo;{searchKeyword}&rdquo;
                       <X className="w-3 h-3 cursor-pointer hover:text-blue-800" onClick={() => setSearchKeyword("")} />
                     </span>
                   )}

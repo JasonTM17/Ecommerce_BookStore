@@ -9,12 +9,16 @@ import Image from "next/image";
 import { api } from "@/lib/api";
 import { useAuthStore, useCartStore, Address, CartItem } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { CouponInput, AvailableCoupons } from "@/components/coupon";
+import { Coupon } from "@/lib/coupon";
+import { Tag } from "lucide-react";
 import {
   ArrowLeft,
   Truck,
@@ -47,6 +51,8 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [useNewAddress, setUseNewAddress] = useState(true);
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   // Address form state
   const [addressForm, setAddressForm] = useState({
@@ -76,10 +82,13 @@ export default function CheckoutPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      setOrderSuccess(data.orderNumber);
+      setOrderSuccess((data as { orderNumber: string }).orderNumber);
       clearCart();
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       setStep(4);
+    },
+    onError: () => {
+      toast.error("Đặt hàng thất bại. Vui lòng thử lại.");
     },
   });
 
@@ -89,14 +98,17 @@ export default function CheckoutPage() {
       const response = await api.post("/addresses", addressData);
       return response.data;
     },
+    onError: () => {
+      toast.error("Lưu địa chỉ thất bại");
+    },
   });
 
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
   const selectedShipping = SHIPPING_METHODS.find((m) => m.id === shippingMethod)!;
   const shippingFee = subtotal >= 200000 || selectedShipping.free ? 0 : selectedShipping.price;
-  const estimatedTax = Math.round(subtotal * 0.1);
-  const grandTotal = subtotal + shippingFee + estimatedTax;
+  const estimatedTax = Math.round((subtotal - discountAmount) * 0.1);
+  const grandTotal = subtotal + shippingFee + estimatedTax - discountAmount;
 
   const handleSubmitOrder = async () => {
     if (!addressForm.receiverName || !addressForm.phoneNumber || !addressForm.province) {
@@ -117,6 +129,7 @@ export default function CheckoutPage() {
       shippingMethod: selectedShipping.name,
       paymentMethod: paymentMethod,
       notes: addressForm.notes,
+      couponCode: appliedCoupon?.code,
     };
 
     createOrderMutation.mutate(orderData);
@@ -583,6 +596,15 @@ export default function CheckoutPage() {
                   <span className="text-gray-600">Tạm tính</span>
                   <span className="font-medium">{formatCurrency(subtotal)}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1">
+                      <Tag className="h-3 w-3" />
+                      Mã {appliedCoupon.code}
+                    </span>
+                    <span className="font-medium">-{formatCurrency(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Phí vận chuyển</span>
                   <span className="font-medium text-green-600">
@@ -596,6 +618,17 @@ export default function CheckoutPage() {
               </div>
 
               <Separator className="my-4" />
+
+              {/* Coupon Input */}
+              <div className="mb-4">
+                <CouponInput
+                  orderTotal={subtotal}
+                  onApply={(coupon, discount) => {
+                    setAppliedCoupon(coupon);
+                    setDiscountAmount(discount);
+                  }}
+                />
+              </div>
 
               <div className="flex justify-between text-lg font-bold">
                 <span>Tổng cộng</span>
