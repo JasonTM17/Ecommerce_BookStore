@@ -5,6 +5,7 @@ import com.bookstore.dto.response.PageResponse;
 import com.bookstore.entity.OrderStatus;
 import com.bookstore.entity.PaymentStatus;
 import com.bookstore.entity.User;
+import com.bookstore.repository.OrderRepository;
 import com.bookstore.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminOrderController {
 
     private final OrderService orderService;
+    private final OrderRepository orderRepository;
 
     @GetMapping
     @Operation(summary = "Lấy danh sách tất cả đơn hàng")
@@ -36,7 +38,7 @@ public class AdminOrderController {
     @GetMapping("/{id}")
     @Operation(summary = "Lấy chi tiết đơn hàng")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getOrderById(null, id));
+        return ResponseEntity.ok(orderService.getAdminOrderById(id));
     }
 
     @PutMapping("/{id}/status")
