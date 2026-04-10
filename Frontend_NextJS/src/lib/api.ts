@@ -1,7 +1,60 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+/** Spring Boot serves APIs under `server.servlet.context-path=/api`. */
+function normalizeApiBaseUrl(raw: string): string {
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  if (trimmed.endsWith("/api")) {
+    return trimmed;
+  }
+  return `${trimmed}/api`;
+}
+
+export const API_URL = normalizeApiBaseUrl(
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+);
+
+// Global error handler callback
+type ErrorHandler = (error: AxiosError) => void;
+let globalErrorHandler: ErrorHandler | null = null;
+
+export function setGlobalErrorHandler(handler: ErrorHandler | null) {
+  globalErrorHandler = handler;
+}
+
+// Retry configuration
+const DEFAULT_RETRY_COUNT = 2;
+const DEFAULT_RETRY_DELAY = 1000;
+
+function isRetryableError(error: AxiosError): boolean {
+  if (!error.config) return false;
+  const method = (error.config as AxiosRequestConfig).method?.toUpperCase();
+  // Don't retry POST/PUT/DELETE
+  if (method === "POST" || method === "PUT" || method === "DELETE" || method === "PATCH") {
+    return false;
+  }
+  // Retry on network errors and 5xx server errors
+  if (!error.response) return true;
+  return error.response.status >= 500 || error.response.status === 408 || error.response.status === 429;
+}
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function retryRequest(config: AxiosRequestConfig, retryCount: number): Promise<unknown> {
+  for (let attempt = 0; attempt <= retryCount; attempt++) {
+    try {
+      return await axios.request(config);
+    } catch (error) {
+      if (attempt === retryCount || !isRetryableError(error as AxiosError)) {
+        throw error;
+      }
+      await sleep(DEFAULT_RETRY_DELAY * Math.pow(2, attempt));
+    }
+  }
+  throw new Error("Retry exhausted");
+}
 
 // Public API instance (no auth headers)
 export const apiPublic = axios.create({
@@ -29,6 +82,24 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Retry interceptor for GET requests
+apiPublic.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const config = error.config as AxiosRequestConfig & { _retry?: boolean };
+    if (config && isRetryableError(error) && !config._retry) {
+      config._retry = true;
+      try {
+        return await retryRequest(config, DEFAULT_RETRY_COUNT);
+      } catch {
+        // Fall through to global error handler
+      }
+    }
+    if (globalErrorHandler) globalErrorHandler(error);
+    return Promise.reject(error);
+  }
 );
 
 // Response interceptor - handle 401 and token refresh
@@ -77,6 +148,11 @@ api.interceptors.response.use(
       }
     }
 
+    // Global error notification for 5xx errors
+    if (error.response?.status && error.response.status >= 500) {
+      if (globalErrorHandler) globalErrorHandler(error);
+    }
+
     return Promise.reject(error);
   }
 );
@@ -118,3 +194,4 @@ export interface ApiError {
   status: number;
   errors?: Record<string, string[]>;
 }
+
