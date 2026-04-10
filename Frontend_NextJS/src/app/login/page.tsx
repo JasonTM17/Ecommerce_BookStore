@@ -68,7 +68,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
                 required
-                className="mt-1"
+                className="mt-1 bg-white/70 backdrop-blur-sm border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
                 autoComplete="email"
               />
             </div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Nhập mật khẩu"
                   required
-                  className="pr-10"
+                  className="mt-1 bg-white/70 backdrop-blur-sm border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 pr-10"
                   autoComplete="current-password"
                 />
                 <button
