@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ChatbotWidget } from "@/components/chatbot";
 import { FlashSaleBanner } from "@/components/flashsale";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/JsonLd";
+import { WebVitals } from "@/components/seo/WebVitals";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -81,9 +82,12 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png" }],
   },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-  },
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#3b82f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#1e40af" },
+    { media: "(prefers-color-scheme: no-preference)", color: "#3b82f6" },
+    { color: "#3b82f6" },
+  ],
 };
 
 export default function RootLayout({
@@ -96,6 +100,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <OrganizationSchema />
         <WebSiteSchema />
+        <WebVitals />
         <Providers>
           <FlashSaleBanner />
           {children}
