@@ -42,7 +42,7 @@ public class ReadingStatsResponse {
     public static class ChallengeInfo {
         private Integer targetBooks;
         private Integer completedBooks;
-        private Integer year;
+        private Integer challengeYear;
         private Boolean isCompleted;
         private Integer progressPercent;
     }

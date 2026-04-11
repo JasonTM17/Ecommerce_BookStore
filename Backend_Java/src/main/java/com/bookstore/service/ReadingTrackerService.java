@@ -122,7 +122,7 @@ public class ReadingTrackerService {
                     .build();
         }
 
-        ReadingChallenge challenge = challengeRepository.findByUserAndYear(user, LocalDateTime.now().getYear()).orElse(null);
+        ReadingChallenge challenge = challengeRepository.findByUserAndChallengeYear(user, LocalDateTime.now().getYear()).orElse(null);
         ChallengeInfo challengeInfo = null;
         if (challenge != null) {
             int percent = challenge.getTargetBooks() > 0 ?
@@ -130,7 +130,7 @@ public class ReadingTrackerService {
             challengeInfo = ChallengeInfo.builder()
                     .targetBooks(challenge.getTargetBooks())
                     .completedBooks(challenge.getCompletedBooks())
-                    .year(challenge.getYear())
+                    .challengeYear(challenge.getChallengeYear())
                     .isCompleted(challenge.getIsCompleted())
                     .progressPercent(percent)
                     .build();
@@ -170,9 +170,9 @@ public class ReadingTrackerService {
 
     private void updateChallenge(User user) {
         int year = LocalDateTime.now().getYear();
-        ReadingChallenge challenge = challengeRepository.findByUserAndYear(user, year)
+        ReadingChallenge challenge = challengeRepository.findByUserAndChallengeYear(user, year)
                 .orElse(ReadingChallenge.builder()
-                        .user(user).year(year).targetBooks(12).completedBooks(0).build());
+                        .user(user).challengeYear(year).targetBooks(12).completedBooks(0).build());
 
         challenge.setCompletedBooks((int) progressRepository.countByUserAndStatus(user, ReadingStatus.FINISHED));
         if (challenge.getCompletedBooks() >= challenge.getTargetBooks()) {

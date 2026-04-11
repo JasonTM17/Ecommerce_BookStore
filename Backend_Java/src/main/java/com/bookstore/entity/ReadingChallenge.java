@@ -33,9 +33,9 @@ public class ReadingChallenge {
     @Builder.Default
     private Integer completedBooks = 0;
 
-    @Column(name = "year")
+    @Column(name = "challenge_year")
     @Builder.Default
-    private Integer year = LocalDateTime.now().getYear();
+    private Integer challengeYear = LocalDateTime.now().getYear();
 
     @Column(name = "is_completed")
     @Builder.Default

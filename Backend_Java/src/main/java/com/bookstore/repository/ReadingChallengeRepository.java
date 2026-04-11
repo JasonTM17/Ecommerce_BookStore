@@ -12,10 +12,10 @@ import java.util.Optional;
 @Repository
 public interface ReadingChallengeRepository extends JpaRepository<ReadingChallenge, Long> {
 
-    Optional<ReadingChallenge> findByUserAndYear(User user, int year);
+    Optional<ReadingChallenge> findByUserAndChallengeYear(User user, int challengeYear);
 
-    List<ReadingChallenge> findByUserOrderByYearDesc(User user);
+    List<ReadingChallenge> findByUserOrderByChallengeYearDesc(User user);
 
-    @Query("SELECT rc FROM ReadingChallenge rc WHERE rc.user = :user AND rc.isCompleted = false ORDER BY rc.year DESC")
+    @Query("SELECT rc FROM ReadingChallenge rc WHERE rc.user = :user AND rc.isCompleted = false ORDER BY rc.challengeYear DESC")
     List<ReadingChallenge> findActiveByUser(User user);
 }
