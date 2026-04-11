@@ -20,6 +20,7 @@ public class WishlistResponse {
     private ProductInfo product;
     private String notes;
     private Integer priority;
+    private Integer sortOrder;
     private Boolean isInStock;
     private LocalDateTime createdAt;
 

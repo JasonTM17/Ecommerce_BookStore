@@ -77,15 +77,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: new Date(product.updatedAt || Date.now()),
           changeFrequency: "weekly" as const,
           priority: product.isFeatured ? 0.8 : 0.7,
-          images: product.imageUrl
-            ? [
-                {
-                  url: product.imageUrl,
-                  title: product.name,
-                  caption: product.description?.substring(0, 100),
-                },
-              ]
-            : undefined,
         });
       }
     }

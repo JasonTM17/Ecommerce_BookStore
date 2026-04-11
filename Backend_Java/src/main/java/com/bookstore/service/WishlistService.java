@@ -48,6 +48,7 @@ public class WishlistService {
                 .user(user)
                 .product(product)
                 .priority(0)
+                .sortOrder(0)
                 .build());
 
         log.info("Product {} added to wishlist for user {}", productId, user.getEmail());
@@ -152,6 +153,7 @@ public class WishlistService {
                 .product(productInfo)
                 .notes(wishlist.getNotes())
                 .priority(wishlist.getPriority())
+                .sortOrder(wishlist.getSortOrder())
                 .isInStock(product.isInStock())
                 .createdAt(wishlist.getCreatedAt())
                 .build();

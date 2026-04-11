@@ -30,6 +30,10 @@ public class CartItem {
     @Builder.Default
     private Integer quantity = 1;
 
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     @Column(name = "added_at")
     private java.time.LocalDateTime addedAt;
 

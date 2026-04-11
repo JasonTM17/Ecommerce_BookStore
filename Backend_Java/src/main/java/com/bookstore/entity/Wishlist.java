@@ -38,6 +38,10 @@ public class Wishlist {
     @Builder.Default
     private Integer priority = 0;
 
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

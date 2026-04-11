@@ -3,10 +3,15 @@ import { create } from "zustand";
 export interface Product {
   id: number;
   name: string;
+  slug?: string;
   author?: string;
   publisher?: string;
   description?: string;
   shortDescription?: string;
+  isbn?: string;
+  publishedYear?: number;
+  pageCount?: number;
+  weight?: number;
   price: number;
   discountPrice?: number;
   discountPercent?: number;
@@ -23,6 +28,7 @@ export interface Product {
   isFeatured?: boolean;
   isBestseller?: boolean;
   isNew?: boolean;
+  updatedAt?: string;
 }
 
 export interface Category {

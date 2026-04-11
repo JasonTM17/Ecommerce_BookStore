@@ -39,4 +39,6 @@ public class FlashSaleRequest {
 
     @Min(value = 1, message = "Mỗi user tối thiểu mua 1 sản phẩm")
     private Integer maxPerUser;
+
+    private Boolean isActive;
 }

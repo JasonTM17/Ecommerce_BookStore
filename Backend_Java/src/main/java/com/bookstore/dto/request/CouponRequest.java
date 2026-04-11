@@ -54,4 +54,6 @@ public class CouponRequest {
     private String applicableCategories;
 
     private String applicableProducts;
+
+    private Integer sortOrder;
 }

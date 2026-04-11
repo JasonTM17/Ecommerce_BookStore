@@ -7,6 +7,9 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   createdAt: string;
+  messageId?: number; // AI message ID for feedback
+  bookSuggestions?: BookSuggestion[];
+  quickActions?: QuickAction[];
 }
 
 export interface Conversation {
@@ -33,6 +36,7 @@ export interface QuickAction {
   action: string;
   label: string;
   icon: string;
+  params?: Record<string, unknown>;
 }
 
 export interface ChatbotResponse {

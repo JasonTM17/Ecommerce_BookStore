@@ -34,5 +34,6 @@ public class CouponResponse {
     private Boolean isValid;
     private Boolean isExpired;
     private String discountDisplay;
+    private Integer sortOrder;
     private LocalDateTime createdAt;
 }

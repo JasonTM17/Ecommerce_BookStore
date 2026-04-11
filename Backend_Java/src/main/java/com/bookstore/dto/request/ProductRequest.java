@@ -74,4 +74,6 @@ public class ProductRequest {
     private Boolean isBestseller;
 
     private Boolean isNew;
+
+    private Integer sortOrder;
 }

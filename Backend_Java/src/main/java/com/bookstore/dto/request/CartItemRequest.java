@@ -20,4 +20,6 @@ public class CartItemRequest {
     @NotNull(message = "Số lượng không được để trống")
     @Positive(message = "Số lượng phải lớn hơn 0")
     private Integer quantity;
+
+    private Integer sortOrder;
 }

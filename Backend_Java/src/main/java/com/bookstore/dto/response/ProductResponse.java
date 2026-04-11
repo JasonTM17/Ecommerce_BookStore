@@ -44,4 +44,5 @@ public class ProductResponse {
     private Boolean isFeatured;
     private Boolean isBestseller;
     private Boolean isNew;
+    private Integer sortOrder;
 }

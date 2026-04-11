@@ -35,7 +35,7 @@ public class CategoryService {
                 .description(request.getDescription())
                 .iconUrl(request.getIconUrl())
                 .imageUrl(request.getImageUrl())
-                .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
+                .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                 .isActive(true)
                 .build();
 
@@ -65,7 +65,7 @@ public class CategoryService {
         if (request.getDescription() != null) category.setDescription(request.getDescription());
         if (request.getIconUrl() != null) category.setIconUrl(request.getIconUrl());
         if (request.getImageUrl() != null) category.setImageUrl(request.getImageUrl());
-        if (request.getDisplayOrder() != null) category.setDisplayOrder(request.getDisplayOrder());
+        if (request.getSortOrder() != null) category.setSortOrder(request.getSortOrder());
 
         if (request.getParentId() != null) {
             if (request.getParentId().equals(id)) {
@@ -141,7 +141,7 @@ public class CategoryService {
                 .parentId(category.getParent() != null ? category.getParent().getId() : null)
                 .parentName(category.getParent() != null ? category.getParent().getName() : null)
                 .subcategories(subcategories)
-                .displayOrder(category.getDisplayOrder())
+                .sortOrder(category.getSortOrder())
                 .isActive(category.getIsActive())
                 .productCount((int) productCount)
                 .build();

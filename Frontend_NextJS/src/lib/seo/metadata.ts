@@ -11,7 +11,7 @@ export interface PageSeoParams {
   description?: string;
   path: string;
   image?: string;
-  type?: "website" | "product" | "article";
+  type?: "website" | "article";
   publishedTime?: string;
   modifiedTime?: string;
   authors?: string[];
@@ -112,7 +112,7 @@ export const PRODUCT_METADATA = (name: string, description: string, image: strin
     description,
     path: "/products",
     image,
-    type: "product",
+    type: "website",
   });
 
 export const CATEGORY_METADATA = (categoryName: string) =>

@@ -12,17 +12,27 @@
         </encoder>
     </appender>
 
-    <!-- JSON Appender for production (use with ELK stack) -->
+    <!-- JSON Appender for production (Logstash format - ELK stack compatible)
+         Cần dependency: net.logstash.logback:logstash-logback-encoder:7.4
+         Maven: <groupId>net.logstash.logback</groupId><artifactId>logstash-logback-encoder</artifactId><version>7.4</version> -->
     <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
-                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampFormat>
-                <timestampFormatTimezoneId>UTC</timestampFormatTimezoneId>
-                <appendLineSeparator>true</appendLineSeparator>
-                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
-                    <prettyPrint>false</prettyPrint>
-                </jsonFormatter>
-            </layout>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Thêm metadata cho tracing -->
+            <customFields>{"service":"${APP_NAME}","environment":"${SPRING_PROFILES_ACTIVE:-default}"}</customFields>
+            <!-- Timestamp format -->
+            <timeZone>UTC</timeZone>
+            <!-- Stacktrace cho ERROR level -->
+            <includeMdcKeyName>true</includeMdcKeyName>
+            <includeContext>true</includeContext>
+            <!-- Field names tùy chỉnh -->
+            <fieldNames>
+                <timestamp>@timestamp</timestamp>
+                <message>message</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <level>level</level>
+                <stackTrace>stack_trace</stackTrace>
+            </fieldNames>
         </encoder>
     </appender>
 

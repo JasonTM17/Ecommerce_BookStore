@@ -55,3 +55,11 @@ uploads/
 *.tmp
 *.temp
 .cache/
+
+# Playwright
+Frontend_NextJS/playwright-report/
+Frontend_NextJS/test-results/
+
+
+# Cursor — plan/todos cục bộ, không đưa vào Git
+.cursor/

@@ -68,7 +68,7 @@ public final class TestFixtures {
                 .name(name)
                 .description("Test category")
                 .isActive(true)
-                .displayOrder(0)
+                .sortOrder(0)
                 .build();
     }
 }

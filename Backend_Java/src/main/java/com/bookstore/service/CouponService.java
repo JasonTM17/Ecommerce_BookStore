@@ -53,6 +53,7 @@ public class CouponService {
                 .isPublic(request.getIsPublic() != null ? request.getIsPublic() : true)
                 .applicableCategories(request.getApplicableCategories())
                 .applicableProducts(request.getApplicableProducts())
+                .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                 .createdBy(admin.getId())
                 .build();
 
@@ -102,6 +103,9 @@ public class CouponService {
         }
         if (request.getApplicableProducts() != null) {
             coupon.setApplicableProducts(request.getApplicableProducts());
+        }
+        if (request.getSortOrder() != null) {
+            coupon.setSortOrder(request.getSortOrder());
         }
 
         coupon = couponRepository.save(coupon);
@@ -230,7 +234,7 @@ public class CouponService {
         CouponUsage usage = CouponUsage.builder()
                 .coupon(coupon)
                 .user(user)
-                .discountAmount(discountAmount != null ? discountAmount.doubleValue() : 0.0)
+                .discountAmount(discountAmount)
                 .build();
         couponUsageRepository.save(usage);
 
@@ -277,6 +281,7 @@ public class CouponService {
                 .isValid(coupon.isValid())
                 .isExpired(coupon.isExpired())
                 .discountDisplay(discountDisplay)
+                .sortOrder(coupon.getSortOrder())
                 .createdAt(coupon.getCreatedAt())
                 .build();
     }

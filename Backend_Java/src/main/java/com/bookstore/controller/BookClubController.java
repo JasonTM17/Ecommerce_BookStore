@@ -1,6 +1,7 @@
 package com.bookstore.controller;
 
 import com.bookstore.dto.response.ApiResponse;
+import com.bookstore.dto.response.BookClubResponse;
 import com.bookstore.entity.User;
 import com.bookstore.service.BookClubService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +27,7 @@ public class BookClubController {
 
     @PostMapping("/api/clubs")
     @Operation(summary = "Tạo club mới")
-    public ResponseEntity<ApiResponse<BookClubService.BookClubResponse>> createClub(
+    public ResponseEntity<ApiResponse<BookClubResponse>> createClub(
             @AuthenticationPrincipal User user, @RequestBody Map<String, String> body) {
         var club = clubService.createClub(body.get("name"), body.get("description"), user);
         return ResponseEntity.ok(ApiResponse.success(club, "Club đã được tạo"));
@@ -34,14 +35,14 @@ public class BookClubController {
 
     @GetMapping("/api/clubs")
     @Operation(summary = "Lấy danh sách club công khai")
-    public ResponseEntity<ApiResponse<Page<BookClubService.BookClubResponse>>> getClubs(
+    public ResponseEntity<ApiResponse<Page<BookClubResponse>>> getClubs(
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(ApiResponse.success(clubService.getPublicClubs(PageRequest.of(page, size))));
     }
 
     @GetMapping("/api/clubs/{id}")
     @Operation(summary = "Lấy chi tiết club")
-    public ResponseEntity<ApiResponse<BookClubService.BookClubResponse>> getClub(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BookClubResponse>> getClub(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(clubService.getClub(id)));
     }
 
@@ -63,7 +64,7 @@ public class BookClubController {
 
     @GetMapping("/api/clubs/{id}/members")
     @Operation(summary = "Lấy danh sách thành viên")
-    public ResponseEntity<ApiResponse<List<BookClubService.BookClubMemberResponse>>> getMembers(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<BookClubResponse.BookClubMemberResponse>>> getMembers(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(clubService.getMembers(id)));
     }
 }

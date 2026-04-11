@@ -44,6 +44,10 @@ public class Review {
     @Builder.Default
     private Integer helpfulCount = 0;
 
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     @Column(name = "is_approved")
     @Builder.Default
     private Boolean isApproved = true;

@@ -48,7 +48,7 @@ export function OrganizationSchema() {
   return <JsonLd schema={schema} />;
 }
 
-export function BreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+export function BreadcrumbSchema({ items }: { items: Array<{ name: string; url: string }> }) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -63,20 +63,22 @@ export function BreadcrumbSchema(items: Array<{ name: string; url: string }>) {
   return <JsonLd schema={schema} />;
 }
 
-export function ProductSchema(product: {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string;
-  imageUrl?: string;
-  author?: string;
-  currentPrice: number;
-  originalPrice?: number;
-  discountPercent?: number;
-  inStock?: boolean;
-  rating?: number;
-  reviewCount?: number;
-  category?: string;
+export function ProductSchema({ product }: {
+  product: {
+    id: number;
+    name: string;
+    slug?: string;
+    description?: string;
+    imageUrl?: string;
+    author?: string;
+    currentPrice: number;
+    originalPrice?: number;
+    discountPercent?: number;
+    inStock?: boolean;
+    rating?: number;
+    reviewCount?: number;
+    category?: string;
+  }
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
 
@@ -128,17 +130,19 @@ export function ProductSchema(product: {
   return <JsonLd schema={schema} />;
 }
 
-export function BookSchema(book: {
-  id: number;
-  name: string;
-  slug: string;
-  author?: string;
-  isbn?: string;
-  publisher?: string;
-  publishYear?: number;
-  description?: string;
-  imageUrl?: string;
-  currentPrice: number;
+export function BookSchema({ book }: {
+  book: {
+    id: number;
+    name: string;
+    slug?: string;
+    author?: string;
+    isbn?: string;
+    publisher?: string;
+    publishYear?: number;
+    description?: string;
+    imageUrl?: string;
+    currentPrice: number;
+  }
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
 

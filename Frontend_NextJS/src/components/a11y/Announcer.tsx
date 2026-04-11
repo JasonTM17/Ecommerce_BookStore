@@ -37,14 +37,14 @@ export function useAnnouncer({ Politeness = "polite" }: UseAnnouncerOptions = {}
 
 export function Announcer({
   message,
-  role = "status",
+  role = "polite",
 }: {
   message: string;
   role?: "polite" | "assertive";
 }) {
   return (
     <div
-      role={role}
+      role={role === "assertive" ? "alert" : "status"}
       aria-live={role}
       aria-atomic="true"
       className="sr-only"

@@ -1,7 +1,7 @@
 "use client";
 
-import { useTransition, useRouter, usePathname } from "next/navigation";
-import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Globe, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,6 @@ export function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
   const handleSwitch = (locale: string) => {
     setIsOpen(false);
     startTransition(() => {
-      // Replace locale segment in pathname
       const segments = pathname.split("/");
       segments[1] = locale;
       router.push(segments.join("/"));

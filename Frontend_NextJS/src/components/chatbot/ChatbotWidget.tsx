@@ -63,22 +63,24 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
 
       setCurrentConversationId(response.conversationId);
 
-      // Add AI response
+      // Add AI response with full data from API
       const aiMsg: ChatMessageType = {
         id: response.conversationId * 1000 + Math.random(),
         role: "assistant",
         content: response.reply,
         createdAt: response.createdAt,
+        bookSuggestions: response.bookSuggestions,
+        quickActions: response.quickActions,
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (error: any) {
-      toast({
-        title: "Lỗi",
-        description:
-          error?.response?.data?.message ||
+      toast.error(
+        error?.response?.data?.message ||
           "Không thể gửi tin nhắn. Vui lòng thử lại.",
-        variant: "destructive",
-      });
+        {
+          description: "Lỗi",
+        }
+      );
 
       // Add fallback message
       const fallbackMsg: ChatMessageType = {

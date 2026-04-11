@@ -21,7 +21,7 @@ public class CategoryResponse {
     private Long parentId;
     private String parentName;
     private List<CategoryResponse> subcategories;
-    private Integer displayOrder;
+    private Integer sortOrder;
     private Boolean isActive;
     private Integer productCount;
 }

@@ -56,7 +56,7 @@ public class VNPayService {
         Order order = orderRepository.findByIdWithUser(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
-        if (order.getPaymentMethod() != PaymentMethod.VNPAY) {
+        if (!PaymentMethod.VNPAY.name().equals(order.getPaymentMethod())) {
             throw new BadRequestException("Đơn hàng không hỗ trợ thanh toán VNPay");
         }
 

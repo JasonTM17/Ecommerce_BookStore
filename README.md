@@ -1,203 +1,161 @@
-# BookStore - Nền Tảng Thương Mại Điện Tử Sách
+# BookStore — Nền tảng thương mại điện tử sách (E-Commerce Bookstore)
 
-Dự án thương mại điện tử chuyên về sách, xây dựng với Spring Boot + Next.js + PostgreSQL.
+[![Java](https://img.shields.io/badge/Java-17+-ED8B00?style=flat-square&logo=java&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
-![Java](https://img.shields.io/badge/Java-17+-ED8B00?style=for-the-badge&logo=java&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+Ứng dụng web bán sách full-stack: **Spring Boot (REST API)** + **Next.js (App Router)** + **MySQL**, có Docker Compose, test (JUnit, Vitest, Playwright) và CI trên GitHub Actions.
 
-Clone project về, copy file `.env.example` thành `.env`, chỉnh sửa thông tin database và credentials, sau đó chạy:
+> **Mục đích:** Dự án phục vụ **học tập** và **portfolio** — không dùng cho môi trường production thật nếu chưa được rà soát bảo mật và cấu hình đầy đủ.
 
-```bash
-docker compose up -d
+---
+
+## Tác giả
+
+| | |
+|---|---|
+| **Họ tên** | Nguyễn Sơn |
+| **Email** | [jasonbmt06@gmail.com](mailto:jasonbmt06@gmail.com) |
+| **Repository** | Dự án portfolio cá nhân |
+
+---
+
+## Tính năng chính (tóm tắt)
+
+- Đăng ký / đăng nhập JWT + refresh token, phân quyền Admin / Customer  
+- Danh mục, sản phẩm, giỏ hàng, đơn hàng, thanh toán (VNPay sandbox)  
+- Flash sale, mã giảm giá, wishlist, chatbot (tích hợp API), theo dõi đọc sách (reading tracker)  
+- Giao diện Next.js + Tailwind, SEO cơ bản, PWA/manifest, health check API  
+
+Chi tiết lộ trình và checklist: [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md).
+
+---
+
+## Kiến trúc
+
+```text
+[Browser] → Next.js (Frontend_NextJS) → REST API Spring Boot (Backend_Java) → MySQL
+                                              ↘ Email (SMTP, tùy cấu hình)
 ```
 
-Truy cập:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080/api
-- Swagger Docs: http://localhost:8080/api/swagger-ui.html
+---
 
-## Tài khoản demo
+## Yêu cầu môi trường
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@bookstore.com | Admin123! |
+- **Docker Desktop** (khuyến nghị cho chạy nhanh toàn stack)  
+- Hoặc: **Java 17+**, **Node.js 18+**, **MySQL 8** nếu chạy từng service tay  
 
-## Yêu cầu
+---
 
-- Docker Desktop đang chạy
-- Java 17+ (nếu chạy backend local)
-- Node.js 18+ (nếu chạy frontend local)
+## Chạy nhanh với Docker
 
-## Cấu hình
+1. Sao chép biến môi trường:
 
-Tạo file `.env` từ `.env.example`:
+   ```bash
+   copy .env.example .env
+   ```
 
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=bookstore
-DB_USERNAME=postgres
-DB_PASSWORD=your_password
+2. Chỉnh `.env` (database, JWT, mail nếu cần).
 
-JWT_SECRET=YourSuperSecretKeyAtLeast256BitsLong!
-JWT_EXPIRATION=86400000
+3. Khởi động:
 
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=xxxx xxxx xxxx xxxx
-```
+   ```bash
+   docker compose up -d --build
+   ```
 
-## Bảo mật
+4. Truy cập:
 
-Dự án sử dụng các biện pháp bảo mật sau:
+   | Dịch vụ | URL |
+   |---------|-----|
+   | Frontend | http://localhost:3000 |
+   | API (context `/api`) | http://localhost:8080/api |
+   | Swagger UI | http://localhost:8080/api/swagger-ui.html |
+   | Health (tùy cấu hình) | http://localhost:8080/api/health |
 
-- JWT Authentication với refresh token
-- BCrypt password hashing (strength 12)
-- Rate limiting chống brute-force (5 request/phút cho auth endpoints)
-- Input validation chống XSS, SQL Injection
-- Security headers (CSP, HSTS, X-Frame-Options)
-- CORS chỉ cho phép trusted origins
+---
 
-Trước khi deploy production, nhớ:
-- Đổi JWT_SECRET
-- Cập nhật DB password
-- Cấu hình CORS origins chính xác
-- Bật HTTPS
-- Tắt test endpoints
+## Tài khoản demo (ví dụ)
 
-## Cấu trúc
+| Vai trò | Email | Mật khẩu |
+|---------|-------|----------|
+| Admin | `admin@bookstore.com` | `Admin123!` |
 
-```
-Ecommerce_BookStore/
-├── Backend_Java/          # Spring Boot API
-│   ├── src/main/java/com/bookstore/
-│   │   ├── config/        # Security, Filters, Thymeleaf
-│   │   ├── controller/    # REST APIs
-│   │   ├── entity/       # JPA Entities
-│   │   ├── repository/   # Data Access
-│   │   ├── service/      # Business Logic
-│   │   └── security/     # JWT, Filters
-│   └── src/main/resources/
-│       └── templates/email/  # Email templates
-│
-├── Frontend_NextJS/        # Next.js App
-│   ├── src/app/           # App Router pages
-│   │   ├── admin/         # Admin dashboard
-│   │   ├── products/      # Product pages
-│   │   └── (auth)/        # Auth pages
-│   └── src/components/    # UI components
-│
-└── docker-compose.yml     # Orchestration
-```
+*(Có thể thay đổi theo dữ liệu seed trong backend — xem tài liệu backend / migration.)*
 
-## Testing
+---
 
-Backend:
+## Chạy dev không Docker
+
+**Backend**
+
 ```bash
 cd Backend_Java
-mvn test
+mvn spring-boot:run
 ```
 
-Frontend E2E:
-```bash
-cd Frontend_NextJS
-npm install
-npx playwright install
-npm run test:e2e
-```
+**Frontend**
 
-## Cấu hình email
-
-1. Bật 2-Factor Authentication trong Google Account
-2. Tạo App Password tại https://myaccount.google.com/security → App Passwords
-3. Copy App Password vào `MAIL_PASSWORD` trong .env
-4. Bật test endpoint trong dev:
-```env
-APP_EMAIL_TEST_ENABLED=true
-APP_EMAIL_ALLOWED_RECIPIENTS=your-email@gmail.com
-```
-
-Test:
-```bash
-# Health check
-curl http://localhost:8080/api/email/health
-
-# Gửi welcome email
-curl -X POST http://localhost:8080/api/email/test/send \
-  -H "Content-Type: application/json" \
-  -d '{"to":"your-email@gmail.com","type":"welcome","firstName":"Test"}'
-```
-
-## API Endpoints
-
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Đăng ký |
-| POST | `/auth/login` | Đăng nhập |
-| POST | `/auth/refresh` | Refresh token |
-| POST | `/auth/logout` | Đăng xuất |
-
-### Products (Public)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/products` | Danh sách sản phẩm |
-| GET | `/products/{id}` | Chi tiết sản phẩm |
-| GET | `/products/search` | Tìm kiếm |
-
-### Protected (Cần JWT)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/orders` | Tạo đơn hàng |
-| GET | `/orders` | Danh sách đơn hàng |
-| GET | `/cart` | Xem giỏ hàng |
-| POST | `/cart/items` | Thêm vào giỏ |
-
-### Admin Only
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/admin/products` | Thêm sản phẩm |
-| PUT | `/admin/products/{id}` | Sửa sản phẩm |
-| DELETE | `/admin/products/{id}` | Xóa sản phẩm |
-| PUT | `/admin/orders/{id}/status` | Cập nhật đơn hàng |
-
-## Development
-
-Chạy backend local:
-```bash
-cd Backend_Java
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-Chạy frontend local:
 ```bash
 cd Frontend_NextJS
 npm install
 npm run dev
 ```
 
-Rebuild Docker:
+Đảm bảo MySQL và biến môi trường trùng với `application.properties` / `.env`.
+
+---
+
+## Kiểm thử
+
 ```bash
-docker compose down
-docker compose build --no-cache
-docker compose up -d
+# Backend
+cd Backend_Java && mvn test
+
+# Frontend unit
+cd Frontend_NextJS && npm run test:run
+
+# E2E (cần app đang chạy tại BASE_URL mặc định)
+cd Frontend_NextJS && npx playwright install && npm run test:e2e
 ```
 
-## License
+Pipeline CI: [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
-Dự án này được phân phối dưới giấy phép MIT. Xem file [LICENSE](LICENSE) để biết thêm chi tiết.
+---
+
+## Bảo mật (nhắc nhở cho portfolio)
+
+- Không commit file `.env` hoặc secret thật.  
+- Đổi `JWT_SECRET`, mật khẩu DB và tắt endpoint test email trước khi public repo nếu deploy thật.  
+- Cấu hình CORS và HTTPS theo domain thực tế.
+
+---
+
+## Cấu trúc thư mục
+
+```text
+Ecommerce_BookStore/
+├── Backend_Java/          # Spring Boot API
+├── Frontend_NextJS/       # Next.js 14 (App Router)
+├── Mobile/                 # Ứng dụng React Native (tham khảo)
+├── docs/                   # MASTER_PLAN và tài liệu
+├── docker-compose.yml
+├── Dockerfile.backend
+└── Dockerfile.frontend
+```
+
+---
+
+## Giấy phép
+
+Mã nguồn trong khuôn khổ dự án học tập/portfolio — xem [LICENSE](LICENSE) (MIT) nếu có trong repo.
 
 ---
 
 <div align="center">
 
-**Made with ❤️ and ☕**
-
-*© 2026 BookStore. All rights reserved.*
+**Nguyễn Sơn** · [jasonbmt06@gmail.com](mailto:jasonbmt06@gmail.com)  
+*Dự án học tập & portfolio — 2026*
 
 </div>

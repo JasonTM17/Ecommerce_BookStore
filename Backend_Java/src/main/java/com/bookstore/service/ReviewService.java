@@ -55,6 +55,7 @@ public class ReviewService {
                 .isApproved(true)
                 .isHidden(false)
                 .helpfulCount(0)
+                .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                 .build();
 
         review = reviewRepository.save(review);
@@ -128,6 +129,7 @@ public class ReviewService {
                 .comment(review.getComment())
                 .isVerifiedPurchase(review.getIsVerifiedPurchase())
                 .helpfulCount(review.getHelpfulCount())
+                .sortOrder(review.getSortOrder())
                 .createdAt(review.getCreatedAt())
                 .build();
     }

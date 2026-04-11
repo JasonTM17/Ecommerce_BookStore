@@ -17,4 +17,5 @@ public class CartItemResponse {
     private ProductResponse product;
     private Integer quantity;
     private BigDecimal subtotal;
+    private Integer sortOrder;
 }

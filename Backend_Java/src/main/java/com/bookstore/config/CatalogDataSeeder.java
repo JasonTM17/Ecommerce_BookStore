@@ -36,7 +36,7 @@ public final class CatalogDataSeeder {
             return List.of();
         }
 
-        List<Category> roots = categoryRepository.findByParentIsNullOrderByDisplayOrderAsc();
+        List<Category> roots = categoryRepository.findByParentIsNullOrderBySortOrderAsc();
         if (roots.isEmpty()) {
             log.warn("No root categories found; cannot seed products without categories.");
             return List.of();
@@ -94,65 +94,65 @@ public final class CatalogDataSeeder {
         List<Category> categories = new ArrayList<>();
 
         Category fiction = Category.builder()
-                .name("Sách Văn Học").description("Tiểu thuyết, truyện ngắn, thơ, kịch").displayOrder(1).isActive(true).build();
+                .name("Sách Văn Học").description("Tiểu thuyết, truyện ngắn, thơ, kịch").sortOrder(1).isActive(true).build();
         fiction = categoryRepository.save(fiction);
 
         Category business = Category.builder()
-                .name("Kinh Tế").description("Sách kinh doanh, tài chính, đầu tư").displayOrder(2).isActive(true).build();
+                .name("Kinh Tế").description("Sách kinh doanh, tài chính, đầu tư").sortOrder(2).isActive(true).build();
         business = categoryRepository.save(business);
 
         Category science = Category.builder()
-                .name("Khoa Học").description("Sách khoa học, công nghệ").displayOrder(3).isActive(true).build();
+                .name("Khoa Học").description("Sách khoa học, công nghệ").sortOrder(3).isActive(true).build();
         science = categoryRepository.save(science);
 
         Category selfHelp = Category.builder()
-                .name("Phát Triển Bản Thân").description("Sách tự giúp, kỹ năng sống").displayOrder(4).isActive(true).build();
+                .name("Phát Triển Bản Thân").description("Sách tự giúp, kỹ năng sống").sortOrder(4).isActive(true).build();
         selfHelp = categoryRepository.save(selfHelp);
 
         Category children = Category.builder()
-                .name("Sách Thiếu Nhi").description("Sách tranh, truyện cho trẻ em").displayOrder(5).isActive(true).build();
+                .name("Sách Thiếu Nhi").description("Sách tranh, truyện cho trẻ em").sortOrder(5).isActive(true).build();
         children = categoryRepository.save(children);
 
         Category history = Category.builder()
-                .name("Lịch Sử").description("Sách lịch sử, văn hóa").displayOrder(6).isActive(true).build();
+                .name("Lịch Sử").description("Sách lịch sử, văn hóa").sortOrder(6).isActive(true).build();
         history = categoryRepository.save(history);
 
         Category foreign = Category.builder()
-                .name("Sách Ngoại Văn").description("Sách tiếng Anh, ngoại ngữ").displayOrder(7).isActive(true).build();
+                .name("Sách Ngoại Văn").description("Sách tiếng Anh, ngoại ngữ").sortOrder(7).isActive(true).build();
         foreign = categoryRepository.save(foreign);
 
         Category textbook = Category.builder()
-                .name("Sách Giáo Khoa").description("Sách giáo khoa, tham khảo").displayOrder(8).isActive(true).build();
+                .name("Sách Giáo Khoa").description("Sách giáo khoa, tham khảo").sortOrder(8).isActive(true).build();
         textbook = categoryRepository.save(textbook);
 
         Category cooking = Category.builder()
-                .name("Ẩm Thực").description("Sách nấu ăn, ẩm thực").displayOrder(9).isActive(true).build();
+                .name("Ẩm Thực").description("Sách nấu ăn, ẩm thực").sortOrder(9).isActive(true).build();
         cooking = categoryRepository.save(cooking);
 
         Category art = Category.builder()
-                .name("Nghệ Thuật").description("Sách về hội họa, nhiếp ảnh").displayOrder(10).isActive(true).build();
+                .name("Nghệ Thuật").description("Sách về hội họa, nhiếp ảnh").sortOrder(10).isActive(true).build();
         art = categoryRepository.save(art);
 
         categoryRepository.save(Category.builder()
-                .name("Tiểu Thuyết").description("Tiểu thuyết Việt Nam và thế giới").parent(fiction).displayOrder(1).isActive(true).build());
+                .name("Tiểu Thuyết").description("Tiểu thuyết Việt Nam và thế giới").parent(fiction).sortOrder(1).isActive(true).build());
         categoryRepository.save(Category.builder()
-                .name("Truyện Ngắn").description("Tuyển tập truyện ngắn").parent(fiction).displayOrder(2).isActive(true).build());
+                .name("Truyện Ngắn").description("Tuyển tập truyện ngắn").parent(fiction).sortOrder(2).isActive(true).build());
         categoryRepository.save(Category.builder()
-                .name("Thơ").description("Tập thơ, thơ hay").parent(fiction).displayOrder(3).isActive(true).build());
+                .name("Thơ").description("Tập thơ, thơ hay").parent(fiction).sortOrder(3).isActive(true).build());
         categoryRepository.save(Category.builder()
-                .name("Văn Học Cổ Điển").description("Tác phẩm văn học cổ điển").parent(fiction).displayOrder(4).isActive(true).build());
+                .name("Văn Học Cổ Điển").description("Tác phẩm văn học cổ điển").parent(fiction).sortOrder(4).isActive(true).build());
 
         categoryRepository.save(Category.builder()
-                .name("Marketing").description("Sách về marketing, quảng cáo").parent(business).displayOrder(1).isActive(true).build());
+                .name("Marketing").description("Sách về marketing, quảng cáo").parent(business).sortOrder(1).isActive(true).build());
         categoryRepository.save(Category.builder()
-                .name("Tài Chính").description("Sách tài chính, kế toán").parent(business).displayOrder(2).isActive(true).build());
+                .name("Tài Chính").description("Sách tài chính, kế toán").parent(business).sortOrder(2).isActive(true).build());
         categoryRepository.save(Category.builder()
-                .name("Lãnh Đạo").description("Sách về lãnh đạo, quản trị").parent(business).displayOrder(3).isActive(true).build());
+                .name("Lãnh Đạo").description("Sách về lãnh đạo, quản trị").parent(business).sortOrder(3).isActive(true).build());
 
         categoryRepository.save(Category.builder()
-                .name("Khoa Học Tự Nhiên").description("Vật lý, hóa học, sinh học").parent(science).displayOrder(1).isActive(true).build());
+                .name("Khoa Học Tự Nhiên").description("Vật lý, hóa học, sinh học").parent(science).sortOrder(1).isActive(true).build());
         categoryRepository.save(Category.builder()
-                .name("Công Nghệ").description("AI, lập trình, IT").parent(science).displayOrder(2).isActive(true).build());
+                .name("Công Nghệ").description("AI, lập trình, IT").parent(science).sortOrder(2).isActive(true).build());
 
         categories.addAll(List.of(fiction, business, science, selfHelp, children, history, foreign, textbook, cooking, art));
         log.info("Created {} root categories", categories.size());
@@ -294,3 +294,4 @@ public final class CatalogDataSeeder {
         return products;
     }
 }
+

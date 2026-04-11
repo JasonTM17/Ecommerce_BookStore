@@ -4,6 +4,7 @@ import com.bookstore.dto.request.CouponRequest;
 import com.bookstore.dto.request.CouponValidationRequest;
 import com.bookstore.dto.response.ApiResponse;
 import com.bookstore.dto.response.CouponResponse;
+import com.bookstore.entity.CouponType;
 import com.bookstore.entity.User;
 import com.bookstore.repository.UserRepository;
 import com.bookstore.service.CouponService;
@@ -62,10 +63,10 @@ class CouponControllerTest {
                 .id(1L)
                 .code("SAVE20")
                 .description("Save 20% on your order")
-                .discountType("PERCENTAGE")
+                .type(CouponType.PERCENTAGE)
                 .discountValue(BigDecimal.valueOf(20))
                 .minOrderAmount(BigDecimal.valueOf(100000))
-                .maxDiscountAmount(BigDecimal.valueOf(50000))
+                .maxDiscount(BigDecimal.valueOf(50000))
                 .usageLimit(100)
                 .usedCount(0)
                 .startDate(LocalDateTime.now().minusDays(1))
@@ -83,7 +84,7 @@ class CouponControllerTest {
 
         CouponRequest request = CouponRequest.builder()
                 .code("SAVE20")
-                .discountType("PERCENTAGE")
+                .type(CouponType.PERCENTAGE)
                 .discountValue(BigDecimal.valueOf(20))
                 .minOrderAmount(BigDecimal.valueOf(100000))
                 .build();

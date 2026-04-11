@@ -23,11 +23,7 @@ export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputP
 
   const handleApply = async () => {
     if (!code.trim()) {
-      toast({
-        title: "Lỗi",
-        description: "Vui lòng nhập mã coupon",
-        variant: "destructive",
-      });
+      toast.error("Vui lòng nhập mã coupon", { description: "Lỗi" });
       return;
     }
 
@@ -47,16 +43,9 @@ export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputP
       }
       
       onApply?.(coupon, discount);
-      toast({
-        title: "Thành công",
-        description: `Áp dụng coupon ${coupon.code} thành công!`,
-      });
+      toast.success(`Áp dụng coupon ${coupon.code} thành công!`, { description: "Thành công" });
     } catch (error: any) {
-      toast({
-        title: "Coupon không hợp lệ",
-        description: error?.response?.data?.message || "Mã coupon không đúng hoặc đã hết hạn",
-        variant: "destructive",
-      });
+      toast.error(error?.response?.data?.message || "Mã coupon không đúng hoặc đã hết hạn", { description: "Coupon không hợp lệ" });
     } finally {
       setLoading(false);
     }

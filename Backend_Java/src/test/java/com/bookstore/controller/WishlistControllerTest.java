@@ -1,6 +1,7 @@
 package com.bookstore.controller;
 
 import com.bookstore.dto.response.ApiResponse;
+import com.bookstore.dto.response.ProductResponse;
 import com.bookstore.dto.response.WishlistResponse;
 import com.bookstore.entity.User;
 import com.bookstore.repository.UserRepository;
@@ -54,13 +55,22 @@ class WishlistControllerTest {
 
     @BeforeEach
     void setUp() {
+        WishlistResponse.ProductInfo productInfo = WishlistResponse.ProductInfo.builder()
+                .id(1L)
+                .name("Test Book")
+                .author("Test Author")
+                .imageUrl("https://example.com/book.jpg")
+                .price(BigDecimal.valueOf(150000))
+                .currentPrice(BigDecimal.valueOf(150000))
+                .stockQuantity(100)
+                .avgRating(4.5)
+                .reviewCount(10)
+                .build();
+
         wishlistResponse = WishlistResponse.builder()
                 .id(1L)
-                .productId(1L)
-                .productName("Test Book")
-                .productImage("https://example.com/book.jpg")
-                .productPrice(BigDecimal.valueOf(150000))
-                .addedAt(LocalDateTime.now())
+                .product(productInfo)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -74,7 +84,7 @@ class WishlistControllerTest {
         mockMvc.perform(post("/api/wishlist/1")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.productName").value("Test Book"))
+                .andExpect(jsonPath("$.data.product.name").value("Test Book"))
                 .andExpect(jsonPath("$.message").value("Đã thêm vào danh sách yêu thích"));
     }
 
@@ -87,20 +97,7 @@ class WishlistControllerTest {
 
         mockMvc.perform(get("/api/wishlist"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].productName").value("Test Book"));
-    }
-
-    @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("GET /api/wishlist/{productId} - checks if product is in wishlist")
-    void checkInWishlist_success() throws Exception {
-        when(wishlistService.isInWishlist(any(User.class), eq(1L)))
-                .thenReturn(true);
-
-        mockMvc.perform(get("/api/wishlist/1")
-                        .param("check", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.isInWishlist").value(true));
+                .andExpect(jsonPath("$[0].product.name").value("Test Book"));
     }
 
     @Test

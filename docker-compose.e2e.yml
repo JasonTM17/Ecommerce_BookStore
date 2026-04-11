@@ -1,0 +1,239 @@
+version: '3.8'
+
+# ==============================================================================
+# docker-compose.e2e.yml - E2E Testing Stack
+# Chạy cả local và GitHub Actions
+#
+# Usage:
+#   Local:  docker-compose -f docker-compose.e2e.yml --profile e2e up -d
+#   DB only: docker-compose -f docker-compose.e2e.yml --profile db-only up -d
+#   Stop:   docker-compose -f docker-compose.e2e.yml down -v
+#
+# Services:
+#   mysql        - MySQL 8.4 ephemeral (tmpfs), test DB sạch mỗi lần
+#   backend      - Spring Boot, chờ MySQL healthy
+#   frontend     - Next.js, chờ backend healthy
+#   e2e-runner   - Playwright, chạy tests sau khi frontend ready
+# ==============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # MySQL - Test Database (ephemeral tmpfs)
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.4
+    container_name: bookstore-e2e-mysql
+    profile: ["e2e", "db-only"]
+    # tmpfs cho ephemeral test DB - dữ liệu bị xóa khi container stop
+    tmpfs:
+      - /var/lib/mysql:size=512m
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123
+      MYSQL_DATABASE: bookstore_e2e
+      MYSQL_USER: bookstore
+      MYSQL_PASSWORD: bookstore123
+    ports:
+      - "3307:3306"
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=200
+      --innodb-buffer-pool-size=128M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass123"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks:
+      - bookstore-e2e-network
+
+  # ---------------------------------------------------------------------------
+  # Backend - Spring Boot API
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        SPRING_PROFILES_ACTIVE: prod
+        # Override cho E2E test
+        DB_HOST: mysql
+        DB_PORT: 3306
+        DB_NAME: bookstore_e2e
+        DB_USERNAME: bookstore
+        DB_PASSWORD: bookstore123
+    container_name: bookstore-e2e-backend
+    profile: ["e2e"]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # MySQL
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: bookstore_e2e
+      DB_USERNAME: bookstore
+      DB_PASSWORD: bookstore123
+      # PostgreSQL
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: bookstore
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres123
+      # JWT
+      JWT_SECRET: YourSuperSecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong!
+      # CORS
+      CORS_ORIGINS: http://localhost:3000,http://frontend:3000
+      # JPA
+      JPA_DDL_AUTO: create-drop
+      # Rate Limiting
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_AUTH_LIMIT: "10"
+      RATE_LIMIT_API_LIMIT: "200"
+      RATE_LIMIT_PUBLIC_LIMIT: "500"
+      # Input Validation
+      INPUT_VALIDATION_ENABLED: "true"
+      INPUT_VALIDATION_BLOCK_XSS: "true"
+      INPUT_VALIDATION_BLOCK_SQL_INJECTION: "true"
+      # App
+      APP_BASE_URL: http://localhost:8080
+      UPLOAD_DIR: /app/uploads
+      # Email - disable trong E2E
+      APP_EMAIL_TEST_ENABLED: "false"
+      # Test mode
+      E2E_MODE: "true"
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./uploads_data:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - bookstore-e2e-network
+    # Tài nguyên giới hạn cho CI
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Frontend - Next.js Application
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: bookstore-e2e-frontend
+    profile: ["e2e"]
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080/api
+      NEXT_PUBLIC_APP_NAME: BookStore E2E
+      NEXT_PUBLIC_APP_DESCRIPTION: E2E Test Environment
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Disable optimization cho faster build
+      NODE_ENV: test
+    ports:
+      - "3001:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - bookstore-e2e-network
+    # Tài nguyên giới hạn cho CI
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # E2E Runner - Playwright Test
+  # ---------------------------------------------------------------------------
+  e2e-runner:
+    image: mcr.microsoft.com/playwright:v1.50.0-jammy
+    container_name: bookstore-e2e-runner
+    profile: ["e2e"]
+    # Chạy như root để có quyền install browser
+    user: root
+    working_dir: /e2e
+    environment:
+      # Backend URL cho Playwright
+      NEXT_PUBLIC_API_URL: http://frontend:3000
+      BACKEND_URL: http://backend:8080/api
+      FRONTEND_URL: http://frontend:3000
+      # Playwright config
+      PLAYWRIGHT_HEADLESS: "true"
+      PLAYWRIGHT_RETRY: "3"
+      # Report
+      PLAYWRIGHT_REPORT_DIR: /e2e/playwright-report
+      # CI mode
+      CI: "true"
+    volumes:
+      # Mount project vào container
+      - .:/e2e
+      # Playwright report
+      - playwright-report:/e2e/playwright-report
+      # Playwright browser cache
+      - playwright-cache:/ms-playwright
+    command: >
+      sh -c "
+        echo '========================================';
+        echo '  E2E Runner started';
+        echo '========================================';
+        
+        # Install dependencies
+        cd /e2e/Frontend_NextJS && npm install --prefer-offline;
+        
+        # Chờ frontend sẵn sàng
+        echo 'Waiting for frontend...';
+        /bin/bash /e2e/scripts/wait-for-services.sh --timeout 120 --interval 5 http://frontend:3000;
+        
+        # Chạy E2E tests
+        echo 'Running E2E tests...';
+        cd /e2e/Frontend_NextJS && npx playwright test;
+        
+        # Copy report ra ngoài
+        echo 'Copying reports...';
+        cp -r /e2e/Frontend_NextJS/playwright-report /e2e/playwright-report/ 2>/dev/null || true;
+        
+        echo 'E2E tests completed!';
+        exit 0;
+      "
+    depends_on:
+      frontend:
+        condition: service_healthy
+    networks:
+      - bookstore-e2e-network
+    # Tài nguyên giới hạn
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+  bookstore-e2e-network:
+    driver: bridge
+
+# ==============================================================================
+# Volumes - ephemeral data
+# ==============================================================================
+volumes:
+  playwright-report:
+    driver: local
+  playwright-cache:
+    driver: local

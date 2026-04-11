@@ -25,5 +25,5 @@ public class CategoryRequest {
 
     private Long parentId;
 
-    private Integer displayOrder;
+    private Integer sortOrder;
 }

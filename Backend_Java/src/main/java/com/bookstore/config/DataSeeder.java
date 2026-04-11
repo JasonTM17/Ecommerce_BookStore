@@ -154,7 +154,7 @@ public class DataSeeder {
 
                     OrderStatus oStatus = orderStatuses[rand.nextInt(orderStatuses.length)];
                     PaymentStatus pStatus = oStatus == OrderStatus.PENDING || oStatus == OrderStatus.CONFIRMED
-                            ? PaymentStatus.PENDING : PaymentStatus.PAID;
+                            ? PaymentStatus.PENDING : PaymentStatus.SUCCESS;
 
                     LocalDateTime createdAt = LocalDateTime.now().minusDays(rand.nextInt(60));
 
@@ -234,7 +234,7 @@ public class DataSeeder {
                         .orderNumber("ORD" + System.currentTimeMillis() + 10000 + i)
                         .user(adminCustomer)
                         .orderStatus(oStatus)
-                        .paymentStatus(PaymentStatus.PAID)
+                        .paymentStatus(PaymentStatus.SUCCESS)
                         .shippingAddress("123 Admin Street, District 1, Ho Chi Minh City")
                         .shippingPhone(adminCustomer.getPhoneNumber())
                         .shippingReceiverName(adminCustomer.getFullName())

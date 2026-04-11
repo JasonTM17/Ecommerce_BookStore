@@ -97,6 +97,10 @@ public class Order {
     @Column(name = "cancel_reason")
     private String cancelReason;
 
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

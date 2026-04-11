@@ -66,6 +66,7 @@ public class ProductService {
                 .isBestseller(request.getIsBestseller() != null ? request.getIsBestseller() : false)
                 .isNew(request.getIsNew() != null ? request.getIsNew() : true)
                 .isActive(true)
+                .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                 .build();
 
         product.calculateDiscountPrice();
@@ -109,6 +110,7 @@ public class ProductService {
         if (request.getIsFeatured() != null) product.setIsFeatured(request.getIsFeatured());
         if (request.getIsBestseller() != null) product.setIsBestseller(request.getIsBestseller());
         if (request.getIsNew() != null) product.setIsNew(request.getIsNew());
+        if (request.getSortOrder() != null) product.setSortOrder(request.getSortOrder());
 
         product.calculateDiscountPrice();
         product = productRepository.save(product);
@@ -317,7 +319,7 @@ public class ProductService {
             case "price_asc" -> Sort.by(Sort.Direction.ASC, "price");
             case "price_desc" -> Sort.by(Sort.Direction.DESC, "price");
             case "name_asc" -> Sort.by(Sort.Direction.ASC, "name");
-            case "createdAt", "price", "name", "soldCount", "viewCount", "avgRating" -> Sort.by(dir, sortBy.trim());
+            case "createdAt", "price", "name", "soldCount", "viewCount", "avgRating", "sortOrder" -> Sort.by(dir, sortBy.trim());
             default -> Sort.by(Sort.Direction.DESC, "createdAt");
         };
     }
@@ -366,6 +368,7 @@ public class ProductService {
                 .isFeatured(product.getIsFeatured())
                 .isBestseller(product.getIsBestseller())
                 .isNew(product.getIsNew())
+                .sortOrder(product.getSortOrder())
                 .build();
     }
 
@@ -383,6 +386,7 @@ public class ProductService {
                 .parentId(category.getParent() != null ? category.getParent().getId() : null)
                 .parentName(parentName)
                 .isActive(category.getIsActive())
+                .sortOrder(category.getSortOrder())
                 .build();
     }
 

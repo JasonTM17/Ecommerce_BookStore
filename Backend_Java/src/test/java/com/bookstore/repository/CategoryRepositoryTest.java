@@ -31,7 +31,7 @@ class CategoryRepositoryTest {
                 .name("Fiction")
                 .description("Fiction books")
                 .isActive(true)
-                .displayOrder(1)
+                .sortOrder(1)
                 .build();
         parent = categoryRepository.save(parent);
 
@@ -39,7 +39,7 @@ class CategoryRepositoryTest {
                 .name("Mystery")
                 .description("Mystery fiction")
                 .isActive(true)
-                .displayOrder(1)
+                .sortOrder(1)
                 .parent(parent)
                 .build();
         categoryRepository.save(child);
@@ -58,7 +58,7 @@ class CategoryRepositoryTest {
         categoryRepository.save(Category.builder()
                 .name("UniqueName")
                 .isActive(true)
-                .displayOrder(0)
+                .sortOrder(0)
                 .build());
 
         assertThat(categoryRepository.existsByName("UniqueName")).isTrue();

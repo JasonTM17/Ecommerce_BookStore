@@ -9,6 +9,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.time.Duration;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -17,11 +18,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private String uploadDir;
 
     @Bean
-    public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getRestTemplate().setConnectTimeout(Duration.ofSeconds(30));
-        restTemplate.getRestTemplate().setReadTimeout(Duration.ofSeconds(60));
-        return restTemplate;
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofSeconds(30))
+                .setReadTimeout(Duration.ofSeconds(60))
+                .build();
     }
 
     @Override

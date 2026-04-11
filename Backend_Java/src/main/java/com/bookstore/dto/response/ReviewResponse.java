@@ -20,5 +20,6 @@ public class ReviewResponse {
     private String comment;
     private Boolean isVerifiedPurchase;
     private Integer helpfulCount;
+    private Integer sortOrder;
     private LocalDateTime createdAt;
 }

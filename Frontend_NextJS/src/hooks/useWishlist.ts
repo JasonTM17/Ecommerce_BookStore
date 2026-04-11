@@ -35,18 +35,10 @@ export function useWishlist() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       queryClient.invalidateQueries({ queryKey: ["wishlist-count"] });
-      toast({
-        title: "Thành công",
-        description: "Đã thêm vào danh sách yêu thích",
-      });
+      toast.success("Đã thêm vào danh sách yêu thích", { description: "Thành công" });
     },
     onError: (error: any) => {
-      toast({
-        title: "Lỗi",
-        description:
-          error?.response?.data?.message || "Không thể thêm vào wishlist",
-        variant: "destructive",
-      });
+      toast.error(error?.response?.data?.message || "Không thể thêm vào wishlist", { description: "Lỗi" });
     },
   });
 
@@ -56,18 +48,10 @@ export function useWishlist() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       queryClient.invalidateQueries({ queryKey: ["wishlist-count"] });
-      toast({
-        title: "Thành công",
-        description: "Đã xóa khỏi danh sách yêu thích",
-      });
+      toast.success("Đã xóa khỏi danh sách yêu thích", { description: "Thành công" });
     },
     onError: (error: any) => {
-      toast({
-        title: "Lỗi",
-        description:
-          error?.response?.data?.message || "Không thể xóa khỏi wishlist",
-        variant: "destructive",
-      });
+      toast.error(error?.response?.data?.message || "Không thể xóa khỏi wishlist", { description: "Lỗi" });
     },
   });
 
@@ -83,11 +67,7 @@ export function useWishlist() {
   const addToWishlist = useCallback(
     async (productId: number) => {
       if (!isAuthenticated) {
-        toast({
-          title: "Yêu cầu đăng nhập",
-          description: "Vui lòng đăng nhập để sử dụng tính năng này",
-          variant: "destructive",
-        });
+        toast.error("Vui lòng đăng nhập để sử dụng tính năng này", { description: "Yêu cầu đăng nhập" });
         return;
       }
       await addMutation.mutateAsync(productId);

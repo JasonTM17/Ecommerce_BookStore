@@ -3,7 +3,6 @@ package com.bookstore.controller;
 import com.bookstore.dto.request.FlashSaleRequest;
 import com.bookstore.dto.response.ApiResponse;
 import com.bookstore.dto.response.FlashSaleResponse;
-import com.bookstore.entity.Product;
 import com.bookstore.repository.ProductRepository;
 import com.bookstore.service.FlashSaleService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,33 +49,34 @@ class FlashSaleControllerTest {
     private ProductRepository productRepository;
 
     private FlashSaleResponse flashSaleResponse;
-    private Product testProduct;
 
     @BeforeEach
     void setUp() {
-        testProduct = productRepository.findAll().stream().findFirst()
+        var testProduct = productRepository.findAll().stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("No products found"));
 
-        Product simpleProduct = Product.builder()
+        FlashSaleResponse.ProductInfo productInfo = FlashSaleResponse.ProductInfo.builder()
                 .id(testProduct.getId())
                 .name(testProduct.getName())
-                .slug(testProduct.getSlug())
-                .price(testProduct.getPrice())
-                .stockQuantity(testProduct.getStockQuantity())
+                .author(testProduct.getAuthor())
                 .imageUrl(testProduct.getImageUrl())
                 .build();
 
         flashSaleResponse = FlashSaleResponse.builder()
                 .id(1L)
-                .product(simpleProduct)
-                .salePrice(BigDecimal.valueOf(80000))
+                .product(productInfo)
                 .originalPrice(BigDecimal.valueOf(100000))
-                .discountPercent(20)
-                .stockQuantity(50)
-                .soldQuantity(10)
+                .salePrice(BigDecimal.valueOf(80000))
+                .discountPercent(BigDecimal.valueOf(20))
+                .stockLimit(50)
+                .soldCount(10)
+                .remainingStock(40)
                 .startTime(LocalDateTime.now())
                 .endTime(LocalDateTime.now().plusHours(12))
                 .isActive(true)
+                .isCurrentlyActive(true)
+                .isUpcoming(false)
+                .maxPerUser(2)
                 .build();
     }
 
@@ -131,12 +131,17 @@ class FlashSaleControllerTest {
         when(flashSaleService.createFlashSale(any(FlashSaleRequest.class)))
                 .thenReturn(flashSaleResponse);
 
+        var testProduct = productRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new RuntimeException("No products found"));
+
         FlashSaleRequest request = FlashSaleRequest.builder()
                 .productId(testProduct.getId())
+                .originalPrice(BigDecimal.valueOf(100000))
                 .salePrice(BigDecimal.valueOf(80000))
-                .stockQuantity(50)
+                .stockLimit(50)
                 .startTime(LocalDateTime.now())
                 .endTime(LocalDateTime.now().plusHours(12))
+                .maxPerUser(2)
                 .build();
 
         mockMvc.perform(post("/api/admin/flash-sales")
@@ -153,7 +158,11 @@ class FlashSaleControllerTest {
     void createFlashSale_asCustomer_forbidden() throws Exception {
         FlashSaleRequest request = FlashSaleRequest.builder()
                 .productId(1L)
+                .originalPrice(BigDecimal.valueOf(100000))
                 .salePrice(BigDecimal.valueOf(80000))
+                .stockLimit(50)
+                .startTime(LocalDateTime.now())
+                .endTime(LocalDateTime.now().plusHours(12))
                 .build();
 
         mockMvc.perform(post("/api/admin/flash-sales")

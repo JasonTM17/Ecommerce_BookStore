@@ -42,14 +42,14 @@ public class BookClubService {
 
     @Transactional(readOnly = true)
     public BookClubResponse getClub(Long id) {
-        BookClub club = clubRepository.findByIdAndIsActiveTrue(id);
+        BookClub club = clubRepository.findByIdAndIsActiveTrue(id).orElse(null);
         if (club == null) throw new ResourceNotFoundException("BookClub", "id", id);
         return mapToResponse(club);
     }
 
     @Transactional
     public void joinClub(Long clubId, User user) {
-        BookClub club = clubRepository.findByIdAndIsActiveTrue(clubId);
+        BookClub club = clubRepository.findByIdAndIsActiveTrue(clubId).orElse(null);
         if (club == null) throw new ResourceNotFoundException("BookClub", "id", clubId);
         if (memberRepository.existsByClubIdAndUser(clubId, user)) throw new BadRequestException("Bạn đã tham gia club này rồi");
 
@@ -72,7 +72,7 @@ public class BookClubService {
     }
 
     @Transactional(readOnly = true)
-    public List<BookClubMemberResponse> getMembers(Long clubId) {
+    public List<BookClubResponse.BookClubMemberResponse> getMembers(Long clubId) {
         return memberRepository.findByClubId(clubId).stream().map(this::mapMemberToResponse).collect(Collectors.toList());
     }
 
@@ -86,13 +86,9 @@ public class BookClubService {
                 .createdAt(club.getCreatedAt()).build();
     }
 
-    private BookClubMemberResponse mapMemberToResponse(BookClubMember m) {
-        return BookClubMemberResponse.builder()
+    private BookClubResponse.BookClubMemberResponse mapMemberToResponse(BookClubMember m) {
+        return BookClubResponse.BookClubMemberResponse.builder()
                 .id(m.getId()).userId(m.getUser().getId()).userName(m.getUser().getFullName())
                 .role(m.getRole()).joinedAt(m.getJoinedAt()).build();
     }
-
-    public record BookClubResponse(Long id, String name, String description, String coverImage, String ownerName,
-                                  Long currentBookId, String currentBookTitle, Integer memberCount, Boolean isPublic, java.time.LocalDateTime createdAt) {}
-    public record BookClubMemberResponse(Long id, Long userId, String userName, BookClubRole role, java.time.LocalDateTime joinedAt) {}
 }

@@ -17,8 +17,9 @@ export function Analytics() {
     const url = pathname + searchParams.toString();
 
     // Google Analytics 4
-    if ("gtag" in window) {
-      (window as unknown as Record<string, unknown>).gtag?.("config", GA_ID, {
+    const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag;
+    if (gtag) {
+      gtag("config", GA_ID, {
         page_path: url,
         page_title: document.title,
       });
@@ -37,8 +38,9 @@ export const trackEvent = (
 ) => {
   if (!GA_ID || typeof window === "undefined") return;
 
-  if ("gtag" in window) {
-    (window as unknown as Record<string, unknown>).gtag?.("event", action, {
+  const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag;
+  if (gtag) {
+    gtag("event", action, {
       event_category: category,
       event_label: label,
       value: value,
@@ -48,7 +50,7 @@ export const trackEvent = (
 
 declare global {
   interface Window {
-    gtag?: (...args: unknown[]) => void;
+    gtag?: (...args: unknown[]) => unknown;
     dataLayer?: unknown[];
   }
 }

@@ -40,5 +40,6 @@ public class OrderResponse {
     private LocalDateTime deliveredAt;
     private LocalDateTime cancelledAt;
     private String cancelReason;
+    private Integer sortOrder;
     private LocalDateTime createdAt;
 }

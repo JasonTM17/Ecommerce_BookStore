@@ -15,17 +15,17 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     boolean existsByName(String name);
 
-    List<Category> findByParentIsNullOrderByDisplayOrderAsc();
+    List<Category> findByParentIsNullOrderBySortOrderAsc();
 
-    List<Category> findByParentIdOrderByDisplayOrderAsc(Long parentId);
+    List<Category> findByParentIdOrderBySortOrderAsc(Long parentId);
 
-    @Query("SELECT c FROM Category c WHERE c.isActive = true ORDER BY c.displayOrder ASC")
+    @Query("SELECT c FROM Category c WHERE c.isActive = true ORDER BY c.sortOrder ASC")
     List<Category> findAllActiveCategories();
 
-    @Query("SELECT c FROM Category c WHERE c.isActive = true AND c.parent IS NULL ORDER BY c.displayOrder ASC")
+    @Query("SELECT c FROM Category c WHERE c.isActive = true AND c.parent IS NULL ORDER BY c.sortOrder ASC")
     List<Category> findActiveRootCategories();
 
-    @Query("SELECT c FROM Category c WHERE c.isActive = true AND c.parent.id = :parentId ORDER BY c.displayOrder ASC")
+    @Query("SELECT c FROM Category c WHERE c.isActive = true AND c.parent.id = :parentId ORDER BY c.sortOrder ASC")
     List<Category> findActiveSubcategories(Long parentId);
 
     @Query("SELECT c.parent.name FROM Category c WHERE c.id = :id AND c.parent IS NOT NULL")

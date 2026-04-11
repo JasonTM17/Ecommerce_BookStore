@@ -61,7 +61,7 @@ export function Footer() {
             <h2 id="footer-nav-heading" className="font-semibold text-white text-lg relative inline-block">
               Liên Kết Nhanh
               <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-600 to-transparent" />
-            </h3>
+            </h2>
             <ul className="space-y-3">
               {[
                 { href: "/products", label: "Sản Phẩm" },
@@ -88,7 +88,7 @@ export function Footer() {
             <h2 id="footer-service-heading" className="font-semibold text-white text-lg relative inline-block">
               Dịch Vụ Khách Hàng
               <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-600 to-transparent" />
-            </h3>
+            </h2>
             <ul className="space-y-3">
               {[
                 { href: "/faq", label: "Câu Hỏi Thường Gặp" },
@@ -115,7 +115,7 @@ export function Footer() {
             <h2 id="footer-contact-heading" className="font-semibold text-white text-lg relative inline-block">
               Liên Hệ
               <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-600 to-transparent" />
-            </h3>
+            </h2>
             <ul className="space-y-4">
               <li className="flex items-start space-x-3 group">
                 <div className="w-10 h-10 bg-gray-800 group-hover:bg-blue-600/20 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300">

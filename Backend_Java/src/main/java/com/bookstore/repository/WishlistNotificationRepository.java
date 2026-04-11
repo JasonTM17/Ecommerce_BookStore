@@ -12,6 +12,4 @@ public interface WishlistNotificationRepository extends JpaRepository<WishlistNo
     List<WishlistNotification> findByWishlistIdOrderByCreatedAtDesc(Long wishlistId);
 
     List<WishlistNotification> findByIsSentFalse();
-
-    List<WishlistNotification> findByIsReadFalseOrderByCreatedAtDesc(Long userId);
 }

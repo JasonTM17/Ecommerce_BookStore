@@ -32,7 +32,7 @@ export function SearchBar({
         router.push(`/products?keyword=${encodeURIComponent(value.trim())}`);
       }
     },
-    { wait: 400 }
+    400
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

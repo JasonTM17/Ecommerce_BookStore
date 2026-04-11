@@ -66,6 +66,10 @@ public class Coupon {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     @Column(name = "applicable_categories", columnDefinition = "TEXT")
     private String applicableCategories;
 

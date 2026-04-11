@@ -46,6 +46,10 @@ public class RefreshToken {
     @Column(name = "ip_address", length = 50)
     private String ipAddress;
 
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

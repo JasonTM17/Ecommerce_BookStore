@@ -36,10 +36,8 @@ export function ChatConversations({
       const data = await chatbotApi.getConversations();
       setConversations(data);
     } catch (error: any) {
-      toast({
-        title: "Lỗi",
-        description: "Không thể tải lịch sử hội thoại",
-        variant: "destructive",
+      toast.error("Không thể tải lịch sử hội thoại", {
+        description: "Lỗi",
       });
     } finally {
       setLoading(false);
@@ -59,11 +57,7 @@ export function ChatConversations({
       }));
       onSelectConversation(conversation.id, messages);
     } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: "Không thể tải chi tiết hội thoại",
-        variant: "destructive",
-      });
+      toast.error("Không thể tải chi tiết hội thoại", { description: "Lỗi" });
     }
   };
 
@@ -73,16 +67,9 @@ export function ChatConversations({
     try {
       await chatbotApi.deleteConversation(id);
       setConversations((prev) => prev.filter((c) => c.id !== id));
-      toast({
-        title: "Thành công",
-        description: "Hội thoại đã được xóa",
-      });
+      toast.success("Hội thoại đã được xóa", { description: "Thành công" });
     } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: "Không thể xóa hội thoại",
-        variant: "destructive",
-      });
+      toast.error("Không thể xóa hội thoại", { description: "Lỗi" });
     }
   };
 

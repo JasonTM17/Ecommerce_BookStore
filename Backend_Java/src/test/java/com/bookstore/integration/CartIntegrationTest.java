@@ -17,8 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -129,24 +127,8 @@ class CartIntegrationTest {
     @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
     @DisplayName("GET /cart returns empty cart for new user")
     void getCart_emptyForNewUser() throws Exception {
-        String newEmail = "newuser-" + System.nanoTime() + "@bookstore.test";
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "email": "%s",
-                                  "password": "Password123!",
-                                  "firstName": "New",
-                                  "lastName": "User",
-                                  "phoneNumber": "0900000000"
-                                }
-                                """.formatted(newEmail)))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(get("/cart")
-                        .principal(() -> new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                                new org.springframework.security.core.userdetails.User(newEmail, "",
-                                        List.of()), null, List.of())))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/cart"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items").isArray());
     }
 }

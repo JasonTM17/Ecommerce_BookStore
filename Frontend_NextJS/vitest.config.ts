@@ -22,7 +22,6 @@ export default defineConfig({
       ],
     },
     reporters: ["default", "verbose"],
-    useAtomics: true,
     testTimeout: 10000,
     hookTimeout: 10000,
   },

@@ -48,9 +48,9 @@ public class Category {
     @Builder.Default
     private List<Product> products = new ArrayList<>();
 
-    @Column(name = "display_order")
+    @Column(name = "sort_order")
     @Builder.Default
-    private Integer displayOrder = 0;
+    private Integer sortOrder = 0;
 
     @Column(name = "is_active")
     @Builder.Default
@@ -72,5 +72,11 @@ public class Category {
     public void removeSubcategory(Category subcategory) {
         subcategories.remove(subcategory);
         subcategory.setParent(null);
+    }
+
+    // Alias for sortOrder() - used by seeders
+    public Category displayOrder(int order) {
+        this.sortOrder = order;
+        return this;
     }
 }

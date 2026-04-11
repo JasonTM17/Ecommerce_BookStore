@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.isActive = true")
     Page<User> findAllActiveUsers(Pageable pageable);
 
-    @Query("SELECT u FROM User u WHERE u.email LIKE %:keyword% OR u.firstName LIKE %:keyword% OR u.lastName LIKE %:keyword%")
+    @Query("SELECT u FROM User u WHERE u.email LIKE %:keyword% OR u.firstName LIKE %:keyword%")
     Page<User> searchUsers(String keyword, Pageable pageable);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")

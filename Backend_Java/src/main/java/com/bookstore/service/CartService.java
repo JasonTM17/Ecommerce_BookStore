@@ -62,6 +62,7 @@ public class CartService {
                     .cart(cart)
                     .product(product)
                     .quantity(request.getQuantity())
+                    .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                     .build();
             cartItemRepository.save(newItem);
         }
@@ -160,6 +161,7 @@ public class CartService {
                 .product(mapToProductResponse(item.getProduct()))
                 .quantity(item.getQuantity())
                 .subtotal(item.getSubtotal())
+                .sortOrder(item.getSortOrder())
                 .build();
     }
 

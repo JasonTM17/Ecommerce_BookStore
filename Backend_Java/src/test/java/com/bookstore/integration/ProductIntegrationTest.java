@@ -58,7 +58,7 @@ class ProductIntegrationTest {
                             .name("Test Category")
                             .description("Test description")
                             .isActive(true)
-                            .displayOrder(0)
+                            .sortOrder(0)
                             .build();
                     return categoryRepository.save(c);
                 });
@@ -82,15 +82,15 @@ class ProductIntegrationTest {
                 .name("Integration Test Book")
                 .description("A book created in integration test")
                 .price(BigDecimal.valueOf(199000))
-                .salePrice(BigDecimal.valueOf(149000))
+                .discountPrice(BigDecimal.valueOf(149000))
                 .stockQuantity(100)
                 .categoryId(testCategory.getId())
                 .author("Test Author")
                 .isbn("978-3-16-148410-0")
                 .publisher("Test Publisher")
-                .publishYear(2024)
-                .pages(350)
-                .weight(0.5)
+                .publishedYear(2024)
+                .pageCount(350)
+                .weightGrams(500)
                 .dimensions("14x21 cm")
                 .language("Vietnamese")
                 .build();

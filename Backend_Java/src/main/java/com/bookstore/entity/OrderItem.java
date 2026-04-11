@@ -39,6 +39,10 @@ public class OrderItem {
     @Column(name = "subtotal", precision = 12, scale = 2)
     private BigDecimal subtotal;
 
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     public void calculateSubtotal() {
         BigDecimal discount = BigDecimal.ZERO;
         if (discountPercent != null && discountPercent > 0) {

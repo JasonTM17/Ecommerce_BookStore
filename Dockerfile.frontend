@@ -9,7 +9,7 @@ WORKDIR /app
 COPY Frontend_NextJS/package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production=false
+RUN npm install
 
 # Copy source code
 COPY Frontend_NextJS/ ./

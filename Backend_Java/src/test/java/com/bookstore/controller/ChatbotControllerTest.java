@@ -59,15 +59,16 @@ class ChatbotControllerTest {
         chatbotResponse = ChatbotResponse.builder()
                 .reply("Xin chào! Tôi có thể giúp gì cho bạn hôm nay?")
                 .conversationId(1L)
-                .createdAt(LocalDateTime.now().toString())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         conversationResponse = ConversationResponse.builder()
                 .id(1L)
-                .userId(1L)
                 .title("Hội thoại 1")
                 .messageCount(5)
-                .lastMessageAt(LocalDateTime.now())
+                .lastMessage("Tin nhắn cuối")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 

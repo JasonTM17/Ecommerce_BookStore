@@ -230,9 +230,9 @@ public class OrderService {
                 .orderNumber(order.getOrderNumber())
                 .user(mapToUserResponse(order.getUser()))
                 .orderStatus(order.getOrderStatus())
-                .orderStatusDisplayName(order.getOrderStatus().getDisplayName())
+                .orderStatusDisplayName(order.getOrderStatus().name())
                 .paymentStatus(order.getPaymentStatus())
-                .paymentStatusDisplayName(order.getPaymentStatus().getDisplayName())
+                .paymentStatusDisplayName(order.getPaymentStatus().name())
                 .orderItems(items)
                 .shippingAddress(order.getShippingAddress())
                 .shippingPhone(order.getShippingPhone())
@@ -249,6 +249,7 @@ public class OrderService {
                 .deliveredAt(order.getDeliveredAt())
                 .cancelledAt(order.getCancelledAt())
                 .cancelReason(order.getCancelReason())
+                .sortOrder(order.getSortOrder())
                 .createdAt(order.getCreatedAt())
                 .build();
     }
@@ -261,6 +262,7 @@ public class OrderService {
                 .price(item.getPrice())
                 .discountPercent(item.getDiscountPercent())
                 .subtotal(item.getSubtotal())
+                .sortOrder(item.getSortOrder())
                 .build();
     }
 

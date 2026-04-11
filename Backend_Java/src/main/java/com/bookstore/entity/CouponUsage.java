@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,7 +35,11 @@ public class CouponUsage {
     private Order order;
 
     @Column(name = "discount_amount", precision = 12, scale = 2)
-    private Double discountAmount;
+    private BigDecimal discountAmount;
+
+    @Column(name = "sort_order")
+    @Builder.Default
+    private Integer sortOrder = 0;
 
     @CreatedDate
     @Column(name = "used_at", updatable = false)

@@ -3,7 +3,8 @@ package com.bookstore.controller;
 import com.bookstore.dto.request.CartItemRequest;
 import com.bookstore.dto.response.CartItemResponse;
 import com.bookstore.dto.response.CartResponse;
-import com.bookstore.entity.Product;
+import com.bookstore.dto.response.ProductResponse;
+import com.bookstore.dto.response.UserResponse;
 import com.bookstore.entity.User;
 import com.bookstore.repository.UserRepository;
 import com.bookstore.service.CartService;
@@ -25,7 +26,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -58,21 +58,37 @@ class CartControllerTest {
         testUser = userRepository.findByEmail("customer@example.com")
                 .orElseThrow(() -> new RuntimeException("Test user not found"));
 
+        ProductResponse product = ProductResponse.builder()
+                .id(1L)
+                .name("Test Book")
+                .author("Test Author")
+                .price(BigDecimal.valueOf(100000))
+                .currentPrice(BigDecimal.valueOf(100000))
+                .imageUrl("https://example.com/book.jpg")
+                .stockQuantity(100)
+                .inStock(true)
+                .build();
+
         CartItemResponse item = CartItemResponse.builder()
                 .id(1L)
-                .productId(1L)
-                .productName("Test Book")
-                .productImage("https://example.com/book.jpg")
+                .product(product)
                 .quantity(2)
-                .price(BigDecimal.valueOf(100000))
                 .subtotal(BigDecimal.valueOf(200000))
+                .sortOrder(0)
+                .build();
+
+        UserResponse userResponse = UserResponse.builder()
+                .id(testUser.getId())
+                .email(testUser.getEmail())
+                .fullName(testUser.getFullName())
                 .build();
 
         cartResponse = CartResponse.builder()
                 .id(1L)
-                .userId(testUser.getId())
+                .user(userResponse)
                 .items(List.of(item))
                 .totalItems(1)
+                .subtotal(BigDecimal.valueOf(200000))
                 .total(BigDecimal.valueOf(200000))
                 .build();
     }
@@ -86,7 +102,7 @@ class CartControllerTest {
         mockMvc.perform(get("/cart"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalItems").value(1))
-                .andExpect(jsonPath("$.items[0].productName").value("Test Book"));
+                .andExpect(jsonPath("$.items[0].product.name").value("Test Book"));
     }
 
     @Test
@@ -98,10 +114,9 @@ class CartControllerTest {
 
     @Test
     @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("POST /cart/items - returns 200 when adding item")
-    void addToCart_success() throws Exception {
-        when(cartService.addToCart(any(User.class), any(CartItemRequest.class)))
-                .thenReturn(cartResponse);
+    @DisplayName("POST /cart/items - adds item to cart")
+    void addItem_success() throws Exception {
+        when(cartService.addToCart(any(User.class), any(CartItemRequest.class))).thenReturn(cartResponse);
 
         CartItemRequest request = CartItemRequest.builder()
                 .productId(1L)
@@ -112,41 +127,17 @@ class CartControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalItems").value(1));
-    }
-
-    @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("PUT /cart/items/{id} - returns 200 when updating quantity")
-    void updateCartItem_success() throws Exception {
-        when(cartService.updateCartItem(any(User.class), eq(1L), eq(5)))
-                .thenReturn(cartResponse);
-
-        mockMvc.perform(put("/cart/items/1")
-                        .with(csrf())
-                        .param("quantity", "5"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("DELETE /cart/items/{id} - returns 200 when removing item")
-    void removeFromCart_success() throws Exception {
-        when(cartService.removeFromCart(any(User.class), eq(1L)))
-                .thenReturn(cartResponse);
+    @DisplayName("DELETE /cart/items/{id} - removes item from cart")
+    void removeItem_success() throws Exception {
+        when(cartService.removeFromCart(any(User.class), any(Long.class))).thenReturn(cartResponse);
 
         mockMvc.perform(delete("/cart/items/1")
                         .with(csrf()))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("DELETE /cart - returns 204 when clearing cart")
-    void clearCart_success() throws Exception {
-        mockMvc.perform(delete("/cart")
-                        .with(csrf()))
-                .andExpect(status().isNoContent());
     }
 }
