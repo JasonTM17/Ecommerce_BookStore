@@ -97,14 +97,15 @@ public class DataSeeder {
 
             List<User> customers = ensureCustomerUsers(userRepository);
             List<Product> products = ensureCatalog(categoryRepository, brandRepository, productRepository);
+            List<Product> prioritizedProducts = ShowcaseBookCatalog.prioritizeProducts(products);
 
             Random rand = new Random(42);
             ensureAddresses(customers, addressRepository, rand);
-            ensureOrders(customers, products, orderRepository, reviewRepository, rand);
-            ensureCarts(admin, customers, products, cartRepository, cartItemRepository, rand);
-            ensureWishlists(customers, products, wishlistRepository, rand);
+            ensureOrders(customers, products, prioritizedProducts, orderRepository, reviewRepository, rand);
+            ensureCarts(admin, customers, products, prioritizedProducts, cartRepository, cartItemRepository, rand);
+            ensureWishlists(customers, products, prioritizedProducts, wishlistRepository, rand);
             ensureCoupons(couponRepository, admin);
-            ensureFlashSales(flashSaleRepository, products);
+            ensureFlashSales(flashSaleRepository, prioritizedProducts);
 
             log.info("========================================");
             log.info("Portfolio demo data is ready");
@@ -264,6 +265,7 @@ public class DataSeeder {
     private void ensureOrders(
             List<User> customers,
             List<Product> products,
+            List<Product> prioritizedProducts,
             OrderRepository orderRepository,
             ReviewRepository reviewRepository,
             Random rand) {
@@ -280,13 +282,16 @@ public class DataSeeder {
             for (int customerIndex = 0; customerIndex < customers.size(); customerIndex++) {
                 User customer = customers.get(customerIndex);
                 int orderCount = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL) ? 3 : rand.nextInt(3) + 1;
+                List<Product> catalog = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL) || customerIndex < 6
+                        ? prioritizedProducts
+                        : products;
 
                 for (int orderIndex = 0; orderIndex < orderCount; orderIndex++) {
                     OrderStatus status = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL)
                             ? List.of(OrderStatus.DELIVERED, OrderStatus.SHIPPED, OrderStatus.PENDING).get(orderIndex % 3)
                             : orderStatuses[rand.nextInt(orderStatuses.length)];
 
-                    createSampleOrder(customer, products, orderRepository, reviewRepository, rand, sequence, status);
+                    createSampleOrder(customer, catalog, orderRepository, reviewRepository, rand, sequence, status);
                 }
             }
 
@@ -298,7 +303,7 @@ public class DataSeeder {
         if (orderRepository.findByUserId(demoCustomer.getId(), PageRequest.of(0, 1)).isEmpty()) {
             createSampleOrder(
                     demoCustomer,
-                    products,
+                    prioritizedProducts,
                     orderRepository,
                     reviewRepository,
                     rand,
@@ -310,17 +315,25 @@ public class DataSeeder {
 
     private void createSampleOrder(
             User customer,
-            List<Product> products,
+            List<Product> catalog,
             OrderRepository orderRepository,
             ReviewRepository reviewRepository,
             Random rand,
             AtomicInteger sequence,
             OrderStatus status) {
 
+        if (catalog.isEmpty()) {
+            return;
+        }
+
+        List<Product> candidateCatalog = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL)
+                ? catalog.stream().limit(Math.min(12, catalog.size())).toList()
+                : catalog;
+
         List<Product> orderProducts = new ArrayList<>();
-        int itemCount = rand.nextInt(3) + 1;
+        int itemCount = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL) ? 2 + rand.nextInt(2) : rand.nextInt(3) + 1;
         for (int i = 0; i < itemCount; i++) {
-            orderProducts.add(products.get((sequence.get() + i + rand.nextInt(products.size())) % products.size()));
+            orderProducts.add(candidateCatalog.get((sequence.get() + i * 3 + rand.nextInt(Math.min(candidateCatalog.size(), 8))) % candidateCatalog.size()));
         }
 
         LocalDateTime createdAt = LocalDateTime.now().minusDays(rand.nextInt(45) + 1);
@@ -403,6 +416,7 @@ public class DataSeeder {
             User admin,
             List<User> customers,
             List<Product> products,
+            List<Product> prioritizedProducts,
             CartRepository cartRepository,
             CartItemRepository cartItemRepository,
             Random rand) {
@@ -430,9 +444,15 @@ public class DataSeeder {
 
             cartsCreated++;
             int itemCount = user.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL) ? 3 : rand.nextInt(3) + 1;
+            List<Product> catalog = user.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL) || userIndex < 6
+                    ? prioritizedProducts
+                    : products;
+            List<Product> candidateCatalog = user.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL)
+                    ? catalog.stream().limit(Math.min(10, catalog.size())).toList()
+                    : catalog;
 
             for (int itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-                Product product = products.get((userIndex * 5 + itemIndex * 3 + rand.nextInt(products.size())) % products.size());
+                Product product = candidateCatalog.get((userIndex * 5 + itemIndex * 3 + rand.nextInt(Math.min(candidateCatalog.size(), 8))) % candidateCatalog.size());
 
                 if (cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()).isPresent()) {
                     continue;
@@ -455,6 +475,7 @@ public class DataSeeder {
     private void ensureWishlists(
             List<User> customers,
             List<Product> products,
+            List<Product> prioritizedProducts,
             WishlistRepository wishlistRepository,
             Random rand) {
 
@@ -472,8 +493,14 @@ public class DataSeeder {
             }
 
             int wishlistSize = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL) ? 4 : 2 + rand.nextInt(2);
+            List<Product> catalog = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL) || userIndex < 6
+                    ? prioritizedProducts
+                    : products;
+            List<Product> candidateCatalog = customer.getEmail().equalsIgnoreCase(DEMO_CUSTOMER_EMAIL)
+                    ? catalog.stream().limit(Math.min(12, catalog.size())).toList()
+                    : catalog;
             for (int itemIndex = 0; itemIndex < wishlistSize; itemIndex++) {
-                Product product = products.get((userIndex * 7 + itemIndex * 5 + rand.nextInt(products.size())) % products.size());
+                Product product = candidateCatalog.get((userIndex * 7 + itemIndex * 5 + rand.nextInt(Math.min(candidateCatalog.size(), 10))) % candidateCatalog.size());
 
                 if (wishlistRepository.existsByUserAndProduct(customer, product)) {
                     continue;
@@ -572,14 +599,14 @@ public class DataSeeder {
         log.info("Created {} public coupons", coupons.size());
     }
 
-    private void ensureFlashSales(FlashSaleRepository flashSaleRepository, List<Product> products) {
-        if (flashSaleRepository.count() > 0 || products.isEmpty()) {
+    private void ensureFlashSales(FlashSaleRepository flashSaleRepository, List<Product> prioritizedProducts) {
+        if (flashSaleRepository.count() > 0 || prioritizedProducts.isEmpty()) {
             return;
         }
 
         LocalDateTime now = LocalDateTime.now();
-        List<Product> showcaseProducts = products.stream()
-                .sorted(Comparator.comparingInt((Product product) -> product.getSoldCount() != null ? product.getSoldCount() : 0).reversed())
+        List<Product> showcaseProducts = prioritizedProducts.stream()
+                .filter(product -> Boolean.TRUE.equals(product.getIsActive()))
                 .limit(4)
                 .toList();
 
