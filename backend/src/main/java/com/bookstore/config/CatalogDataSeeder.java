@@ -318,12 +318,6 @@ public final class CatalogDataSeeder {
                         rand.nextInt(9),
                         rand.nextInt(9));
 
-                String shortDesc = "Một cuốn sách tuyệt vời về chủ đề " + cat.getName() + ". Được viết bởi " + author + " và xuất bản bởi " + publisher + ".";
-                String description = shortDesc + "\n\n" +
-                        "Cuốn sách này mang đến cho bạn những kiến thức quý giá, những câu chuyện cảm động và những bài học ý nghĩa. " +
-                        "Với " + pages + " trang, cuốn sách được trình bày đẹp mắt với chất lượng in ấn cao cấp.\n\n" +
-                        "Sách phù hợp với mọi lứa tuổi, đặc biệt là những ai quan tâm đến " + cat.getName() + ".";
-
                 boolean isFeatured = i < 3;
                 boolean isBestseller = i < 4;
                 boolean isNew = i >= 2 && i < 6;
