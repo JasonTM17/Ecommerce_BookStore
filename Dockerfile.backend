@@ -9,8 +9,8 @@ WORKDIR /app
 RUN apk add --no-cache maven
 
 # Copy Maven config first (for dependency caching)
-COPY Backend_Java/pom.xml .
-COPY Backend_Java/src ./src
+COPY backend/pom.xml .
+COPY backend/src ./src
 
 # Download dependencies (cached if pom.xml unchanged)
 RUN mvn dependency:go-offline -B
