@@ -36,7 +36,7 @@ Chi tiết lộ trình và checklist: [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 ## Kiến trúc
 
 ```text
-[Browser] → Next.js (Frontend_NextJS) → REST API Spring Boot (Backend_Java) → MySQL
+[Browser] → Next.js (frontend) → REST API Spring Boot (backend) → MySQL
                                               ↘ Email (SMTP, tùy cấu hình)
 ```
 
@@ -57,6 +57,8 @@ Chi tiết lộ trình và checklist: [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
    copy .env.example .env
    ```
 
+   Set `GROK_ENABLED=true` together with `GROK_API_KEY=...` if you want Grok enabled in local/dev.
+
 2. Chỉnh `.env` (database, JWT, mail nếu cần).
 
 3. Khởi động:
@@ -69,10 +71,10 @@ Chi tiết lộ trình và checklist: [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 
    | Dịch vụ | URL |
    |---------|-----|
-   | Frontend | http://localhost:3000 |
+| Frontend | http://localhost:3001 |
    | API (context `/api`) | http://localhost:8080/api |
    | Swagger UI | http://localhost:8080/api/swagger-ui.html |
-   | Health (tùy cấu hình) | http://localhost:8080/api/health |
+| Health (actuator liveness) | http://localhost:8080/api/actuator/health/liveness |
 
 ---
 
@@ -91,17 +93,27 @@ Chi tiết lộ trình và checklist: [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
 **Backend**
 
 ```bash
-cd Backend_Java
-mvn spring-boot:run
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+If you want the `dev` profile instead, run:
+
+```bash
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 **Frontend**
 
 ```bash
-cd Frontend_NextJS
+cd frontend
 npm install
 npm run dev
 ```
+
+Backend local/dev now reads variables from the repo-root `.env` file without requiring a manual shell export.
+Docker Compose uses the same `.env` file to pass `GROK_*`, mail, and backend runtime variables into containers.
 
 Đảm bảo MySQL và biến môi trường trùng với `application.properties` / `.env`.
 
@@ -111,16 +123,20 @@ npm run dev
 
 ```bash
 # Backend
-cd Backend_Java && mvn test
+cd backend && mvn test
 
 # Frontend unit
-cd Frontend_NextJS && npm run test:run
+cd frontend && npm run test:run
 
 # E2E (cần app đang chạy tại BASE_URL mặc định)
-cd Frontend_NextJS && npx playwright install && npm run test:e2e
+cd frontend && npx playwright install && npm run test:e2e
 ```
 
 Pipeline CI: [.github/workflows/ci.yml](.github/workflows/ci.yml).
+
+CI currently enforces honest baseline line-coverage gates while the suite is being expanded:
+- Backend: 50%
+- Frontend: 15%
 
 ---
 
@@ -136,9 +152,9 @@ Pipeline CI: [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ```text
 Ecommerce_BookStore/
-├── Backend_Java/          # Spring Boot API
-├── Frontend_NextJS/       # Next.js 14 (App Router)
-├── Mobile/                 # Ứng dụng React Native (tham khảo)
+├── backend/               # Spring Boot API
+├── frontend/              # Next.js 14 (App Router)
+├── mobile/                # Ứng dụng React Native (tham khảo)
 ├── docs/                   # MASTER_PLAN và tài liệu
 ├── docker-compose.yml
 ├── Dockerfile.backend
@@ -157,5 +173,15 @@ Mã nguồn trong khuôn khổ dự án học tập/portfolio — xem [LICENSE](
 
 **Nguyễn Sơn** · [jasonbmt06@gmail.com](mailto:jasonbmt06@gmail.com)  
 *Dự án học tập & portfolio — 2026*
+
+### Grok env loading
+
+Backend local/dev reads Grok settings from `.env` and container env values.
+
+- `GROK_ENABLED=false` by default
+- Set `GROK_ENABLED=true` together with `GROK_API_KEY` to enable Grok locally
+- Use `GROK_MODEL` and `GROK_API_URL` to override the default model or endpoint
+
+When running through Docker Compose, the backend service receives these values from `.env` automatically.
 
 </div>

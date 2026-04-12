@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MySQL Database
   mysql:
@@ -69,10 +67,15 @@ services:
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: postgres123
       JWT_SECRET: YourSuperSecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong!
-      CORS_ORIGINS: http://localhost:3000,http://frontend:3000
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://frontend:3000
       JPA_DDL_AUTO: update
       APP_BASE_URL: http://localhost:8080
       UPLOAD_DIR: /app/uploads
+      # Grok AI chatbot configuration from .env
+      GROK_ENABLED: ${GROK_ENABLED:-false}
+      GROK_API_KEY: ${GROK_API_KEY:-}
+      GROK_MODEL: ${GROK_MODEL:-grok-3}
+      GROK_API_URL: ${GROK_API_URL:-https://api.x.ai/v1/chat/completions}
       # Rate Limiting
       RATE_LIMIT_ENABLED: "true"
       RATE_LIMIT_AUTH_LIMIT: "5"
@@ -110,12 +113,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_URL: /api
+        NEXT_PUBLIC_APP_NAME: BookStore
+        NEXT_PUBLIC_APP_DESCRIPTION: Professional Vietnamese E-Commerce BookStore Platform
+        API_PROXY_TARGET: http://backend:8080/api
     container_name: bookstore-frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8080/api
+      NEXT_PUBLIC_API_URL: /api
       NEXT_PUBLIC_APP_NAME: BookStore
       NEXT_PUBLIC_APP_DESCRIPTION: Professional Vietnamese E-Commerce BookStore Platform
+      API_PROXY_TARGET: http://backend:8080/api
     ports:
       - "3001:3000"
     depends_on:
