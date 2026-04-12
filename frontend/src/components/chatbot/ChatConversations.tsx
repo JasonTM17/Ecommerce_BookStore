@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { chatbotApi, Conversation, ChatMessage } from "@/lib/chatbot";
+import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import { notifyToast } from "@/lib/toast";
@@ -16,9 +17,45 @@ interface ChatConversationsProps {
 
 export function ChatConversations({ currentConversationId, onSelectConversation, onClose }: ChatConversationsProps) {
   const { toast } = useToast();
+  const { locale } = useLanguage();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const copy =
+    locale === "vi"
+      ? {
+          history: "Lịch sử",
+          loadError: "Không thể tải lịch sử hội thoại",
+          loadDetailError: "Không thể tải chi tiết hội thoại",
+          deleteSuccess: "Hội thoại đã được xóa",
+          deleteError: "Không thể xóa hội thoại",
+          justNow: "Vừa xong",
+          minutesAgo: "phút trước",
+          hoursAgo: "giờ trước",
+          daysAgo: "ngày trước",
+          empty: "Chưa có hội thoại nào",
+          newConversation: "Cuộc trò chuyện mới",
+          delete: "Xóa",
+          error: "Lỗi",
+          success: "Thành công",
+        }
+      : {
+          history: "History",
+          loadError: "Unable to load conversation history",
+          loadDetailError: "Unable to load conversation details",
+          deleteSuccess: "Conversation deleted",
+          deleteError: "Unable to delete conversation",
+          justNow: "Just now",
+          minutesAgo: "minutes ago",
+          hoursAgo: "hours ago",
+          daysAgo: "days ago",
+          empty: "No conversations yet",
+          newConversation: "New conversation",
+          delete: "Delete",
+          error: "Error",
+          success: "Success",
+        };
 
   useEffect(() => {
     let isMounted = true;
@@ -31,7 +68,7 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
           setConversations(data);
         }
       } catch {
-        notifyToast(toast, "error", "Không thể tải lịch sử hội thoại", { description: "Lỗi" });
+        notifyToast(toast, "error", copy.loadError, { description: copy.error });
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -44,7 +81,7 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
     return () => {
       isMounted = false;
     };
-  }, [toast]);
+  }, [copy.error, copy.loadError, toast]);
 
   const handleSelectConversation = async (conversation: Conversation) => {
     setSelectedId(conversation.id);
@@ -59,7 +96,7 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
       }));
       onSelectConversation(conversation.id, messages);
     } catch {
-      notifyToast(toast, "error", "Không thể tải chi tiết hội thoại", { description: "Lỗi" });
+      notifyToast(toast, "error", copy.loadDetailError, { description: copy.error });
     }
   };
 
@@ -69,9 +106,9 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
     try {
       await chatbotApi.deleteConversation(id);
       setConversations((prev) => prev.filter((conversation) => conversation.id !== id));
-      notifyToast(toast, "success", "Hội thoại đã được xóa", { description: "Thành công" });
+      notifyToast(toast, "success", copy.deleteSuccess, { description: copy.success });
     } catch {
-      notifyToast(toast, "error", "Không thể xóa hội thoại", { description: "Lỗi" });
+      notifyToast(toast, "error", copy.deleteError, { description: copy.error });
     }
   };
 
@@ -83,29 +120,22 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "Vừa xong";
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays < 7) return `${diffDays} ngày trước`;
-    return date.toLocaleDateString("vi-VN");
+    if (diffMins < 1) return copy.justNow;
+    if (diffMins < 60) return `${diffMins} ${copy.minutesAgo}`;
+    if (diffHours < 24) return `${diffHours} ${copy.hoursAgo}`;
+    if (diffDays < 7) return `${diffDays} ${copy.daysAgo}`;
+    return date.toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US");
   };
 
   return (
     <div className="w-64 bg-white border-r border-gray-100 flex flex-col">
-      {/* Header */}
       <div className="p-3 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 text-sm">Lịch sử</h3>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="h-7 w-7"
-        >
+        <h3 className="font-semibold text-gray-900 text-sm">{copy.history}</h3>
+        <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
           <X className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-32">
@@ -114,49 +144,52 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
         ) : conversations.length === 0 ? (
           <div className="p-4 text-center text-sm text-gray-500">
             <MessageCircle className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-            <p>Chưa có hội thoại nào</p>
+            <p>{copy.empty}</p>
           </div>
         ) : (
           <div className="p-2 space-y-1">
             {conversations.map((conversation) => (
-              <button
+              <div
                 key={conversation.id}
-                onClick={() => handleSelectConversation(conversation)}
                 className={cn(
-                  "w-full p-3 rounded-xl text-left transition-all group",
-                  "hover:bg-gray-50",
+                  "w-full rounded-xl transition-all group",
                   currentConversationId === conversation.id && "bg-blue-50"
                 )}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={cn(
-                        "text-sm font-medium truncate",
-                        currentConversationId === conversation.id
-                          ? "text-blue-700"
-                          : "text-gray-900"
-                      )}
-                    >
-                      {conversation.title}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate mt-0.5">
-                      {conversation.lastMessage || "Cuộc trò chuyện mới"}
-                    </p>
-                  </div>
-                  <span className="text-[10px] text-gray-400 shrink-0">
-                    {formatDate(conversation.updatedAt)}
-                  </span>
-                </div>
-
-                {/* Delete button */}
                 <button
-                  onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                  className="mt-2 text-[10px] text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  onClick={() => handleSelectConversation(conversation)}
+                  className={cn("w-full p-3 rounded-xl text-left transition-all hover:bg-gray-50")}
                 >
-                  Xóa
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={cn(
+                          "text-sm font-medium truncate",
+                          currentConversationId === conversation.id || selectedId === conversation.id
+                            ? "text-blue-700"
+                            : "text-gray-900"
+                        )}
+                      >
+                        {conversation.title}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                        {conversation.lastMessage || copy.newConversation}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-gray-400 shrink-0">{formatDate(conversation.updatedAt)}</span>
+                  </div>
                 </button>
-              </button>
+
+                <div className="px-3 pb-2">
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteConversation(e, conversation.id)}
+                    className="text-[10px] text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    {copy.delete}
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}

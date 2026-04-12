@@ -32,7 +32,7 @@ export function OrganizationSchema() {
     name: "BookStore Vietnam",
     url: process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com",
     logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com"}/logo.svg`,
-    description: "Nền tảng thương mại điện tử bán sách hàng đầu Việt Nam",
+    description: "Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại.",
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+84-28-1234-5678",
@@ -63,7 +63,9 @@ export function BreadcrumbSchema({ items }: { items: Array<{ name: string; url: 
   return <JsonLd schema={schema} />;
 }
 
-export function ProductSchema({ product }: {
+export function ProductSchema({
+  product,
+}: {
   product: {
     id: number;
     name: string;
@@ -78,7 +80,7 @@ export function ProductSchema({ product }: {
     rating?: number;
     reviewCount?: number;
     category?: string;
-  }
+  };
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
 
@@ -86,7 +88,7 @@ export function ProductSchema({ product }: {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.description || `Mua sách ${product.name} chính hãng với giá tốt nhất`,
+    description: product.description || `Mua sách ${product.name} chính hãng với giá tốt.`,
     image: product.imageUrl || `${baseUrl}/placeholder-book.jpg`,
     url: `${baseUrl}/products/${product.slug || product.id}`,
     sku: `BOOK-${product.id}`,
@@ -108,9 +110,7 @@ export function ProductSchema({ product }: {
       ...(product.originalPrice && {
         priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       }),
-      availability: product.inStock !== false
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
+      availability: product.inStock !== false ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       seller: {
         "@type": "Organization",
         name: "BookStore Vietnam",
@@ -130,7 +130,9 @@ export function ProductSchema({ product }: {
   return <JsonLd schema={schema} />;
 }
 
-export function BookSchema({ book }: {
+export function BookSchema({
+  book,
+}: {
   book: {
     id: number;
     name: string;
@@ -142,7 +144,7 @@ export function BookSchema({ book }: {
     description?: string;
     imageUrl?: string;
     currentPrice: number;
-  }
+  };
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
 
@@ -152,12 +154,8 @@ export function BookSchema({ book }: {
     name: book.name,
     description: book.description,
     isbn: book.isbn,
-    author: book.author
-      ? { "@type": "Person", name: book.author }
-      : undefined,
-    publisher: book.publisher
-      ? { "@type": "Organization", name: book.publisher }
-      : undefined,
+    author: book.author ? { "@type": "Person", name: book.author } : undefined,
+    publisher: book.publisher ? { "@type": "Organization", name: book.publisher } : undefined,
     datePublished: book.publishYear?.toString(),
     image: book.imageUrl,
     url: `${baseUrl}/products/${book.slug || book.id}`,
@@ -180,7 +178,7 @@ export function WebSiteSchema() {
     "@type": "WebSite",
     name: "BookStore Vietnam",
     url: baseUrl,
-    description: "Nền tảng thương mại điện tử bán sách hàng đầu Việt Nam",
+    description: "Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại.",
     potentialAction: {
       "@type": "SearchAction",
       target: {

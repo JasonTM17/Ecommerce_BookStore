@@ -11,8 +11,48 @@ import { useRouter } from "next/navigation";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import type { Product } from "@/lib/types";
 import { buildLoginRedirect } from "@/lib/utils";
+import { useLanguage } from "@/components/providers/language-provider";
+
+const COPY = {
+  vi: {
+    loginRequiredTitle: "Đăng nhập để xem wishlist",
+    loginRequiredDescription: "Vui lòng đăng nhập để xem danh sách yêu thích của bạn",
+    loginButton: "Đăng nhập",
+    title: "Danh Sách Yêu Thích",
+    subtitle: (count: number) => `${count} sản phẩm trong wishlist`,
+    loading: "Đang tải...",
+    emptyTitle: "Chưa có sản phẩm nào",
+    emptyDescription: "Hãy thêm sản phẩm bạn thích vào danh sách yêu thích",
+    browseProducts: "Khám phá sản phẩm",
+    outOfStock: "Hết hàng",
+    ratingSuffix: "đánh giá",
+    addToCart: "Thêm vào giỏ",
+    addingToCart: "Đang thêm...",
+    noteTitle: "Ghi chú",
+    addedAt: (date: string) => `Thêm ngày ${date}`,
+  },
+  en: {
+    loginRequiredTitle: "Sign in to view your wishlist",
+    loginRequiredDescription: "Please sign in to see your saved favorites",
+    loginButton: "Sign in",
+    title: "Wishlist",
+    subtitle: (count: number) => `${count} items in your wishlist`,
+    loading: "Loading...",
+    emptyTitle: "No saved items yet",
+    emptyDescription: "Add products you love to your wishlist",
+    browseProducts: "Browse products",
+    outOfStock: "Out of stock",
+    ratingSuffix: "reviews",
+    addToCart: "Add to cart",
+    addingToCart: "Adding...",
+    noteTitle: "Note",
+    addedAt: (date: string) => `Added on ${date}`,
+  },
+} as const;
 
 export function WishlistPage() {
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const { wishlistItems, isLoading, removeFromWishlist } = useWishlist();
@@ -25,33 +65,24 @@ export function WishlistPage() {
     setRemovingId(null);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("vi-VN", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-  };
 
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <Heart className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Đăng nhập để xem wishlist
-        </h1>
-        <p className="text-gray-500 mb-6">
-          Vui lòng đăng nhập để xem danh sách yêu thích của bạn
-        </p>
+        <Heart className="mx-auto mb-4 h-16 w-16 text-gray-300" />
+        <h1 className="mb-2 text-2xl font-bold text-gray-900">{copy.loginRequiredTitle}</h1>
+        <p className="mb-6 text-gray-500">{copy.loginRequiredDescription}</p>
         <Button onClick={() => router.push(buildLoginRedirect("/wishlist"))} className="bg-blue-600">
-          Đăng nhập
+          {copy.loginButton}
         </Button>
       </div>
     );
@@ -59,45 +90,37 @@ export function WishlistPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Danh Sách Yêu Thích</h1>
-          <p className="text-gray-500 mt-1">
-            {wishlistItems.length} sản phẩm trong wishlist
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">{copy.title}</h1>
+          <p className="mt-1 text-gray-500">{copy.subtitle(wishlistItems.length)}</p>
         </div>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <span className="sr-only">{copy.loading}</span>
         </div>
       ) : wishlistItems.length === 0 ? (
-        <div className="text-center py-16">
-          <Heart className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Chưa có sản phẩm nào
-          </h2>
-          <p className="text-gray-500 mb-6">
-            Hãy thêm sản phẩm bạn thích vào danh sách yêu thích
-          </p>
+        <div className="py-16 text-center">
+          <Heart className="mx-auto mb-4 h-16 w-16 text-gray-300" />
+          <h2 className="mb-2 text-xl font-semibold text-gray-900">{copy.emptyTitle}</h2>
+          <p className="mb-6 text-gray-500">{copy.emptyDescription}</p>
           <Link href="/products">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Khám phá sản phẩm
-            </Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">{copy.browseProducts}</Button>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {wishlistItems.map((item) => (
             <div
               key={item.id}
               data-testid="wishlist-item"
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+              className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-lg"
             >
-              {/* Product Image */}
               <Link href={`/products/${item.product.id}`} className="block relative">
-                <div className="aspect-[3/4] relative bg-gray-100">
+                <div className="relative aspect-[3/4] bg-gray-100">
                   {item.product.imageUrl ? (
                     <Image
                       src={item.product.imageUrl}
@@ -106,79 +129,70 @@ export function WishlistPage() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <div className="flex h-full w-full items-center justify-center bg-gray-100">
                       <span className="text-gray-400">No Image</span>
                     </div>
                   )}
                 </div>
 
-                {/* Badges */}
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
+                <div className="absolute left-3 top-3 flex flex-col gap-2">
                   {item.product.isNew && (
-                    <span className="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-md">
+                    <span className="rounded-md bg-green-500 px-2 py-1 text-xs font-medium text-white">
                       Mới
                     </span>
                   )}
                   {item.product.isBestseller && (
-                    <span className="px-2 py-1 bg-orange-500 text-white text-xs font-medium rounded-md">
+                    <span className="rounded-md bg-orange-500 px-2 py-1 text-xs font-medium text-white">
                       Bán chạy
                     </span>
                   )}
                   {item.product.discountPercent > 0 && (
-                    <span className="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-md">
+                    <span className="rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-white">
                       -{item.product.discountPercent}%
                     </span>
                   )}
                 </div>
 
-                {/* Out of Stock Overlay */}
                 {!item.isInStock && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="px-4 py-2 bg-white text-gray-900 font-medium rounded-lg">
-                      Hết hàng
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <span className="rounded-lg bg-white px-4 py-2 font-medium text-gray-900">
+                      {copy.outOfStock}
                     </span>
                   </div>
                 )}
               </Link>
 
-              {/* Product Info */}
               <div className="p-4">
                 <Link href={`/products/${item.product.id}`}>
-                  <h3 className="font-semibold text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors mb-1">
+                  <h3 className="mb-1 line-clamp-2 font-semibold text-gray-900 transition-colors hover:text-blue-600">
                     {item.product.name}
                   </h3>
                 </Link>
-                <p className="text-sm text-gray-500 mb-2">{item.product.author}</p>
+                <p className="mb-2 text-sm text-gray-500">{item.product.author}</p>
 
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-3">
+                <div className="mb-3 flex items-center gap-2">
                   <div className="flex items-center">
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    <span className="text-sm font-medium ml-1">
-                      {item.product.avgRating.toFixed(1)}
-                    </span>
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="ml-1 text-sm font-medium">{item.product.avgRating.toFixed(1)}</span>
                   </div>
                   <span className="text-sm text-gray-400">
-                    ({item.product.reviewCount} đánh giá)
+                    ({item.product.reviewCount} {copy.ratingSuffix})
                   </span>
                 </div>
 
-                {/* Price */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <div>
                     <span className="text-lg font-bold text-blue-600">
                       {formatPrice(item.product.currentPrice || item.product.price)}
                     </span>
-                    {item.product.currentPrice &&
-                      item.product.currentPrice < item.product.price && (
-                        <span className="text-sm text-gray-400 line-through ml-2">
-                          {formatPrice(item.product.price)}
-                        </span>
-                      )}
+                    {item.product.currentPrice && item.product.currentPrice < item.product.price && (
+                      <span className="ml-2 text-sm text-gray-400 line-through">
+                        {formatPrice(item.product.price)}
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-2">
                   <Button
                     className="flex-1 bg-blue-600 hover:bg-blue-700"
@@ -194,8 +208,8 @@ export function WishlistPage() {
                       )
                     }
                   >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    {isAddingToCart ? "Đang thêm..." : "Thêm vào giỏ"}
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    {isAddingToCart ? copy.addingToCart : copy.addToCart}
                   </Button>
                   <Button
                     variant="outline"
@@ -213,20 +227,18 @@ export function WishlistPage() {
                   </Button>
                 </div>
 
-                {/* Notes */}
                 {item.notes && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                  <div className="mt-3 rounded-lg bg-gray-50 p-3">
+                    <div className="mb-1 flex items-center gap-2 text-xs text-gray-500">
                       <Bell className="h-3 w-3" />
-                      Ghi chú
+                      {copy.noteTitle}
                     </div>
                     <p className="text-sm text-gray-700">{item.notes}</p>
                   </div>
                 )}
 
-                {/* Added Date */}
-                <p className="text-xs text-gray-400 mt-3">
-                  Thêm ngày {formatDate(item.createdAt)}
+                <p className="mt-3 text-xs text-gray-400">
+                  {copy.addedAt(formatDate(item.createdAt))}
                 </p>
               </div>
             </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useCartStore } from "@/lib/store";
-import { useLanguage, type Locale } from "@/components/providers/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import { ShoppingCart, User, Search, LogOut, ChevronDown, BookOpen } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,28 +11,30 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
-const navLabels: Record<Locale, { home: string; products: string; categories: string; about: string }> = {
-  vi: { home: "Trang chủ", products: "Sản phẩm", categories: "Danh mục", about: "Giới thiệu" },
-  en: { home: "Home", products: "Products", categories: "Categories", about: "About" },
-};
-
-const userMenuLabels: Record<Locale, { account: string; orders: string; admin: string; logout: string; login: string }> = {
-  vi: { account: "Tài khoản", orders: "Đơn hàng", admin: "Quản trị", logout: "Đăng xuất", login: "Đăng nhập" },
-  en: { account: "Account", orders: "Orders", admin: "Admin", logout: "Logout", login: "Login" },
-};
-
 export function Header() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { totalItems } = useCartStore();
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const nav = navLabels[locale];
-  const menuLabels = userMenuLabels[locale];
+  const nav = {
+    home: t("nav.home"),
+    products: t("nav.products"),
+    categories: t("nav.categories"),
+    about: t("nav.about"),
+  };
+
+  const menuLabels = {
+    account: t("nav.account"),
+    orders: t("nav.orders"),
+    admin: t("nav.admin"),
+    logout: t("nav.logout"),
+    login: t("nav.login"),
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -98,13 +100,13 @@ export function Header() {
 
           <div className="flex items-center space-x-2">
             <Link href="/products?focus=search">
-              <Button variant="ghost" size="icon" className="relative group" aria-label="Search">
+              <Button variant="ghost" size="icon" className="relative group" aria-label={t("common.search")}>
                 <Search className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
               </Button>
             </Link>
 
             <Link href="/cart" className="relative">
-              <Button variant="ghost" size="icon" className="relative group">
+              <Button variant="ghost" size="icon" className="relative group" aria-label={t("nav.cart")}>
                 <ShoppingCart className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-bounce">
@@ -127,11 +129,12 @@ export function Header() {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">
                     {user?.fullName?.charAt(0)?.toUpperCase() || "U"}
                   </div>
-                  <span className="hidden sm:inline text-sm font-medium text-gray-700">
-                    {user?.fullName}
-                  </span>
+                  <span className="hidden sm:inline text-sm font-medium text-gray-700">{user?.fullName}</span>
                   <ChevronDown
-                    className={cn("h-4 w-4 text-gray-500 transition-transform duration-200", isUserMenuOpen && "rotate-180")}
+                    className={cn(
+                      "h-4 w-4 text-gray-500 transition-transform duration-200",
+                      isUserMenuOpen && "rotate-180"
+                    )}
                   />
                 </Button>
                 {isUserMenuOpen && (
@@ -197,7 +200,7 @@ export function Header() {
               size="icon"
               className="lg:hidden relative"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Menu"
+              aria-label={locale === "vi" ? "Mở menu" : "Open menu"}
             >
               <div className="relative w-5 h-5">
                 <span

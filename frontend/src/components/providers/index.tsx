@@ -5,13 +5,20 @@ import { useState } from "react";
 import { AuthProvider } from "./auth-provider";
 import { LanguageProvider } from "./language-provider";
 import { useKeyboardShortcuts } from "@/components/a11y/useKeyboardShortcuts";
+import type { Locale } from "@/lib/i18n";
 
 function KeyboardShortcutsProvider() {
   useKeyboardShortcuts();
   return null;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  initialLocale,
+}: {
+  children: React.ReactNode;
+  initialLocale?: Locale;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -34,7 +41,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <LanguageProvider>
+        <LanguageProvider initialLocale={initialLocale}>
           <KeyboardShortcutsProvider />
           {children}
         </LanguageProvider>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { getRequestLocale } from "@/lib/i18n/server";
 
 type Breadcrumb = {
   label: string;
@@ -28,6 +29,10 @@ export function StaticInfoPageShell({
   title,
   children,
 }: StaticInfoPageShellProps) {
+  const locale = getRequestLocale();
+  const homeLabel = locale === "en" ? "Home" : "Trang chủ";
+  const breadcrumbLabel = locale === "en" ? "Breadcrumb" : "Điều hướng trang";
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50/70 to-white">
       <Header />
@@ -40,9 +45,9 @@ export function StaticInfoPageShell({
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
-            <nav className="mb-4 flex items-center gap-2 text-sm text-white/75" aria-label="Breadcrumb">
+            <nav className="mb-4 flex items-center gap-2 text-sm text-white/75" aria-label={breadcrumbLabel}>
               <Link href="/" className="hover:text-white transition-colors">
-                Trang chủ
+                {homeLabel}
               </Link>
               {breadcrumbs.map((crumb) => (
                 <div key={crumb.label} className="flex items-center gap-2">
@@ -68,12 +73,8 @@ export function StaticInfoPageShell({
                     {icon}
                   </div>
                   <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">
-                      {title}
-                    </h1>
-                    <p className="mt-4 max-w-2xl text-base leading-7 text-white/85 md:text-lg">
-                      {description}
-                    </p>
+                    <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">{title}</h1>
+                    <p className="mt-4 max-w-2xl text-base leading-7 text-white/85 md:text-lg">{description}</p>
                   </div>
                 </div>
               </div>

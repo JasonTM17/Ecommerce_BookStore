@@ -14,14 +14,63 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Sparkles, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/providers/language-provider";
+
+const COPY = {
+  vi: {
+    emptyTitle: "Giỏ Hàng Trống",
+    emptyDescription: "Vui lòng đăng nhập để xem giỏ hàng của bạn",
+    emptyBrowse: "Khám Phá Sách",
+    loadingTitle: "Giỏ Hàng Trống",
+    loadingDescription: "Đang tải giỏ hàng của bạn...",
+    title: (count: number) => `Giỏ Hàng (${count} sản phẩm)`,
+    clearCart: "Xóa toàn bộ",
+    summaryTitle: "Tổng Quan Đơn Hàng",
+    subtotal: "Tạm tính",
+    shipping: "Phí vận chuyển",
+    freeShipping: "Miễn phí",
+    freeShippingNote: "Miễn phí vận chuyển cho đơn từ 200.000đ",
+    tax: "Thuế (VAT 10%)",
+    total: "Tổng cộng",
+    checkout: "Tiến Hành Thanh Toán",
+    continueShopping: "Tiếp Tục Mua Sắm",
+    shippingPromo: (amount: string) => `Mua thêm ${amount} để được miễn phí vận chuyển!`,
+    remove: "Xóa",
+    noImage: "Không có ảnh",
+    byAuthor: (author: string) => `Tác giả: ${author}`,
+  },
+  en: {
+    emptyTitle: "Your Cart Is Empty",
+    emptyDescription: "Please sign in to view your cart",
+    emptyBrowse: "Browse books",
+    loadingTitle: "Loading Cart",
+    loadingDescription: "Loading your cart...",
+    title: (count: number) => `Cart (${count} items)`,
+    clearCart: "Clear all",
+    summaryTitle: "Order Summary",
+    subtotal: "Subtotal",
+    shipping: "Shipping",
+    freeShipping: "Free",
+    freeShippingNote: "Free shipping on orders over 200,000đ",
+    tax: "Tax (VAT 10%)",
+    total: "Total",
+    checkout: "Proceed to checkout",
+    continueShopping: "Continue shopping",
+    shippingPromo: (amount: string) => `Add ${amount} more to get free shipping!`,
+    remove: "Remove",
+    noImage: "No image",
+    byAuthor: (author: string) => `by ${author}`,
+  },
+} as const;
 
 export default function CartPage() {
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const { isAuthenticated } = useAuthStore();
-  const { items, total, totalItems, setCart, clearCart, updateQuantity, removeItem } = useCartStore();
+  const { items, totalItems, setCart, clearCart, updateQuantity, removeItem } = useCartStore();
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Fetch cart from backend
   const { data: cartData, isLoading } = useQuery({
     queryKey: ["cart"],
     queryFn: async () => {
@@ -31,25 +80,12 @@ export default function CartPage() {
     enabled: isAuthenticated,
   });
 
-  // Sync backend cart to Zustand on load
   useEffect(() => {
     if (cartData && isAuthenticated) {
       setCart(cartData.items, cartData.totalItems, cartData.total);
     }
   }, [cartData, isAuthenticated, setCart]);
 
-  // Add to cart mutation
-  const addToCartMutation = useMutation({
-    mutationFn: async ({ productId, quantity }: { productId: number; quantity: number }) => {
-      const response = await api.post("/cart/items", { productId, quantity });
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-    },
-  });
-
-  // Update cart item mutation
   const updateCartMutation = useMutation({
     mutationFn: async ({ itemId, quantity }: { itemId: number; quantity: number }) => {
       const response = await api.put(`/cart/items/${itemId}?quantity=${quantity}`, {});
@@ -60,7 +96,6 @@ export default function CartPage() {
     },
   });
 
-  // Remove from cart mutation
   const removeFromCartMutation = useMutation({
     mutationFn: async (itemId: number) => {
       await api.delete(`/cart/items/${itemId}`);
@@ -70,7 +105,6 @@ export default function CartPage() {
     },
   });
 
-  // Clear cart mutation
   const clearCartMutation = useMutation({
     mutationFn: async () => {
       await api.delete("/cart");
@@ -105,7 +139,6 @@ export default function CartPage() {
     clearCart();
   };
 
-  // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
   const shippingFee = subtotal >= 200000 ? 0 : 25000;
   const estimatedTax = Math.round(subtotal * 0.1);
@@ -116,11 +149,11 @@ export default function CartPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-16 text-center">
-          <ShoppingBag className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Giỏ Hàng Trống</h1>
-          <p className="text-gray-600 mb-8">Vui lòng đăng nhập để xem giỏ hàng của bạn</p>
+          <ShoppingBag className="mx-auto mb-6 h-24 w-24 text-gray-300" />
+          <h1 className="mb-4 text-2xl font-bold text-gray-900">{copy.emptyTitle}</h1>
+          <p className="mb-8 text-gray-600">{copy.emptyDescription}</p>
           <Link href="/login?redirect=%2Fcart">
-            <Button size="lg">Đăng Nhập</Button>
+            <Button size="lg">{locale === "vi" ? "Đăng Nhập" : "Sign in"}</Button>
           </Link>
         </main>
         <Footer />
@@ -135,12 +168,12 @@ export default function CartPage() {
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex gap-4 p-4 bg-white rounded-lg">
-                <div className="w-24 h-32 bg-gray-200 rounded" />
+              <div key={i} className="flex gap-4 rounded-lg bg-white p-4">
+                <div className="h-32 w-24 rounded bg-gray-200" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-4 bg-gray-200 rounded w-1/4" />
+                  <div className="h-4 w-3/4 rounded bg-gray-200" />
+                  <div className="h-4 w-1/2 rounded bg-gray-200" />
+                  <div className="h-4 w-1/4 rounded bg-gray-200" />
                 </div>
               </div>
             ))}
@@ -156,12 +189,12 @@ export default function CartPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-16 text-center">
-          <ShoppingBag className="h-24 w-24 text-gray-300 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Giỏ Hàng Trống</h1>
-          <p className="text-gray-600 mb-8">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+          <ShoppingBag className="mx-auto mb-6 h-24 w-24 text-gray-300" />
+          <h1 className="mb-4 text-2xl font-bold text-gray-900">{copy.emptyTitle}</h1>
+          <p className="mb-8 text-gray-600">{locale === "vi" ? "Bạn chưa có sản phẩm nào trong giỏ hàng" : "You have no items in your cart yet"}</p>
           <Link href="/products">
             <Button size="lg">
-              Khám Phá Sách
+              {copy.emptyBrowse}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
@@ -176,84 +209,54 @@ export default function CartPage() {
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Giỏ Hàng ({totalItems} sản phẩm)
-          </h1>
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900">{copy.title(totalItems)}</h1>
           <Button
             variant="ghost"
             onClick={handleClearCart}
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Xóa toàn bộ
+            <Trash2 className="mr-2 h-4 w-4" />
+            {copy.clearCart}
           </Button>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
             {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
+              <div key={item.id} className="flex gap-4 rounded-lg bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
                 <Link href={`/products/${item.product.id}`}>
-                  <div className="relative w-24 h-32 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                  <div className="relative h-32 w-24 flex-shrink-0 overflow-hidden rounded bg-gray-100">
                     {item.product.imageUrl ? (
-                      <Image
-                        src={item.product.imageUrl}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover"
-                      />
+                      <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" />
                     ) : (
                       <BookOpen className="h-8 w-8 text-gray-300" />
                     )}
                   </div>
                 </Link>
 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <Link href={`/products/${item.product.id}`}>
-                    <h3 className="font-medium text-gray-900 hover:text-primary line-clamp-2 mb-1">
+                    <h3 className="mb-1 line-clamp-2 font-medium text-gray-900 hover:text-primary">
                       {item.product.name}
                     </h3>
                   </Link>
-                  {item.product.author && (
-                    <p className="text-sm text-gray-500 mb-2">by {item.product.author}</p>
-                  )}
+                  {item.product.author && <p className="mb-2 text-sm text-gray-500">{copy.byAuthor(item.product.author)}</p>}
 
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="text-lg font-bold text-primary">{formatCurrency(item.product.currentPrice)}</span>
                     {item.product.discountPercent && item.product.discountPercent > 0 ? (
-                      <>
-                        <span className="text-lg font-bold text-primary">
-                          {formatCurrency(item.product.currentPrice)}
-                        </span>
-                        <span className="text-sm text-gray-400 line-through">
-                          {formatCurrency(item.product.price)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-lg font-bold text-primary">
-                        {formatCurrency(item.product.currentPrice)}
-                      </span>
-                    )}
+                      <span className="text-sm text-gray-400 line-through">{formatCurrency(item.product.price)}</span>
+                    ) : null}
                   </div>
 
                   <div className="flex items-center justify-between">
-                    {/* Quantity Controls */}
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() =>
-                          handleQuantityChange(
-                            item.id,
-                            item.product.id,
-                            item.quantity - 1
-                          )
-                        }
+                        onClick={() => handleQuantityChange(item.id, item.product.id, item.quantity - 1)}
                         disabled={updateCartMutation.isPending || removeFromCartMutation.isPending}
                       >
                         <Minus className="h-4 w-4" />
@@ -263,34 +266,22 @@ export default function CartPage() {
                         variant="outline"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() =>
-                          handleQuantityChange(
-                            item.id,
-                            item.product.id,
-                            item.quantity + 1
-                          )
-                        }
-                        disabled={
-                          item.quantity >= item.product.stockQuantity ||
-                          updateCartMutation.isPending ||
-                          removeFromCartMutation.isPending
-                        }
+                        onClick={() => handleQuantityChange(item.id, item.product.id, item.quantity + 1)}
+                        disabled={item.quantity >= item.product.stockQuantity || updateCartMutation.isPending || removeFromCartMutation.isPending}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
 
-                    {/* Subtotal & Remove */}
                     <div className="flex items-center gap-4">
-                      <span className="font-semibold text-gray-900">
-                        {formatCurrency(item.subtotal)}
-                      </span>
+                      <span className="font-semibold text-gray-900">{formatCurrency(item.subtotal)}</span>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-500 hover:bg-red-50 hover:text-red-700"
                         onClick={() => handleRemove(item.id)}
                         disabled={removeFromCartMutation.isPending}
+                        aria-label={copy.remove}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -301,73 +292,59 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white/70 backdrop-blur-md border border-white/50 rounded-lg shadow-sm p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Tổng Quan Đơn Hàng</h2>
+            <div className="sticky top-24 rounded-lg border border-white/50 bg-white/70 p-6 shadow-sm backdrop-blur-md">
+              <h2 className="mb-6 text-xl font-bold text-gray-900">{copy.summaryTitle}</h2>
 
               <div className="space-y-4">
                 <div className="flex justify-between text-gray-600">
-                  <span>Tạm tính ({totalItems} sản phẩm)</span>
+                  <span>{copy.subtotal} ({totalItems} {locale === "vi" ? "sản phẩm" : "items"})</span>
                   <span className="font-medium">{formatCurrency(subtotal)}</span>
                 </div>
 
                 <div className="flex justify-between text-gray-600">
-                  <span>Phí vận chuyển</span>
+                  <span>{copy.shipping}</span>
                   <span className="font-medium">
-                    {shippingFee === 0 ? (
-                      <span className="text-green-600">Miễn phí</span>
-                    ) : (
-                      formatCurrency(shippingFee)
-                    )}
+                    {shippingFee === 0 ? <span className="text-green-600">{copy.freeShipping}</span> : formatCurrency(shippingFee)}
                   </span>
                 </div>
 
                 {shippingFee > 0 && (
-                  <p className="text-xs text-gray-500 -mt-2">
-                    Miễn phí vận chuyển cho đơn từ 200.000đ
-                  </p>
+                  <p className="text-xs text-gray-500 -mt-2">{copy.freeShippingNote}</p>
                 )}
 
                 <div className="flex justify-between text-gray-600">
-                  <span>Thuế (VAT 10%)</span>
+                  <span>{copy.tax}</span>
                   <span className="font-medium">{formatCurrency(estimatedTax)}</span>
                 </div>
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold text-gray-900">
-                    <span>Tổng cộng</span>
+                    <span>{copy.total}</span>
                     <span className="text-primary">{formatCurrency(grandTotal)}</span>
                   </div>
                 </div>
 
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={() => router.push("/checkout")}
-                >
-                  Tiến Hành Thanh Toán
+                <Button className="w-full" size="lg" onClick={() => router.push("/checkout")}>
+                  {copy.checkout}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
 
                 <Link href="/products" className="block">
                   <Button variant="outline" className="w-full">
-                    Tiếp Tục Mua Sắm
+                    {copy.continueShopping}
                   </Button>
                 </Link>
 
-                {/* Promotional Banner */}
                 <div className="bg-primary/5 rounded-lg p-4 text-center">
                   <p className="text-sm font-medium text-primary">
-                    <Sparkles className="w-4 h-4 mr-1 inline-block" />
-                    Mua thêm {formatCurrency(200000 - subtotal)} để được miễn phí vận chuyển!
+                    <Sparkles className="mr-1 inline-block w-4 h-4" />
+                    {copy.shippingPromo(formatCurrency(Math.max(200000 - subtotal, 0)))}
                   </p>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
                     <div
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{
-                        width: `${Math.min((subtotal / 200000) * 100, 100)}%`,
-                      }}
+                      className="h-2 rounded-full bg-primary transition-all"
+                      style={{ width: `${Math.min((subtotal / 200000) * 100, 100)}%` }}
                     />
                   </div>
                 </div>

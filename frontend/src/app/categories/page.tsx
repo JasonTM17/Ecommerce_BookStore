@@ -14,6 +14,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAddToCart } from "@/hooks/useAddToCart";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface PageResponse<T> {
   content: T[];
@@ -35,6 +36,37 @@ const CATEGORY_GRADIENTS = [
   "from-yellow-600 to-orange-600",
 ];
 
+const COPY = {
+  vi: {
+    home: "Trang chủ",
+    title: "Danh Mục Sách",
+    allBooks: "Tất cả sách",
+    pageTitle: "Danh Mục Sách",
+    pageDescription: (count: number) => `${count} sản phẩm trong danh mục`,
+    emptyCatalog: "Khám phá hơn 1000 cuốn sách từ mọi thể loại",
+    chooseCategory: "Chọn danh mục để xem sản phẩm",
+    chooseCategoryDescription: "Nhấp vào một danh mục bên trái để xem các sản phẩm",
+    noProducts: "Không có sản phẩm",
+    noProductsDescription: "Danh mục này chưa có sản phẩm nào",
+    viewAll: "Xem tất cả sách",
+    allProducts: "Tất cả sách",
+  },
+  en: {
+    home: "Home",
+    title: "Book Categories",
+    allBooks: "All books",
+    pageTitle: "Book Categories",
+    pageDescription: (count: number) => `${count} products in this category`,
+    emptyCatalog: "Discover more than 1000 books across every genre",
+    chooseCategory: "Choose a category to view products",
+    chooseCategoryDescription: "Click a category on the left to see its products",
+    noProducts: "No products found",
+    noProductsDescription: "This category does not have any products yet",
+    viewAll: "View all books",
+    allProducts: "All books",
+  },
+} as const;
+
 function normalizeList<T>(data: unknown): T[] {
   if (Array.isArray(data)) return data as T[];
   if (data && typeof data === "object" && "content" in data && Array.isArray((data as PageResponse<T>).content)) {
@@ -44,12 +76,12 @@ function normalizeList<T>(data: unknown): T[] {
 }
 
 function CategoriesContent() {
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const searchParams = useSearchParams();
   const router = useRouter();
   const { addToCart, isAddingToCart } = useAddToCart("/categories");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    searchParams.get("id") || null
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(searchParams.get("id") || null);
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 12;
 
@@ -71,13 +103,11 @@ function CategoriesContent() {
     enabled: !!selectedCategoryId,
   });
 
-  const selectedCategory = categoriesData.find(c => c.id.toString() === selectedCategoryId);
+  const selectedCategory = categoriesData.find((c) => c.id.toString() === selectedCategoryId);
   const products = productsData?.content || [];
   const totalPages = productsData?.totalPages || 0;
   const totalElements = productsData?.totalElements || 0;
-
-  // Get root categories (no parent)
-  const rootCategories = categoriesData.filter(c => !c.parentId);
+  const rootCategories = categoriesData.filter((c) => !c.parentId);
 
   const handleCategoryClick = (categoryId: number) => {
     setSelectedCategoryId(categoryId.toString());
@@ -88,24 +118,24 @@ function CategoriesContent() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50/50 to-white">
       <Header />
-      
+
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Danh mục sách</span>
+        <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
+          <Link href="/" className="transition-colors hover:text-blue-600">
+            {copy.home}
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="font-medium text-gray-900">{copy.title}</span>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar - Categories */}
+        <div className="grid gap-8 lg:grid-cols-4">
           <div className="lg:col-span-1">
-            <div className="bg-white/70 backdrop-blur-md border border-white/50 rounded-2xl shadow-sm p-6 sticky top-24">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                  <BookOpen className="w-5 h-5 text-white" />
+            <div className="sticky top-24 rounded-2xl border border-white/50 bg-white/70 p-6 shadow-sm backdrop-blur-md">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
+                  <BookOpen className="h-5 w-5 text-white" />
                 </div>
-                <h2 className="font-bold text-lg text-gray-900">Danh Mục</h2>
+                <h2 className="text-lg font-bold text-gray-900">{copy.title}</h2>
               </div>
 
               {categoriesLoading ? (
@@ -122,14 +152,14 @@ function CategoriesContent() {
                       router.push("/categories");
                     }}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                      "flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300",
                       !selectedCategoryId
                         ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
-                        : "hover:bg-gray-50 text-gray-700"
+                        : "text-gray-700 hover:bg-gray-50"
                     )}
                   >
-                    <BookOpen className="w-5 h-5" />
-                    <span className="font-medium">Tất cả sách</span>
+                    <BookOpen className="h-5 w-5" />
+                    <span className="font-medium">{copy.allBooks}</span>
                   </button>
 
                   {rootCategories.map((category, index) => (
@@ -137,31 +167,27 @@ function CategoriesContent() {
                       <button
                         onClick={() => handleCategoryClick(category.id)}
                         className={cn(
-                          "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                          "flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300",
                           selectedCategoryId === category.id.toString()
                             ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
-                            : "hover:bg-gray-50 text-gray-700"
+                            : "text-gray-700 hover:bg-gray-50"
                         )}
                       >
                         {(() => {
-                          const icons = [BookOpen, FlaskConical, Briefcase, Palette, Stethoscope, Laptop, Globe, Trophy]
-                          const Icon = icons[index % 8]
-                          return <Icon className="w-5 h-5" />
+                          const icons = [BookOpen, FlaskConical, Briefcase, Palette, Stethoscope, Laptop, Globe, Trophy];
+                          const Icon = icons[index % 8];
+                          return <Icon className="h-5 w-5" />;
                         })()}
                         <div className="flex-1 text-left">
-                          <span className="font-medium block">{category.name}</span>
+                          <span className="block font-medium">{category.name}</span>
                           {typeof category.productCount === "number" && category.productCount > 0 && (
-                            <span className={cn(
-                              "text-xs",
-                              selectedCategoryId === category.id.toString() ? "text-white/70" : "text-gray-400"
-                            )}>
-                              {category.productCount} sản phẩm
+                            <span className={cn("text-xs", selectedCategoryId === category.id.toString() ? "text-white/70" : "text-gray-400")}>
+                              {category.productCount} {locale === "vi" ? "sản phẩm" : "products"}
                             </span>
                           )}
                         </div>
                       </button>
 
-                      {/* Subcategories */}
                       {category.subcategories && category.subcategories.length > 0 && (
                         <div className="ml-6 mt-1 space-y-1">
                           {category.subcategories.map((sub) => (
@@ -169,26 +195,19 @@ function CategoriesContent() {
                               key={sub.id}
                               onClick={() => handleCategoryClick(sub.id)}
                               className={cn(
-                                "w-full flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm transition-all duration-300",
+                                "flex w-full items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm transition-all duration-300",
                                 selectedCategoryId === sub.id.toString()
-                                  ? "bg-blue-100 text-blue-700 font-medium"
-                                  : "hover:bg-gray-50 text-gray-600"
+                                  ? "bg-blue-100 font-medium text-blue-700"
+                                  : "text-gray-600 hover:bg-gray-50"
                               )}
                             >
-                              <span className="flex items-center gap-2 min-w-0">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                              <span className="flex min-w-0 items-center gap-2">
+                                <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
                                 <span className="truncate">{sub.name}</span>
                               </span>
                               {typeof sub.productCount === "number" && sub.productCount > 0 && (
-                                <span
-                                  className={cn(
-                                    "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium",
-                                    selectedCategoryId === sub.id.toString()
-                                      ? "bg-blue-200 text-blue-700"
-                                      : "bg-gray-100 text-gray-500"
-                                  )}
-                                >
-                                  {sub.productCount} sách
+                                <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium", selectedCategoryId === sub.id.toString() ? "bg-blue-200 text-blue-700" : "bg-gray-100 text-gray-500")}>
+                                  {sub.productCount} {locale === "vi" ? "sách" : "books"}
                                 </span>
                               )}
                             </button>
@@ -202,59 +221,52 @@ function CategoriesContent() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Category Header */}
             <div className="mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
-                {selectedCategory ? selectedCategory.name : "Tất cả sách"}
+              <h1 className="mb-2 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
+                {selectedCategory ? selectedCategory.name : copy.allProducts}
               </h1>
               <p className="text-gray-500">
-                {selectedCategory 
-                  ? `${totalElements} sản phẩm trong danh mục`
-                  : "Khám phá hơn 1000 cuốn sách từ mọi thể loại"
-                }
+                {selectedCategory ? copy.pageDescription(totalElements) : copy.emptyCatalog}
               </p>
             </div>
 
-            {/* Category Cards Grid (when no category selected) */}
             {!selectedCategoryId && (
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-12">
+              <div className="mb-12 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {rootCategories.map((category, index) => (
                   <button
                     key={category.id}
                     onClick={() => handleCategoryClick(category.id)}
-                    className="group relative h-40 rounded-2xl overflow-hidden transition-all duration-300 hover:ring-2 hover:ring-blue-500/50 hover:shadow-lg"
+                    className="group relative h-40 overflow-hidden rounded-2xl transition-all duration-300 hover:ring-2 hover:ring-blue-500/50 hover:shadow-lg"
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]} transition-transform duration-500 group-hover:scale-110`} />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
-                      <h3 className="font-bold text-lg text-center group-hover:scale-105 transition-transform">
+                    <div className="absolute inset-0 bg-black/20 transition-colors group-hover:bg-black/10" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-white">
+                      <h3 className="text-center text-lg font-bold transition-transform group-hover:scale-105">
                         {category.name}
                       </h3>
                       {typeof category.productCount === "number" && category.productCount > 0 && (
-                        <p className="text-sm text-white/80 mt-2 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                          {category.productCount} sản phẩm
+                        <p className="mt-2 rounded-full bg-white/20 px-3 py-1 text-sm text-white/80 backdrop-blur-sm">
+                          {category.productCount} {locale === "vi" ? "sản phẩm" : "products"}
                         </p>
                       )}
                     </div>
-                    <div className="absolute top-3 right-3 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                      <ArrowRight className="w-4 h-4 text-white" />
+                    <div className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 opacity-0 backdrop-blur-sm transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 group-hover:opacity-100">
+                      <ArrowRight className="h-4 w-4 text-white" />
                     </div>
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Products Grid */}
             {selectedCategoryId ? (
               <>
                 {productsLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {[...Array(6)].map((_, i) => (
-                      <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                      <div key={i} className="overflow-hidden rounded-2xl bg-white shadow-sm">
                         <Skeleton className="h-72 w-full rounded-none" />
-                        <div className="p-4 space-y-3">
+                        <div className="space-y-3 p-4">
                           <Skeleton className="h-4 w-3/4" />
                           <Skeleton className="h-4 w-1/2" />
                           <Skeleton className="h-6 w-1/3" />
@@ -263,19 +275,19 @@ function CategoriesContent() {
                     ))}
                   </div>
                 ) : products.length === 0 ? (
-                  <div className="bg-white rounded-2xl shadow-sm p-16 text-center border border-gray-100">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <BookOpen className="w-10 h-10 text-gray-300" />
+                  <div className="rounded-2xl border border-gray-100 bg-white p-16 text-center shadow-sm">
+                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+                      <BookOpen className="h-10 w-10 text-gray-300" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Không có sản phẩm</h3>
-                    <p className="text-gray-500 mb-6">Danh mục này chưa có sản phẩm nào</p>
+                    <h3 className="mb-2 text-xl font-semibold text-gray-900">{copy.noProducts}</h3>
+                    <p className="mb-6 text-gray-500">{copy.noProductsDescription}</p>
                     <Button onClick={() => setSelectedCategoryId(null)} variant="outline" className="rounded-xl">
-                      Xem tất cả sách
+                      {copy.viewAll}
                     </Button>
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                       {products.map((product) => (
                         <ProductCard
                           key={product.id}
@@ -286,18 +298,17 @@ function CategoriesContent() {
                       ))}
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
-                      <div className="flex items-center justify-center gap-2 mt-12">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} 
+                      <div className="mt-12 flex items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
                           disabled={currentPage === 0}
-                          className="rounded-xl h-10 px-4"
+                          className="h-10 rounded-xl px-4"
                         >
-                          Trước
+                          {locale === "vi" ? "Trước" : "Previous"}
                         </Button>
-                        
+
                         <div className="flex items-center gap-1">
                           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                             let pageNum;
@@ -310,30 +321,27 @@ function CategoriesContent() {
                             } else {
                               pageNum = currentPage - 2 + i;
                             }
-                            
+
                             return (
                               <Button
                                 key={pageNum}
                                 variant={currentPage === pageNum ? "default" : "outline"}
                                 onClick={() => setCurrentPage(pageNum)}
-                                className={cn(
-                                  "w-10 h-10 rounded-xl",
-                                  currentPage === pageNum && "shadow-lg shadow-blue-500/30"
-                                )}
+                                className={cn("h-10 w-10 rounded-xl", currentPage === pageNum && "shadow-lg shadow-blue-500/30")}
                               >
                                 {pageNum + 1}
                               </Button>
                             );
                           })}
                         </div>
-                        
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setCurrentPage((p) => p + 1)} 
+
+                        <Button
+                          variant="outline"
+                          onClick={() => setCurrentPage((p) => p + 1)}
                           disabled={currentPage >= totalPages - 1}
-                          className="rounded-xl h-10 px-4"
+                          className="h-10 rounded-xl px-4"
                         >
-                          Sau
+                          {locale === "vi" ? "Sau" : "Next"}
                         </Button>
                       </div>
                     )}
@@ -341,10 +349,10 @@ function CategoriesContent() {
                 )}
               </>
             ) : (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 text-center border border-blue-100">
-                <Filter className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Chọn danh mục để xem sản phẩm</h3>
-                <p className="text-gray-500">Nhấp vào một danh mục bên trái để xem các sản phẩm</p>
+              <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 text-center">
+                <Filter className="mx-auto mb-4 h-12 w-12 text-blue-400" />
+                <h3 className="mb-2 text-xl font-semibold text-gray-900">{copy.chooseCategory}</h3>
+                <p className="text-gray-500">{copy.chooseCategoryDescription}</p>
               </div>
             )}
           </div>
@@ -358,29 +366,31 @@ function CategoriesContent() {
 
 export default function CategoriesPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <Skeleton className="h-10 w-64 mb-6" />
-          <div className="grid lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1">
-              <Skeleton className="h-96 w-full rounded-2xl" />
-            </div>
-            <div className="lg:col-span-3">
-              <Skeleton className="h-10 w-48 mb-2" />
-              <Skeleton className="h-5 w-64 mb-8" />
-              <div className="grid grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <Skeleton key={i} className="h-80 w-full rounded-2xl" />
-                ))}
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex flex-col bg-gray-50">
+          <Header />
+          <main className="flex-1 container mx-auto px-4 py-8">
+            <Skeleton className="mb-6 h-10 w-64" />
+            <div className="grid gap-8 lg:grid-cols-4">
+              <div className="lg:col-span-1">
+                <Skeleton className="h-96 w-full rounded-2xl" />
+              </div>
+              <div className="lg:col-span-3">
+                <Skeleton className="mb-2 h-10 w-48" />
+                <Skeleton className="mb-8 h-5 w-64" />
+                <div className="grid grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <Skeleton key={i} className="h-80 w-full rounded-2xl" />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    }>
+          </main>
+          <Footer />
+        </div>
+      }
+    >
       <CategoriesContent />
     </Suspense>
   );

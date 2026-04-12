@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { api } from "@/lib/api";
-import { useAuthStore, useCartStore, Address, CartItem } from "@/lib/store";
-import { formatCurrency } from "@/lib/utils";
+import { useAuthStore, useCartStore, Address } from "@/lib/store";
+import { formatCurrency, buildLoginRedirect } from "@/lib/utils";
 import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -16,35 +16,138 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { CouponInput, AvailableCoupons } from "@/components/coupon";
+import { CouponInput } from "@/components/coupon";
 import { Coupon } from "@/lib/coupon";
-import { buildLoginRedirect } from "@/lib/utils";
-import { Tag } from "lucide-react";
-import {
-  ArrowLeft,
-  Truck,
-  CreditCard,
-  Building2,
-  CheckCircle,
-  Package,
-} from "lucide-react";
+import { Tag, ArrowLeft, Truck, CreditCard, Building2, CheckCircle, Package } from "lucide-react";
+import { useLanguage } from "@/components/providers/language-provider";
+
+const COPY = {
+  vi: {
+    loadingRedirect: "Đang chuyển đến trang đăng nhập...",
+    emptyTitle: "Giỏ Hàng Trống",
+    emptyDescription: "Vui lòng thêm sản phẩm vào giỏ hàng trước",
+    browseProducts: "Khám Phá Sách",
+    successTitle: "Đặt Hàng Thành Công!",
+    successDescription: "Cảm ơn bạn đã đặt hàng tại BookStore",
+    orderNumber: "Mã đơn hàng",
+    successInfo: "Thông tin đơn hàng:",
+    successEmail: (email?: string) => `Chúng tôi đã gửi email xác nhận đơn hàng đến ${email || "tài khoản của bạn"}`,
+    successOrders: "Bạn có thể theo dõi đơn hàng trong mục \"Đơn hàng của tôi\"",
+    successETA: "Dự kiến giao hàng: 3-5 ngày làm việc",
+    viewOrders: "Xem Đơn Hàng",
+    continueShopping: "Tiếp Tục Mua Sắm",
+    steps: ["Thông Tin Giao Hàng", "Thanh Toán", "Xác Nhận"],
+    shippingInfo: "Thông Tin Giao Hàng",
+    savedAddresses: "Địa chỉ đã lưu",
+    addNewAddress: "+ Thêm địa chỉ mới",
+    fullName: "Họ tên người nhận *",
+    phone: "Số điện thoại *",
+    province: "Tỉnh/Thành phố *",
+    district: "Quận/Huyện *",
+    ward: "Phường/Xã *",
+    street: "Địa chỉ cụ thể *",
+    notes: "Ghi chú (tùy chọn)",
+    shippingMethod: "Phương thức vận chuyển",
+    nextPayment: "Tiếp Tục Thanh Toán",
+    paymentMethod: "Phương Thức Thanh Toán",
+    back: "Quay Lại",
+    confirmInfo: "Xác Nhận Thông Tin",
+    confirmOrder: "Xác Nhận Đơn Hàng",
+    shippingSummary: "Địa chỉ giao hàng",
+    paymentSummary: "Phương thức thanh toán",
+    orderItems: "Sản phẩm đặt hàng",
+    orderSummary: "Tổng Quan Đơn Hàng",
+    subtotal: "Tạm tính",
+    shipping: "Phí vận chuyển",
+    freeShipping: "Miễn phí",
+    tax: "Thuế (VAT 10%)",
+    total: "Tổng cộng",
+    orderNow: "Đặt Hàng Ngay",
+    processing: "Đang xử lý...",
+    orderError: "Đã xảy ra lỗi khi đặt hàng. Vui lòng thử lại.",
+    addressError: "Vui lòng điền đầy đủ thông tin giao hàng",
+    addressSaveError: "Lưu địa chỉ thất bại",
+    couponCode: "Mã",
+  },
+  en: {
+    loadingRedirect: "Redirecting to sign in...",
+    emptyTitle: "Your Cart Is Empty",
+    emptyDescription: "Please add products to your cart first",
+    browseProducts: "Browse books",
+    successTitle: "Order Placed Successfully!",
+    successDescription: "Thank you for shopping at BookStore",
+    orderNumber: "Order number",
+    successInfo: "Order information:",
+    successEmail: (email?: string) => `We sent the order confirmation to ${email || "your account"}`,
+    successOrders: 'You can track this order in "My Orders"',
+    successETA: "Estimated delivery: 3-5 business days",
+    viewOrders: "View Orders",
+    continueShopping: "Continue Shopping",
+    steps: ["Shipping Information", "Payment", "Confirmation"],
+    shippingInfo: "Shipping Information",
+    savedAddresses: "Saved addresses",
+    addNewAddress: "+ Add new address",
+    fullName: "Receiver full name *",
+    phone: "Phone number *",
+    province: "Province / City *",
+    district: "District *",
+    ward: "Ward *",
+    street: "Street address *",
+    notes: "Notes (optional)",
+    shippingMethod: "Shipping method",
+    nextPayment: "Continue to payment",
+    paymentMethod: "Payment method",
+    back: "Back",
+    confirmInfo: "Confirm information",
+    confirmOrder: "Confirm order",
+    shippingSummary: "Shipping address",
+    paymentSummary: "Payment method",
+    orderItems: "Order items",
+    orderSummary: "Order Summary",
+    subtotal: "Subtotal",
+    shipping: "Shipping fee",
+    freeShipping: "Free",
+    tax: "Tax (VAT 10%)",
+    total: "Total",
+    orderNow: "Place order",
+    processing: "Processing...",
+    orderError: "Something went wrong while placing the order. Please try again.",
+    addressError: "Please complete all shipping information",
+    addressSaveError: "Failed to save address",
+    couponCode: "Code",
+  },
+} as const;
 
 const PAYMENT_METHODS = [
-  { id: "COD", name: "Thanh toán khi nhận hàng (COD)", icon: Package },
-  { id: "VNPAY", name: "VNPay", icon: CreditCard },
-  { id: "MOMO", name: "MoMo", icon: CreditCard },
-  { id: "BANKING", name: "Chuyển khoản ngân hàng", icon: Building2 },
-];
+  { id: "COD", name: { vi: "Thanh toán khi nhận hàng (COD)", en: "Cash on delivery (COD)" }, icon: Package },
+  { id: "VNPAY", name: { vi: "VNPay", en: "VNPay" }, icon: CreditCard },
+  { id: "MOMO", name: { vi: "MoMo", en: "MoMo" }, icon: CreditCard },
+  { id: "BANKING", name: { vi: "Chuyển khoản ngân hàng", en: "Bank transfer" }, icon: Building2 },
+] as const;
 
 const SHIPPING_METHODS = [
-  { id: "STANDARD", name: "Giao hàng tiêu chuẩn", desc: "3-5 ngày", price: 25000, free: false },
-  { id: "EXPRESS", name: "Giao hàng nhanh", desc: "1-2 ngày", price: 40000, free: true },
-];
+  {
+    id: "STANDARD",
+    name: { vi: "Giao hàng tiêu chuẩn", en: "Standard shipping" },
+    desc: { vi: "3-5 ngày", en: "3-5 days" },
+    price: 25000,
+    free: false,
+  },
+  {
+    id: "EXPRESS",
+    name: { vi: "Giao hàng nhanh", en: "Express shipping" },
+    desc: { vi: "1-2 ngày", en: "1-2 days" },
+    price: 40000,
+    free: true,
+  },
+] as const;
 
 export default function CheckoutPage() {
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const { items, total, clearCart } = useCartStore();
+  const { items, clearCart } = useCartStore();
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(1);
@@ -55,7 +158,6 @@ export default function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
 
-  // Address form state
   const [addressForm, setAddressForm] = useState({
     receiverName: user?.fullName || "",
     phoneNumber: user?.phoneNumber || "",
@@ -66,7 +168,6 @@ export default function CheckoutPage() {
     notes: "",
   });
 
-  // Fetch user addresses
   const { data: addresses } = useQuery({
     queryKey: ["addresses"],
     queryFn: async () => {
@@ -76,7 +177,6 @@ export default function CheckoutPage() {
     enabled: isAuthenticated,
   });
 
-  // Create order mutation
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: Record<string, unknown>) => {
       const response = await api.post("/orders", orderData);
@@ -89,27 +189,9 @@ export default function CheckoutPage() {
       setStep(4);
     },
     onError: () => {
-      toast.error("Đặt hàng thất bại. Vui lòng thử lại.");
+      toast.error(copy.orderError);
     },
   });
-
-  // Create address mutation
-  const createAddressMutation = useMutation({
-    mutationFn: async (addressData: Record<string, unknown>) => {
-      const response = await api.post("/addresses", addressData);
-      return response.data;
-    },
-    onError: () => {
-      toast.error("Lưu địa chỉ thất bại");
-    },
-  });
-
-  // Calculate totals
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-  const selectedShipping = SHIPPING_METHODS.find((m) => m.id === shippingMethod)!;
-  const shippingFee = subtotal >= 200000 || selectedShipping.free ? 0 : selectedShipping.price;
-  const estimatedTax = Math.round((subtotal - discountAmount) * 0.1);
-  const grandTotal = subtotal + shippingFee + estimatedTax - discountAmount;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -117,15 +199,21 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, router]);
 
-  const handleSubmitOrder = async () => {
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const selectedShipping = SHIPPING_METHODS.find((m) => m.id === shippingMethod)!;
+  const shippingFee = subtotal >= 200000 || selectedShipping.free ? 0 : selectedShipping.price;
+  const estimatedTax = Math.round((subtotal - discountAmount) * 0.1);
+  const grandTotal = subtotal + shippingFee + estimatedTax - discountAmount;
+
+  const handleSubmitOrder = () => {
     if (!addressForm.receiverName || !addressForm.phoneNumber || !addressForm.province) {
-      alert("Vui lòng điền đầy đủ thông tin giao hàng");
+      toast.error(copy.addressError);
       return;
     }
 
     const fullAddress = `${addressForm.streetAddress}, ${addressForm.ward}, ${addressForm.district}, ${addressForm.province}`;
 
-    const orderData = {
+    createOrderMutation.mutate({
       items: items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
@@ -133,13 +221,11 @@ export default function CheckoutPage() {
       shippingAddress: fullAddress,
       shippingPhone: addressForm.phoneNumber,
       shippingReceiverName: addressForm.receiverName,
-      shippingMethod: selectedShipping.name,
-      paymentMethod: paymentMethod,
+      shippingMethod: selectedShipping.name[locale],
+      paymentMethod,
       notes: addressForm.notes,
       couponCode: appliedCoupon?.code,
-    };
-
-    createOrderMutation.mutate(orderData);
+    });
   };
 
   if (!isAuthenticated) {
@@ -151,9 +237,9 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Giỏ Hàng Trống</h1>
-          <p className="text-gray-600 mb-8">Vui lòng thêm sản phẩm vào giỏ hàng trước</p>
-          <Button onClick={() => router.push("/products")}>Khám Phá Sách</Button>
+          <h1 className="mb-4 text-2xl font-bold text-gray-900">{copy.emptyTitle}</h1>
+          <p className="mb-8 text-gray-600">{copy.emptyDescription}</p>
+          <Button onClick={() => router.push("/products")}>{copy.browseProducts}</Button>
         </main>
         <Footer />
       </div>
@@ -165,32 +251,28 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-16">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-green-600" />
+          <div className="mx-auto max-w-2xl text-center">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+              <CheckCircle className="h-10 w-10 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Đặt Hàng Thành Công!</h1>
-            <p className="text-gray-600 mb-2">
-              Cảm ơn bạn đã đặt hàng tại BookStore
+            <h1 className="mb-4 text-3xl font-bold text-gray-900">{copy.successTitle}</h1>
+            <p className="mb-2 text-gray-600">{copy.successDescription}</p>
+            <p className="mb-8 text-lg font-semibold text-primary">
+              {copy.orderNumber}: {orderSuccess}
             </p>
-            <p className="text-lg font-semibold text-primary mb-8">
-              Mã đơn hàng: {orderSuccess}
-            </p>
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-8 text-left">
-              <h3 className="font-semibold mb-4">Thông tin đơn hàng:</h3>
+            <div className="mb-8 rounded-lg bg-white p-6 text-left shadow-sm">
+              <h3 className="mb-4 font-semibold">{copy.successInfo}</h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>Chúng tôi đã gửi email xác nhận đơn hàng đến {user?.email}</p>
-                <p>Bạn có thể theo dõi đơn hàng trong mục &quot;Đơn hàng của tôi&quot;</p>
-                <p>Dự kiến giao hàng: 3-5 ngày làm việc</p>
+                <p>{copy.successEmail(user?.email)}</p>
+                <p>{copy.successOrders}</p>
+                <p>{copy.successETA}</p>
               </div>
             </div>
-            <div className="flex gap-4 justify-center">
+            <div className="flex justify-center gap-4">
               <Button onClick={() => router.push("/orders")} variant="outline">
-                Xem Đơn Hàng
+                {copy.viewOrders}
               </Button>
-              <Button onClick={() => router.push("/products")}>
-                Tiếp Tục Mua Sắm
-              </Button>
+              <Button onClick={() => router.push("/products")}>{copy.continueShopping}</Button>
             </div>
           </div>
         </main>
@@ -204,53 +286,39 @@ export default function CheckoutPage() {
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Steps Header */}
-        <div className="flex items-center justify-center mb-8">
-          {["Thông Tin Giao Hàng", "Thanh Toán", "Xác Nhận"].map((s, i) => (
-            <div key={s} className="flex items-center">
+        <div className="mb-8 flex items-center justify-center">
+          {copy.steps.map((label, i) => (
+            <div key={label} className="flex items-center">
               <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm ${
-                  step > i + 1
-                    ? "bg-primary text-white"
-                    : step === i + 1
-                    ? "bg-primary text-white"
-                    : "bg-gray-200 text-gray-500"
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+                  step > i + 1 ? "bg-primary text-white" : step === i + 1 ? "bg-primary text-white" : "bg-gray-200 text-gray-500"
                 }`}
               >
-                {step > i + 1 ? <CheckCircle className="w-5 h-5" /> : i + 1}
+                {step > i + 1 ? <CheckCircle className="h-5 w-5" /> : i + 1}
               </div>
-              <span
-                className={`ml-2 font-medium ${
-                  step >= i + 1 ? "text-gray-900" : "text-gray-400"
-                }`}
-              >
-                {s}
-              </span>
-              {i < 2 && <div className="w-16 h-0.5 bg-gray-200 mx-4" />}
+              <span className={`ml-2 font-medium ${step >= i + 1 ? "text-gray-900" : "text-gray-400"}`}>{label}</span>
+              {i < 2 && <div className="mx-4 h-0.5 w-16 bg-gray-200" />}
             </div>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Shipping Info */}
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
             {step === 1 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                  <Truck className="w-5 h-5 mr-2 text-primary" />
-                  Thông Tin Giao Hàng
+              <div className="rounded-lg bg-white p-6 shadow-sm">
+                <h2 className="mb-6 flex items-center text-xl font-bold text-gray-900">
+                  <Truck className="mr-2 h-5 w-5 text-primary" />
+                  {copy.shippingInfo}
                 </h2>
 
-                {/* Saved Addresses */}
                 {addresses && addresses.length > 0 && (
                   <div className="mb-6">
-                    <Label className="mb-2 block">Địa chỉ đã lưu</Label>
+                    <Label className="mb-2 block">{copy.savedAddresses}</Label>
                     <div className="space-y-2">
                       {addresses.map((addr) => (
                         <label
                           key={addr.id}
-                          className={`flex items-start p-4 border rounded-lg cursor-pointer transition-colors ${
+                          className={`flex cursor-pointer items-start rounded-lg border p-4 transition-colors ${
                             !useNewAddress && addr.isDefault
                               ? "border-primary bg-primary/5"
                               : "border-gray-200 hover:border-gray-300"
@@ -261,14 +329,14 @@ export default function CheckoutPage() {
                             name="address"
                             checked={!useNewAddress && addr.isDefault}
                             onChange={() => setUseNewAddress(false)}
-                            className="mt-1 mr-3"
+                            className="mr-3 mt-1"
                           />
                           <div className="flex-1">
                             <p className="font-medium">{addr.receiverName}</p>
                             <p className="text-sm text-gray-600">{addr.phoneNumber}</p>
                             <p className="text-sm text-gray-500">{addr.fullAddress}</p>
                             {addr.isDefault && (
-                              <span className="inline-block mt-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                              <span className="mt-1 inline-block rounded bg-primary/10 px-2 py-0.5 text-xs text-primary">
                                 Mặc định
                               </span>
                             )}
@@ -276,7 +344,7 @@ export default function CheckoutPage() {
                         </label>
                       ))}
                       <label
-                        className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                        className={`flex cursor-pointer items-center rounded-lg border p-4 transition-colors ${
                           useNewAddress ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
@@ -287,113 +355,60 @@ export default function CheckoutPage() {
                           onChange={() => setUseNewAddress(true)}
                           className="mr-3"
                         />
-                        <span className="font-medium">+ Thêm địa chỉ mới</span>
+                        <span className="font-medium">{copy.addNewAddress}</span>
                       </label>
                     </div>
                   </div>
                 )}
 
-                {/* New Address Form */}
                 {useNewAddress && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="receiverName">Họ tên người nhận *</Label>
-                        <Input
-                          id="receiverName"
-                          value={addressForm.receiverName}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, receiverName: e.target.value })
-                          }
-                          placeholder="Nhập họ tên"
-                        />
+                        <Label htmlFor="receiverName">{copy.fullName}</Label>
+                        <Input id="receiverName" value={addressForm.receiverName} onChange={(e) => setAddressForm({ ...addressForm, receiverName: e.target.value })} placeholder={locale === "vi" ? "Nhập họ tên" : "Enter full name"} />
                       </div>
                       <div>
-                        <Label htmlFor="phoneNumber">Số điện thoại *</Label>
-                        <Input
-                          id="phoneNumber"
-                          value={addressForm.phoneNumber}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, phoneNumber: e.target.value })
-                          }
-                          placeholder="Nhập số điện thoại"
-                        />
+                        <Label htmlFor="phoneNumber">{copy.phone}</Label>
+                        <Input id="phoneNumber" value={addressForm.phoneNumber} onChange={(e) => setAddressForm({ ...addressForm, phoneNumber: e.target.value })} placeholder={locale === "vi" ? "Nhập số điện thoại" : "Enter phone number"} />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <Label htmlFor="province">Tỉnh/Thành phố *</Label>
-                        <Input
-                          id="province"
-                          value={addressForm.province}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, province: e.target.value })
-                          }
-                          placeholder="VD: TP. Hồ Chí Minh"
-                        />
+                        <Label htmlFor="province">{copy.province}</Label>
+                        <Input id="province" value={addressForm.province} onChange={(e) => setAddressForm({ ...addressForm, province: e.target.value })} placeholder={locale === "vi" ? "VD: TP. Hồ Chí Minh" : "e.g. Ho Chi Minh City"} />
                       </div>
                       <div>
-                        <Label htmlFor="district">Quận/Huyện *</Label>
-                        <Input
-                          id="district"
-                          value={addressForm.district}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, district: e.target.value })
-                          }
-                          placeholder="VD: Quận 1"
-                        />
+                        <Label htmlFor="district">{copy.district}</Label>
+                        <Input id="district" value={addressForm.district} onChange={(e) => setAddressForm({ ...addressForm, district: e.target.value })} placeholder={locale === "vi" ? "VD: Quận 1" : "e.g. District 1"} />
                       </div>
                       <div>
-                        <Label htmlFor="ward">Phường/Xã *</Label>
-                        <Input
-                          id="ward"
-                          value={addressForm.ward}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, ward: e.target.value })
-                          }
-                          placeholder="VD: Phường Bến Nghé"
-                        />
+                        <Label htmlFor="ward">{copy.ward}</Label>
+                        <Input id="ward" value={addressForm.ward} onChange={(e) => setAddressForm({ ...addressForm, ward: e.target.value })} placeholder={locale === "vi" ? "VD: Phường Bến Nghé" : "e.g. Ben Nghe Ward"} />
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="streetAddress">Địa chỉ cụ thể *</Label>
-                      <Input
-                        id="streetAddress"
-                        value={addressForm.streetAddress}
-                        onChange={(e) =>
-                          setAddressForm({ ...addressForm, streetAddress: e.target.value })
-                        }
-                        placeholder="VD: 123 Nguyễn Trãi, Phường 1"
-                      />
+                      <Label htmlFor="streetAddress">{copy.street}</Label>
+                      <Input id="streetAddress" value={addressForm.streetAddress} onChange={(e) => setAddressForm({ ...addressForm, streetAddress: e.target.value })} placeholder={locale === "vi" ? "VD: 123 Nguyễn Trãi, Phường 1" : "e.g. 123 Nguyen Trai, Ward 1"} />
                     </div>
 
                     <div>
-                      <Label htmlFor="notes">Ghi chú (tùy chọn)</Label>
-                      <Input
-                        id="notes"
-                        value={addressForm.notes}
-                        onChange={(e) =>
-                          setAddressForm({ ...addressForm, notes: e.target.value })
-                        }
-                        placeholder="VD: Giao giờ hành chính"
-                      />
+                      <Label htmlFor="notes">{copy.notes}</Label>
+                      <Input id="notes" value={addressForm.notes} onChange={(e) => setAddressForm({ ...addressForm, notes: e.target.value })} placeholder={locale === "vi" ? "VD: Giao giờ hành chính" : "e.g. Deliver during business hours"} />
                     </div>
                   </div>
                 )}
 
-                {/* Shipping Method */}
                 <div className="mt-6">
-                  <Label className="mb-3 block">Phương thức vận chuyển</Label>
+                  <Label className="mb-3 block">{copy.shippingMethod}</Label>
                   <div className="space-y-2">
                     {SHIPPING_METHODS.map((method) => (
                       <label
                         key={method.id}
-                        className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-colors ${
-                          shippingMethod === method.id
-                            ? "border-primary bg-primary/5"
-                            : "border-gray-200 hover:border-gray-300"
+                        className={`flex items-center justify-between rounded-lg border p-4 transition-colors ${
+                          shippingMethod === method.id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
                         <div className="flex items-center">
@@ -406,12 +421,12 @@ export default function CheckoutPage() {
                             className="mr-3"
                           />
                           <div>
-                            <p className="font-medium">{method.name}</p>
-                            <p className="text-sm text-gray-500">{method.desc}</p>
+                            <p className="font-medium">{method.name[locale]}</p>
+                            <p className="text-sm text-gray-500">{method.desc[locale]}</p>
                           </div>
                         </div>
                         <span className="font-semibold text-primary">
-                          {method.free || subtotal >= 200000 ? "Miễn phí" : formatCurrency(method.price)}
+                          {method.free || subtotal >= 200000 ? copy.freeShipping : formatCurrency(method.price)}
                         </span>
                       </label>
                     ))}
@@ -419,35 +434,29 @@ export default function CheckoutPage() {
                 </div>
 
                 <Button
-                  className="w-full mt-6"
+                  className="mt-6 w-full"
                   size="lg"
                   onClick={() => setStep(2)}
-                  disabled={
-                    useNewAddress &&
-                    (!addressForm.receiverName || !addressForm.phoneNumber || !addressForm.province)
-                  }
+                  disabled={useNewAddress && (!addressForm.receiverName || !addressForm.phoneNumber || !addressForm.province)}
                 >
-                  Tiếp Tục Thanh Toán
+                  {copy.nextPayment}
                 </Button>
               </div>
             )}
 
-            {/* Payment */}
             {step === 2 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                  <CreditCard className="w-5 h-5 mr-2 text-primary" />
-                  Phương Thức Thanh Toán
+              <div className="rounded-lg bg-white p-6 shadow-sm">
+                <h2 className="mb-6 flex items-center text-xl font-bold text-gray-900">
+                  <CreditCard className="mr-2 h-5 w-5 text-primary" />
+                  {copy.paymentMethod}
                 </h2>
 
                 <div className="space-y-3">
                   {PAYMENT_METHODS.map((method) => (
                     <label
                       key={method.id}
-                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
-                        paymentMethod === method.id
-                          ? "border-primary bg-primary/5"
-                          : "border-gray-200 hover:border-gray-300"
+                      className={`flex items-center rounded-lg border p-4 transition-colors ${
+                        paymentMethod === method.id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       <input
@@ -458,136 +467,110 @@ export default function CheckoutPage() {
                         onChange={() => setPaymentMethod(method.id)}
                         className="mr-4"
                       />
-                      <method.icon className="w-5 h-5 mr-3 text-gray-600" />
-                      <span className="font-medium">{method.name}</span>
+                      <method.icon className="mr-3 h-5 w-5 text-gray-600" />
+                      <span className="font-medium">{method.name[locale]}</span>
                     </label>
                   ))}
                 </div>
 
-                <div className="flex gap-4 mt-6">
+                <div className="mt-6 flex gap-4">
                   <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Quay Lại
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    {copy.back}
                   </Button>
                   <Button onClick={() => setStep(3)} className="flex-1">
-                    Xác Nhận Thông Tin
+                    {copy.confirmInfo}
                   </Button>
                 </div>
               </div>
             )}
 
-            {/* Confirm */}
             {step === 3 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Xác Nhận Đơn Hàng</h2>
+              <div className="rounded-lg bg-white p-6 shadow-sm">
+                <h2 className="mb-6 text-xl font-bold text-gray-900">{copy.confirmOrder}</h2>
 
                 <div className="space-y-6">
-                  {/* Shipping Info Summary */}
                   <div>
-                    <h3 className="font-semibold mb-2">Địa chỉ giao hàng</h3>
+                    <h3 className="mb-2 font-semibold">{copy.shippingSummary}</h3>
                     <p className="text-gray-600">
                       {addressForm.receiverName} - {addressForm.phoneNumber}
                     </p>
                     <p className="text-gray-600">
-                      {addressForm.streetAddress}, {addressForm.ward}, {addressForm.district},{" "}
-                      {addressForm.province}
+                      {addressForm.streetAddress}, {addressForm.ward}, {addressForm.district}, {addressForm.province}
                     </p>
-                    {addressForm.notes && <p className="text-gray-500 text-sm mt-1">Ghi chú: {addressForm.notes}</p>}
+                    {addressForm.notes && <p className="mt-1 text-sm text-gray-500">{copy.notes}: {addressForm.notes}</p>}
                   </div>
 
                   <Separator />
 
-                  {/* Shipping Method Summary */}
                   <div>
-                    <h3 className="font-semibold mb-2">Phương thức vận chuyển</h3>
+                    <h3 className="mb-2 font-semibold">{copy.shippingMethod}</h3>
                     <p className="text-gray-600">
-                      {selectedShipping.name} ({selectedShipping.desc})
+                      {selectedShipping.name[locale]} ({selectedShipping.desc[locale]})
                     </p>
                   </div>
 
                   <Separator />
 
-                  {/* Payment Method Summary */}
                   <div>
-                    <h3 className="font-semibold mb-2">Phương thức thanh toán</h3>
-                    <p className="text-gray-600">
-                      {PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.name}
-                    </p>
+                    <h3 className="mb-2 font-semibold">{copy.paymentSummary}</h3>
+                    <p className="text-gray-600">{PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.name[locale]}</p>
                   </div>
 
                   <Separator />
 
-                  {/* Order Items */}
                   <div>
-                    <h3 className="font-semibold mb-3">Sản phẩm đặt hàng</h3>
+                    <h3 className="mb-3 font-semibold">{copy.orderItems}</h3>
                     <div className="space-y-3">
                       {items.map((item) => (
                         <div key={item.id} className="flex items-center gap-4">
-                          <div className="relative w-16 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                          <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded bg-gray-100">
                             {item.product.imageUrl && (
-                              <Image
-                                src={item.product.imageUrl}
-                                alt={item.product.name}
-                                fill
-                                className="object-cover"
-                              />
+                              <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm line-clamp-1">{item.product.name}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-1 text-sm font-medium">{item.product.name}</p>
                             <p className="text-sm text-gray-500">x{item.quantity}</p>
                           </div>
-                          <p className="font-semibold text-sm">{formatCurrency(item.subtotal)}</p>
+                          <p className="text-sm font-semibold">{formatCurrency(item.subtotal)}</p>
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-4 mt-6">
+                <div className="mt-6 flex gap-4">
                   <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Quay Lại
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    {copy.back}
                   </Button>
-                  <Button
-                    onClick={handleSubmitOrder}
-                    className="flex-1"
-                    size="lg"
-                    disabled={createOrderMutation.isPending}
-                  >
-                    {createOrderMutation.isPending ? "Đang xử lý..." : "Đặt Hàng Ngay"}
+                  <Button onClick={handleSubmitOrder} className="flex-1" size="lg" disabled={createOrderMutation.isPending}>
+                    {createOrderMutation.isPending ? copy.processing : copy.orderNow}
                   </Button>
                 </div>
 
                 {createOrderMutation.isError && (
-                  <p className="text-red-500 text-sm mt-4 text-center">
-                    Đã xảy ra lỗi khi đặt hàng. Vui lòng thử lại.
-                  </p>
+                  <p className="mt-4 text-center text-sm text-red-500">{copy.orderError}</p>
                 )}
               </div>
             )}
           </div>
 
-          {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Tổng Quan Đơn Hàng</h2>
+            <div className="sticky top-24 rounded-lg bg-white p-6 shadow-sm">
+              <h2 className="mb-6 text-xl font-bold text-gray-900">{copy.orderSummary}</h2>
 
-              <div className="space-y-3 mb-6">
+              <div className="mb-6 space-y-3">
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center gap-3">
-                    <div className="relative w-12 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                    <div className="relative h-16 w-12 flex-shrink-0 overflow-hidden rounded bg-gray-100">
                       {item.product.imageUrl && (
-                        <Image
-                          src={item.product.imageUrl}
-                          alt={item.product.name}
-                          fill
-                          className="object-cover"
-                        />
+                        <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" />
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium line-clamp-1">{item.product.name}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-1 text-sm font-medium">{item.product.name}</p>
                       <p className="text-xs text-gray-500">x{item.quantity}</p>
                     </div>
                     <p className="text-sm font-semibold">{formatCurrency(item.subtotal)}</p>
@@ -599,33 +582,32 @@ export default function CheckoutPage() {
 
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tạm tính</span>
+                  <span className="text-gray-600">{copy.subtotal}</span>
                   <span className="font-medium">{formatCurrency(subtotal)}</span>
                 </div>
                 {appliedCoupon && (
                   <div className="flex justify-between text-green-600">
                     <span className="flex items-center gap-1">
                       <Tag className="h-3 w-3" />
-                      Mã {appliedCoupon.code}
+                      {copy.couponCode} {appliedCoupon.code}
                     </span>
                     <span className="font-medium">-{formatCurrency(discountAmount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Phí vận chuyển</span>
+                  <span className="text-gray-600">{copy.shipping}</span>
                   <span className="font-medium text-green-600">
-                    {shippingFee === 0 ? "Miễn phí" : formatCurrency(shippingFee)}
+                    {shippingFee === 0 ? copy.freeShipping : formatCurrency(shippingFee)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Thuế (VAT 10%)</span>
+                  <span className="text-gray-600">{copy.tax}</span>
                   <span className="font-medium">{formatCurrency(estimatedTax)}</span>
                 </div>
               </div>
 
               <Separator className="my-4" />
 
-              {/* Coupon Input */}
               <div className="mb-4">
                 <CouponInput
                   orderTotal={subtotal}
@@ -637,7 +619,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="flex justify-between text-lg font-bold">
-                <span>Tổng cộng</span>
+                <span>{copy.total}</span>
                 <span className="text-primary">{formatCurrency(grandTotal)}</span>
               </div>
             </div>

@@ -8,7 +8,9 @@ import { WebVitals } from "@/components/seo/WebVitals";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/JsonLd";
 import { SkipLink } from "@/components/a11y/SkipLink";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
-// Dynamic imports for performance - load below the fold
+import { getRequestLocale } from "@/lib/i18n/server";
+import type { Locale } from "@/lib/i18n";
+
 const ChatbotWidget = dynamic(
   () => import("@/components/chatbot").then((m) => ({ default: m.ChatbotWidget })),
   {
@@ -34,76 +36,102 @@ const beVietnamPro = Be_Vietnam_Pro({
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
-  title: {
-    default: "BookStore Vietnam - Sách Chính Hãng, Giá Tốt Nhất",
-    template: "%s | BookStore Vietnam",
-  },
-  description:
-    "Nền tảng bán sách trực tuyến hàng đầu Việt Nam. Hơn 10.000 đầu sách chính hãng: văn học, khoa học, kỹ năng sống, sách ngoại văn. Miễn phí vận chuyển, ưu đãi hấp dẫn.",
-  keywords: [
-    "mua sách online",
-    "sách chính hãng",
-    "sách giảm giá",
-    "nhà sách online",
-    "ebook",
-    "sách tiếng anh",
-    "sách văn học",
-    "sách kỹ năng sống",
-  ],
-  authors: [{ name: "BookStore Vietnam" }],
-  creator: "BookStore Vietnam",
-  publisher: "BookStore Vietnam",
-  openGraph: {
-    type: "website",
-    locale: "vi_VN",
-    url: BASE_URL,
-    siteName: "BookStore Vietnam",
-    title: "BookStore Vietnam - Sách Chính Hãng, Giá Tốt Nhất",
+function getLayoutMeta(locale: Locale) {
+  if (locale === "en") {
+    return {
+      title: "BookStore Vietnam - Authentic Books, Better Prices",
+      description:
+        "A polished online bookstore with curated titles, weekly flash sales, and a modern shopping experience.",
+      keywords: [
+        "online bookstore",
+        "authentic books",
+        "weekly flash sale",
+        "bookstore vietnam",
+        "buy books online",
+      ],
+      ogLocale: "en_US",
+      mainAriaLabel: "Main content",
+    };
+  }
+
+  return {
+    title: "BookStore Vietnam - Sách Chính Hãng, Giá Tốt",
     description:
-      "Nền tảng bán sách trực tuyến hàng đầu Việt Nam. Hơn 10.000 đầu sách chính hãng.",
-    images: [
-      {
-        url: `${BASE_URL}/og-image.svg`,
-        width: 1200,
-        height: 630,
-        alt: "BookStore Vietnam",
-      },
+      "Nền tảng bán sách trực tuyến với catalog tuyển chọn, flash sale hàng tuần và trải nghiệm mua sắm hiện đại.",
+    keywords: [
+      "mua sách online",
+      "sách chính hãng",
+      "flash sale sách",
+      "nhà sách online",
+      "bookstore vietnam",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "BookStore Vietnam - Sách Chính Hãng, Giá Tốt Nhất",
-    description:
-      "Nền tảng bán sách trực tuyến hàng đầu Việt Nam. Hơn 10.000 đầu sách chính hãng.",
-    images: [`${BASE_URL}/og-image.svg`],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    ogLocale: "vi_VN",
+    mainAriaLabel: "Nội dung chính",
+  };
+}
+
+export function generateMetadata(): Metadata {
+  const locale = getRequestLocale();
+  const meta = getLayoutMeta(locale);
+
+  return {
+    metadataBase: new URL(BASE_URL),
+    title: {
+      default: meta.title,
+      template: "%s | BookStore Vietnam",
+    },
+    description: meta.description,
+    keywords: meta.keywords,
+    authors: [{ name: "BookStore Vietnam" }],
+    creator: "BookStore Vietnam",
+    publisher: "BookStore Vietnam",
+    openGraph: {
+      type: "website",
+      locale: meta.ogLocale,
+      url: BASE_URL,
+      siteName: "BookStore Vietnam",
+      title: meta.title,
+      description: meta.description,
+      images: [
+        {
+          url: `${BASE_URL}/og-image.svg`,
+          width: 1200,
+          height: 630,
+          alt: "BookStore Vietnam",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.title,
+      description: meta.description,
+      images: [`${BASE_URL}/og-image.svg`],
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-  alternates: {
-    canonical: BASE_URL,
-    languages: {
-      vi: BASE_URL,
+    alternates: {
+      canonical: BASE_URL,
+      languages: {
+        vi: BASE_URL,
+        en: BASE_URL,
+      },
     },
-  },
-  manifest: "/manifest.json",
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
-    ],
-    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
-  },
-};
+    manifest: "/manifest.json",
+    icons: {
+      icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
+      apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -119,17 +147,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = getRequestLocale();
+  const meta = getLayoutMeta(locale);
+
   return (
-    <html lang="vi">
+    <html lang={locale}>
       <body className={beVietnamPro.className}>
         <SkipLink />
         <OrganizationSchema />
         <WebSiteSchema />
         <WebVitals />
         <ServiceWorkerRegistration />
-        <Providers>
+        <Providers initialLocale={locale}>
           <FlashSaleBanner />
-          <main id="main-content" role="main" aria-label="Nội dung chính">
+          <main id="main-content" role="main" aria-label={meta.mainAriaLabel}>
             {children}
           </main>
           <ChatbotWidget />

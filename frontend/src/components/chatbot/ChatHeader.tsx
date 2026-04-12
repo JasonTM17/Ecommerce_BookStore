@@ -2,6 +2,7 @@
 
 import { History, Maximize2, MessageCircle, Minimize2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
@@ -27,6 +28,27 @@ export function ChatHeader({
   subtitle,
   canManageConversations = false,
 }: ChatHeaderProps) {
+  const { locale } = useLanguage();
+
+  const copy =
+    locale === "vi"
+      ? {
+          assistant: "BookStore Assistant",
+          newChat: "Tạo cuộc trò chuyện mới",
+          history: "Lịch sử hội thoại",
+          maximize: "Phóng to",
+          minimize: "Thu nhỏ",
+          close: "Đóng",
+        }
+      : {
+          assistant: "BookStore Assistant",
+          newChat: "Start a new chat",
+          history: "Conversation history",
+          maximize: "Expand",
+          minimize: "Minimize",
+          close: "Close",
+        };
+
   return (
     <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-900 px-4 py-3 shadow-lg">
       <div className="flex items-start justify-between gap-3">
@@ -35,7 +57,7 @@ export function ChatHeader({
             <MessageCircle className="h-5 w-5 text-white" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold text-white">BookStore Assistant</h2>
+            <h2 className="truncate text-sm font-semibold text-white">{copy.assistant}</h2>
             <p className="mt-0.5 text-xs text-blue-100/80">{subtitle}</p>
             <div
               className={cn(
@@ -57,7 +79,7 @@ export function ChatHeader({
               size="icon"
               onClick={onNewChat}
               className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-              title="Tạo cuộc trò chuyện mới"
+              title={copy.newChat}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -69,7 +91,7 @@ export function ChatHeader({
               size="icon"
               onClick={onShowConversations}
               className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-              title="Lịch sử hội thoại"
+              title={copy.history}
             >
               <History className="h-4 w-4" />
             </Button>
@@ -80,7 +102,7 @@ export function ChatHeader({
             size="icon"
             onClick={onMinimize}
             className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-            title={isMinimized ? "Phóng to" : "Thu nhỏ"}
+            title={isMinimized ? copy.maximize : copy.minimize}
           >
             {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
           </Button>
@@ -90,7 +112,7 @@ export function ChatHeader({
             size="icon"
             onClick={onClose}
             className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-            title="Đóng"
+            title={copy.close}
           >
             <X className="h-4 w-4" />
           </Button>

@@ -3,45 +3,23 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { ChevronLeft, Package, Truck, CheckCircle, XCircle, Clock, CreditCard, MapPin, Phone, User, FileText, Save, RefreshCw } from "lucide-react";
 import { api } from "@/lib/api";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/toaster";
-import {
-  ChevronLeft,
-  Package,
-  Truck,
-  CheckCircle,
-  XCircle,
-  Clock,
-  CreditCard,
-  MapPin,
-  Phone,
-  User,
-  Calendar,
-  FileText,
-  Save,
-  RefreshCw,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface OrderItem {
   id: number;
@@ -91,30 +69,81 @@ const PAYMENT_STATUS_CONFIG: Record<string, { label: string; color: string; bg: 
   CANCELLED: { label: "Đã hủy", color: "text-red-700", bg: "bg-red-100" },
 };
 
-const STATUS_OPTIONS = [
-  { value: "PENDING", label: "Chờ xác nhận" },
-  { value: "CONFIRMED", label: "Đã xác nhận" },
-  { value: "PROCESSING", label: "Đang xử lý" },
-  { value: "SHIPPED", label: "Đang giao hàng" },
-  { value: "DELIVERED", label: "Đã giao hàng" },
-  { value: "CANCELLED", label: "Hủy đơn hàng" },
-];
-
-const PAYMENT_STATUS_OPTIONS = [
-  { value: "PENDING", label: "Chờ thanh toán" },
-  { value: "PAID", label: "Đã thanh toán" },
-  { value: "FAILED", label: "Thanh toán thất bại" },
-  { value: "REFUNDED", label: "Đã hoàn tiền" },
-];
+const COPY = {
+  vi: {
+    dashboard: "Dashboard",
+    orders: "Quản lý đơn hàng",
+    details: "Chi tiết đơn hàng",
+    placedAt: "Đặt lúc {date}",
+    back: "Quay lại",
+    items: "Sản phẩm trong đơn",
+    summary: "Tổng kết đơn hàng",
+    subtotal: "Tạm tính",
+    shippingFee: "Phí vận chuyển",
+    tax: "Thuế",
+    discount: "Giảm giá",
+    total: "Tổng cộng",
+    status: "Trạng thái đơn hàng",
+    payment: "Thanh toán",
+    updateStatus: "Cập nhật trạng thái",
+    chooseStatus: "Chọn trạng thái đơn",
+    choosePayment: "Chọn thanh toán",
+    customer: "Thông tin khách hàng",
+    shippingInfo: "Địa chỉ giao hàng",
+    receiver: "Người nhận",
+    phone: "Số điện thoại",
+    address: "Địa chỉ",
+    method: "Phương thức vận chuyển",
+    paymentMethod: "Phương thức thanh toán",
+    notes: "Ghi chú",
+    emptyTitle: "Không tìm thấy đơn hàng",
+    emptyDesc: "Đơn hàng này không tồn tại hoặc đã bị xóa",
+    backToList: "Quay lại danh sách",
+    loading: "Đang tải...",
+  },
+  en: {
+    dashboard: "Dashboard",
+    orders: "Order management",
+    details: "Order details",
+    placedAt: "Placed at {date}",
+    back: "Back",
+    items: "Items in order",
+    summary: "Order summary",
+    subtotal: "Subtotal",
+    shippingFee: "Shipping fee",
+    tax: "Tax",
+    discount: "Discount",
+    total: "Total",
+    status: "Order status",
+    payment: "Payment",
+    updateStatus: "Update status",
+    chooseStatus: "Choose order status",
+    choosePayment: "Choose payment status",
+    customer: "Customer information",
+    shippingInfo: "Shipping address",
+    receiver: "Recipient",
+    phone: "Phone number",
+    address: "Address",
+    method: "Shipping method",
+    paymentMethod: "Payment method",
+    notes: "Notes",
+    emptyTitle: "Order not found",
+    emptyDesc: "This order does not exist or has been deleted",
+    backToList: "Back to list",
+    loading: "Loading...",
+  },
+} as const;
 
 export default function AdminOrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { isAdmin } = useAuth();
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const queryClient = useQueryClient();
   const orderId = params.id as string;
 
-  const { data: order, isLoading, isError } = useQuery<Order>({
+  const { data: order, isLoading } = useQuery<Order>({
     queryKey: ["admin-order", orderId],
     queryFn: async () => {
       const res = await api.get(`/admin/orders/${orderId}`);
@@ -139,37 +168,44 @@ export default function AdminOrderDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-      toast.success("Cập nhật trạng thái thành công");
+      toast.success(locale === "vi" ? "Cập nhật trạng thái thành công" : "Status updated successfully");
     },
     onError: () => {
-      toast.error("Cập nhật trạng thái thất bại");
+      toast.error(locale === "vi" ? "Cập nhật trạng thái thất bại" : "Failed to update status");
     },
   });
-
-  const handleUpdateStatus = () => {
-    updateStatusMutation.mutate({
-      status: newStatus || undefined,
-      paymentStatus: newPaymentStatus || undefined,
-    });
-  };
 
   if (!isAdmin) {
     return null;
   }
 
+  const statusOptions = [
+    { value: "PENDING", label: STATUS_CONFIG.PENDING.label },
+    { value: "CONFIRMED", label: STATUS_CONFIG.CONFIRMED.label },
+    { value: "PROCESSING", label: STATUS_CONFIG.PROCESSING.label },
+    { value: "SHIPPED", label: locale === "vi" ? "Đang giao hàng" : "Shipping" },
+    { value: "DELIVERED", label: locale === "vi" ? "Đã giao hàng" : "Delivered" },
+    { value: "CANCELLED", label: locale === "vi" ? "Hủy đơn hàng" : "Cancel order" },
+  ];
+
+  const paymentOptions = [
+    { value: "PENDING", label: PAYMENT_STATUS_CONFIG.PENDING.label },
+    { value: "PAID", label: PAYMENT_STATUS_CONFIG.PAID.label },
+    { value: "FAILED", label: PAYMENT_STATUS_CONFIG.FAILED.label },
+    { value: "REFUNDED", label: PAYMENT_STATUS_CONFIG.REFUNDED.label },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-gray-100 to-blue-50/30">
       <Header />
-
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-            <Link href="/admin" className="hover:text-blue-600 transition-colors">Dashboard</Link>
+            <Link href="/admin" className="hover:text-blue-600 transition-colors">{copy.dashboard}</Link>
             <span>/</span>
-            <Link href="/admin/orders" className="hover:text-blue-600 transition-colors">Quản lý đơn hàng</Link>
+            <Link href="/admin/orders" className="hover:text-blue-600 transition-colors">{copy.orders}</Link>
             <span>/</span>
-            <span className="text-gray-900 font-medium">Chi tiết đơn hàng</span>
+            <span className="text-gray-900 font-medium">{copy.details}</span>
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -182,22 +218,18 @@ export default function AdminOrderDetailPage() {
               ) : (
                 <>
                   <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    Đơn hàng #{order?.orderNumber}
+                    #{order?.orderNumber}
                   </h1>
                   <p className="text-gray-500 mt-1">
-                    Đặt lúc {order ? new Date(order.createdAt).toLocaleString("vi-VN") : ""}
+                    {copy.placedAt.replace("{date}", order ? new Date(order.createdAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US") : "")}
                   </p>
                 </>
               )}
             </div>
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => router.push("/admin/orders")}
-                className="rounded-xl"
-              >
+              <Button variant="outline" onClick={() => router.push("/admin/orders")} className="rounded-xl">
                 <ChevronLeft className="h-4 w-4 mr-2" />
-                Quay lại
+                {copy.back}
               </Button>
             </div>
           </div>
@@ -222,37 +254,30 @@ export default function AdminOrderDetailPage() {
           </div>
         ) : order ? (
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Order Items */}
               <Card className="rounded-2xl border-0 shadow-lg overflow-hidden">
                 <CardHeader className="bg-gray-50/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <Package className="w-5 h-5 text-blue-600" />
-                    Sản phẩm trong đơn ({order.orderItems.length})
+                    {copy.items} ({order.orderItems.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y">
                     {order.orderItems.map((item) => (
                       <div key={item.id} className="p-4 md:p-6 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
-                          <div className="w-16 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                            {item.imageUrl ? (
-                              <Image
-                                src={item.imageUrl}
-                                alt={item.productName}
-                                width={64}
-                                height={80}
-                                unoptimized
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
+                        <div className="w-16 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          {item.imageUrl ? (
+                            <Image src={item.imageUrl} alt={item.productName} width={64} height={80} unoptimized className="w-full h-full object-cover" />
+                          ) : (
                             <div className="w-full h-full flex items-center justify-center text-3xl">📚</div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-gray-900 line-clamp-2">{item.productName}</h4>
-                          <p className="text-sm text-gray-500 mt-1">Số lượng: {item.quantity}</p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {locale === "vi" ? "Số lượng" : "Quantity"}: {item.quantity}
+                          </p>
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">{formatCurrency(item.price * item.quantity)}</p>
@@ -264,37 +289,36 @@ export default function AdminOrderDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Order Summary */}
               <Card className="rounded-2xl border-0 shadow-lg overflow-hidden">
                 <CardHeader className="bg-gray-50/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-blue-600" />
-                    Tổng kết đơn hàng
+                    {copy.summary}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Tạm tính</span>
+                      <span className="text-gray-600">{copy.subtotal}</span>
                       <span className="font-medium text-gray-900">{formatCurrency(order.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Phí vận chuyển</span>
+                      <span className="text-gray-600">{copy.shippingFee}</span>
                       <span className="font-medium text-gray-900">{formatCurrency(order.shippingFee)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Thuế</span>
+                      <span className="text-gray-600">{copy.tax}</span>
                       <span className="font-medium text-gray-900">{formatCurrency(order.taxAmount)}</span>
                     </div>
                     {order.discountAmount > 0 && (
                       <div className="flex justify-between text-sm text-green-600">
-                        <span>Giảm giá</span>
+                        <span>{copy.discount}</span>
                         <span className="font-medium">-{formatCurrency(order.discountAmount)}</span>
                       </div>
                     )}
                     <div className="pt-3 border-t">
                       <div className="flex justify-between">
-                        <span className="text-lg font-bold text-gray-900">Tổng cộng</span>
+                        <span className="text-lg font-bold text-gray-900">{copy.total}</span>
                         <span className="text-xl font-bold text-blue-600">{formatCurrency(order.totalAmount)}</span>
                       </div>
                     </div>
@@ -303,38 +327,36 @@ export default function AdminOrderDetailPage() {
               </Card>
             </div>
 
-            {/* Sidebar */}
             <div className="space-y-6">
-              {/* Order Status */}
               <Card className="rounded-2xl border-0 shadow-lg overflow-hidden">
                 <CardHeader className="bg-gray-50/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-blue-600" />
-                    Trạng thái đơn hàng
+                    {copy.status}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <div>
-                    <p className="text-sm text-gray-500 mb-2">Trạng thái</p>
+                    <p className="text-sm text-gray-500 mb-2">{copy.status}</p>
                     <Badge className={cn("text-sm px-3 py-1", STATUS_CONFIG[order.status]?.bg, STATUS_CONFIG[order.status]?.color)}>
                       {STATUS_CONFIG[order.status]?.label}
                     </Badge>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 mb-2">Thanh toán</p>
+                    <p className="text-sm text-gray-500 mb-2">{copy.payment}</p>
                     <Badge className={cn("text-sm px-3 py-1", PAYMENT_STATUS_CONFIG[order.paymentStatus]?.bg, PAYMENT_STATUS_CONFIG[order.paymentStatus]?.color)}>
                       {PAYMENT_STATUS_CONFIG[order.paymentStatus]?.label}
                     </Badge>
                   </div>
                   <div className="pt-4 border-t">
-                    <p className="text-sm text-gray-500 mb-3">Cập nhật trạng thái</p>
+                    <p className="text-sm text-gray-500 mb-3">{copy.updateStatus}</p>
                     <div className="space-y-3">
                       <Select onValueChange={setNewStatus} value={newStatus}>
                         <SelectTrigger className="h-11 rounded-xl">
-                          <SelectValue placeholder="Chọn trạng thái đơn" />
+                          <SelectValue placeholder={copy.chooseStatus} />
                         </SelectTrigger>
                         <SelectContent>
-                          {STATUS_OPTIONS.map((opt) => (
+                          {statusOptions.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               {opt.label}
                             </SelectItem>
@@ -343,10 +365,10 @@ export default function AdminOrderDetailPage() {
                       </Select>
                       <Select onValueChange={setNewPaymentStatus} value={newPaymentStatus}>
                         <SelectTrigger className="h-11 rounded-xl">
-                          <SelectValue placeholder="Chọn thanh toán" />
+                          <SelectValue placeholder={copy.choosePayment} />
                         </SelectTrigger>
                         <SelectContent>
-                          {PAYMENT_STATUS_OPTIONS.map((opt) => (
+                          {paymentOptions.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               {opt.label}
                             </SelectItem>
@@ -354,8 +376,8 @@ export default function AdminOrderDetailPage() {
                         </SelectContent>
                       </Select>
                       <Button
-                        onClick={handleUpdateStatus}
-                        disabled={!newStatus && !newPaymentStatus || updateStatusMutation.isPending}
+                        onClick={() => updateStatusMutation.mutate({ status: newStatus || undefined, paymentStatus: newPaymentStatus || undefined })}
+                        disabled={(!newStatus && !newPaymentStatus) || updateStatusMutation.isPending}
                         className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                       >
                         {updateStatusMutation.isPending ? (
@@ -363,19 +385,18 @@ export default function AdminOrderDetailPage() {
                         ) : (
                           <Save className="h-4 w-4 mr-2" />
                         )}
-                        Cập nhật
+                        {copy.updateStatus}
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Customer Info */}
               <Card className="rounded-2xl border-0 shadow-lg overflow-hidden">
                 <CardHeader className="bg-gray-50/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <User className="w-5 h-5 text-blue-600" />
-                    Thông tin khách hàng
+                    {copy.customer}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -397,37 +418,36 @@ export default function AdminOrderDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Shipping Info */}
               <Card className="rounded-2xl border-0 shadow-lg overflow-hidden">
                 <CardHeader className="bg-gray-50/50 border-b">
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-blue-600" />
-                    Địa chỉ giao hàng
+                    {copy.shippingInfo}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm text-gray-500">Người nhận</p>
+                      <p className="text-sm text-gray-500">{copy.receiver}</p>
                       <p className="font-medium text-gray-900">{order.shippingReceiverName}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Số điện thoại</p>
+                      <p className="text-sm text-gray-500">{copy.phone}</p>
                       <p className="font-medium text-gray-900">{order.shippingPhone}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Địa chỉ</p>
+                      <p className="text-sm text-gray-500">{copy.address}</p>
                       <p className="font-medium text-gray-900">{order.shippingAddress}</p>
                     </div>
                     {order.shippingMethod && (
                       <div>
-                        <p className="text-sm text-gray-500">Phương thức vận chuyển</p>
+                        <p className="text-sm text-gray-500">{copy.method}</p>
                         <p className="font-medium text-gray-900">{order.shippingMethod}</p>
                       </div>
                     )}
                     {order.paymentMethod && (
                       <div>
-                        <p className="text-sm text-gray-500">Phương thức thanh toán</p>
+                        <p className="text-sm text-gray-500">{copy.paymentMethod}</p>
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-4 h-4 text-gray-400" />
                           <span className="font-medium text-gray-900">{order.paymentMethod}</span>
@@ -438,13 +458,12 @@ export default function AdminOrderDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Notes */}
               {order.notes && (
                 <Card className="rounded-2xl border-0 shadow-lg overflow-hidden">
                   <CardHeader className="bg-gray-50/50 border-b">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-blue-600" />
-                      Ghi chú
+                      {copy.notes}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
@@ -457,15 +476,14 @@ export default function AdminOrderDetailPage() {
         ) : (
           <Card className="rounded-2xl border-0 shadow-lg p-12 text-center">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy đơn hàng</h3>
-            <p className="text-gray-500 mb-6">Đơn hàng này không tồn tại hoặc đã bị xóa</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{copy.emptyTitle}</h3>
+            <p className="text-gray-500 mb-6">{copy.emptyDesc}</p>
             <Button onClick={() => router.push("/admin/orders")} variant="outline" className="rounded-xl">
-              Quay lại danh sách
+              {copy.backToList}
             </Button>
           </Card>
         )}
       </main>
-
       <Footer />
     </div>
   );

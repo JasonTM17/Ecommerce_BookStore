@@ -44,11 +44,7 @@ export function LanguageSwitcher() {
 
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden="true" />
           <div
             role="listbox"
             aria-label="Select language"
@@ -69,9 +65,7 @@ export function LanguageSwitcher() {
               >
                 <span>{language.flag}</span>
                 <span>{language.name}</span>
-                {language.code === locale && (
-                  <span className="ml-auto text-blue-500">OK</span>
-                )}
+                {language.code === locale && <span className="ml-auto text-blue-500">✓</span>}
               </button>
             ))}
           </div>

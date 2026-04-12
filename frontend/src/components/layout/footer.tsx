@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { BookOpen, Clock, Mail, MapPin, Phone } from "lucide-react";
+import { interpolate } from "@/lib/i18n";
+import { useLanguage } from "@/components/providers/language-provider";
 
 export function Footer() {
+  const { t } = useLanguage();
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
 
@@ -16,10 +19,8 @@ export function Footer() {
       return;
     }
 
-    const subject = encodeURIComponent("Đăng ký nhận tin từ BookStore");
-    const body = encodeURIComponent(
-      `Xin chào BookStore,\r\nTôi muốn đăng ký nhận bản tin với email: ${email}`
-    );
+    const subject = encodeURIComponent(t("footer.newsletterSubject"));
+    const body = encodeURIComponent(interpolate(t("footer.newsletterBody"), { email }));
 
     window.open(`mailto:contact@bookstore.com?subject=${subject}&body=${body}`, "_self");
     setNewsletterSubmitted(true);
@@ -28,7 +29,7 @@ export function Footer() {
   return (
     <footer
       role="contentinfo"
-      aria-label="Chân trang website"
+      aria-label={t("footer.ariaLabel")}
       className="relative overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950 text-gray-300"
     >
       <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600" />
@@ -37,7 +38,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-6" role="region" aria-labelledby="footer-brand">
             <h2 id="footer-brand" className="sr-only">
-              Giới thiệu về BookStore
+              {t("footer.brandHeading")}
             </h2>
             <Link href="/" className="flex items-center group">
               <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/30 transition-all duration-300 group-hover:scale-105 group-hover:shadow-blue-500/50">
@@ -47,18 +48,12 @@ export function Footer() {
                 BookStore
               </span>
             </Link>
-            <p className="leading-relaxed text-gray-400">
-              Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại,
-              hình ảnh chỉn chu và các danh mục được tuyển chọn cho nhu cầu đọc mỗi ngày.
-            </p>
-            <div
-              className="flex flex-wrap gap-3"
-              aria-label="Liên kết giới thiệu và hỗ trợ"
-            >
+            <p className="leading-relaxed text-gray-400">{t("footer.brandDescription")}</p>
+            <div className="flex flex-wrap gap-3" aria-label={t("footer.projectLinks")}>
               {[
-                { href: "/about", label: "Về dự án" },
-                { href: "/contact", label: "Liên hệ" },
-                { href: "/faq", label: "Hỗ trợ" },
+                { href: "/about", label: t("footer.projectAbout") },
+                { href: "/contact", label: t("footer.contact") },
+                { href: "/faq", label: t("footer.support") },
               ].map((item) => (
                 <Link
                   key={item.href}
@@ -73,16 +68,16 @@ export function Footer() {
 
           <nav aria-labelledby="footer-nav-heading" className="space-y-6">
             <h2 id="footer-nav-heading" className="relative inline-block text-lg font-semibold text-white">
-              Liên kết nhanh
+              {t("footer.projectLinks")}
               <span className="absolute -bottom-1 left-0 h-0.5 w-12 bg-gradient-to-r from-blue-600 to-transparent" />
             </h2>
             <ul className="space-y-3">
               {[
-                { href: "/products", label: "Sản phẩm" },
-                { href: "/categories", label: "Danh mục" },
-                { href: "/about", label: "Giới thiệu" },
-                { href: "/contact", label: "Liên hệ" },
-                { href: "/blog", label: "Blog" },
+                { href: "/products", label: t("nav.products") },
+                { href: "/categories", label: t("nav.categories") },
+                { href: "/about", label: t("nav.about") },
+                { href: "/contact", label: t("nav.contact") },
+                { href: "/blog", label: t("nav.blog") },
               ].map((item) => (
                 <li key={item.href}>
                   <Link
@@ -99,16 +94,16 @@ export function Footer() {
 
           <nav aria-labelledby="footer-service-heading" className="space-y-6">
             <h2 id="footer-service-heading" className="relative inline-block text-lg font-semibold text-white">
-              Dịch vụ khách hàng
+              {t("footer.customerService")}
               <span className="absolute -bottom-1 left-0 h-0.5 w-12 bg-gradient-to-r from-blue-600 to-transparent" />
             </h2>
             <ul className="space-y-3">
               {[
-                { href: "/faq", label: "Câu hỏi thường gặp" },
-                { href: "/shipping", label: "Chính sách giao hàng" },
-                { href: "/returns", label: "Chính sách đổi trả" },
-                { href: "/privacy", label: "Chính sách bảo mật" },
-                { href: "/terms", label: "Điều khoản sử dụng" },
+                { href: "/faq", label: t("nav.faq") },
+                { href: "/shipping", label: t("nav.shipping") },
+                { href: "/returns", label: t("nav.returns") },
+                { href: "/privacy", label: t("nav.privacy") },
+                { href: "/terms", label: t("nav.terms") },
               ].map((item) => (
                 <li key={item.href}>
                   <Link
@@ -125,7 +120,7 @@ export function Footer() {
 
           <section aria-labelledby="footer-contact-heading" className="space-y-6">
             <h2 id="footer-contact-heading" className="relative inline-block text-lg font-semibold text-white">
-              Liên hệ
+              {t("footer.contact")}
               <span className="absolute -bottom-1 left-0 h-0.5 w-12 bg-gradient-to-r from-blue-600 to-transparent" />
             </h2>
             <ul className="space-y-4">
@@ -133,46 +128,36 @@ export function Footer() {
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800 transition-colors duration-300 group-hover:bg-blue-600/20">
                   <MapPin className="h-5 w-5 text-blue-500 transition-colors group-hover:text-blue-400" />
                 </div>
-                <span className="text-gray-400 transition-colors group-hover:text-gray-300">
-                  123 Đường ABC, Quận 1, TP.HCM
-                </span>
+                <span className="text-gray-400 transition-colors group-hover:text-gray-300">{t("footer.address")}</span>
               </li>
               <li className="group flex items-start space-x-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800 transition-colors duration-300 group-hover:bg-blue-600/20">
                   <Phone className="h-5 w-5 text-blue-500 transition-colors group-hover:text-blue-400" />
                 </div>
-                <span className="text-gray-400 transition-colors group-hover:text-gray-300">
-                  0901 234 567
-                </span>
+                <span className="text-gray-400 transition-colors group-hover:text-gray-300">0901 234 567</span>
               </li>
               <li className="group flex items-start space-x-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800 transition-colors duration-300 group-hover:bg-blue-600/20">
                   <Mail className="h-5 w-5 text-blue-500 transition-colors group-hover:text-blue-400" />
                 </div>
-                <span className="text-gray-400 transition-colors group-hover:text-gray-300">
-                  contact@bookstore.com
-                </span>
+                <span className="text-gray-400 transition-colors group-hover:text-gray-300">contact@bookstore.com</span>
               </li>
               <li className="group flex items-start space-x-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800 transition-colors duration-300 group-hover:bg-blue-600/20">
                   <Clock className="h-5 w-5 text-blue-500 transition-colors group-hover:text-blue-400" />
                 </div>
-                <span className="text-gray-400 transition-colors group-hover:text-gray-300">
-                  Thứ 2 - Thứ 7: 8:00 - 20:00
-                </span>
+                <span className="text-gray-400 transition-colors group-hover:text-gray-300">{t("footer.businessHours")}</span>
               </li>
             </ul>
           </section>
         </div>
 
         <div className="mt-16 rounded-2xl border border-gray-700/50 bg-gradient-to-r from-gray-800/50 via-gray-800 to-gray-800/50 p-8">
-          <h2 className="mb-2 text-xl font-semibold text-white">Đăng ký nhận tin</h2>
-          <p className="mb-4 text-gray-400">
-            Nhận thông tin về sách mới, ưu đãi nổi bật và các bộ sưu tập đang được quan tâm.
-          </p>
+          <h2 className="mb-2 text-xl font-semibold text-white">{t("footer.newsletterTitle")}</h2>
+          <p className="mb-4 text-gray-400">{t("footer.newsletterDescription")}</p>
           <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleNewsletterSubmit}>
             <label htmlFor="newsletter-email" className="sr-only">
-              Email của bạn
+              {t("footer.newsletterInput")}
             </label>
             <input
               id="newsletter-email"
@@ -185,21 +170,21 @@ export function Footer() {
                 }
               }}
               required
-              placeholder="Nhập email của bạn"
-              aria-label="Nhập email để đăng ký nhận tin"
+              placeholder={t("footer.newsletterInput")}
+              aria-label={t("footer.newsletterInput")}
               className="h-12 flex-1 rounded-lg border border-gray-700 bg-gray-900/50 px-4 text-white placeholder-gray-500 transition-all duration-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-80 sm:flex-none"
             />
             <button
               type="submit"
-              aria-label="Đăng ký nhận tin"
+              aria-label={t("footer.newsletterSubmit")}
               className="rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-medium text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-blue-500/50"
             >
-              Đăng ký
+              {t("footer.newsletterSubmit")}
             </button>
           </form>
           {newsletterSubmitted ? (
             <p className="mt-3 text-sm text-blue-300" data-testid="newsletter-confirmation">
-              Ứng dụng email của bạn đã được mở để hoàn tất đăng ký nhận tin.
+              {t("footer.newsletterConfirmation")}
             </p>
           ) : null}
         </div>
@@ -207,11 +192,10 @@ export function Footer() {
         <div className="mt-12 border-t border-gray-800 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} <span className="text-blue-500">BookStore</span>. Tất cả
-              quyền được bảo lưu.
+              © {new Date().getFullYear()} <span className="text-blue-500">BookStore</span>. {t("footer.copyright")}
             </p>
             <p className="text-sm text-gray-500">
-              Dự án portfolio bởi <span className="text-blue-400">Nguyễn Sơn</span>
+              {t("footer.portfolioBy")} <span className="text-blue-400">Nguyễn Sơn</span>
             </p>
           </div>
         </div>

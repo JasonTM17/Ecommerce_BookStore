@@ -15,19 +15,16 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import {
-  CategorySection,
-  FeaturedProducts,
-  NewProducts,
-} from "@/components/home-section";
+import { CategorySection, FeaturedProducts, NewProducts } from "@/components/home-section";
 import { apiPublic } from "@/lib/api";
+import { useLanguage } from "@/components/providers/language-provider";
 import type { Category } from "@/lib/types";
 
 const floatingBookSizes = ["w-16 h-16", "w-20 h-20", "w-24 h-24", "w-28 h-28", "w-32 h-32"];
 
 type ShowcaseGenre = {
   key: string;
-  label: string;
+  labelKey: string;
   aliases: string[];
   iconClassName: string;
 };
@@ -35,58 +32,27 @@ type ShowcaseGenre = {
 const showcaseGenres: ShowcaseGenre[] = [
   {
     key: "tieu-thuyet",
-    label: "Tiểu thuyết",
+    labelKey: "home.genreNovel",
     aliases: ["tieu-thuyet", "tieu-thuyet-van-hoc", "tieu-thuyet-kinh-dien"],
     iconClassName: "h-12 w-12",
   },
   {
     key: "khoa-hoc",
-    label: "Khoa học",
+    labelKey: "home.genreScience",
     aliases: ["khoa-hoc", "khoa-hoc-tu-nhien"],
     iconClassName: "h-14 w-14",
   },
   {
     key: "ky-nang",
-    label: "Kỹ năng",
+    labelKey: "home.genreSkills",
     aliases: ["phat-trien-ban-than", "ky-nang-song"],
     iconClassName: "h-12 w-12",
   },
   {
     key: "lich-su",
-    label: "Lịch sử",
+    labelKey: "home.genreHistory",
     aliases: ["lich-su"],
     iconClassName: "h-14 w-14",
-  },
-];
-
-const featureHighlights = [
-  {
-    icon: Truck,
-    title: "Miễn phí giao hàng",
-    subtitle: "Áp dụng cho đơn từ 200.000đ",
-    iconWrapperClassName: "bg-blue-100",
-    iconClassName: "text-blue-600",
-  },
-  {
-    icon: Shield,
-    title: "100% chính hãng",
-    subtitle: "Sách từ các nhà xuất bản uy tín",
-    iconWrapperClassName: "bg-green-100",
-    iconClassName: "text-green-600",
-  },
-  {
-    icon: CreditCard,
-    title: "Thanh toán an toàn",
-    subtitle: "Nhiều phương thức linh hoạt",
-    iconWrapperClassName: "bg-purple-100",
-    iconClassName: "text-purple-600",
-  },
-  {
-    icon: BookOpen,
-    title: "Đổi trả dễ dàng",
-    subtitle: "Hỗ trợ trong 7 ngày",
-    iconWrapperClassName: "bg-orange-100",
-    iconClassName: "text-orange-600",
   },
 ];
 
@@ -97,7 +63,7 @@ function normalizeKey(value?: string | null) {
 
   return value
     .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/đ/g, "d")
     .replace(/Đ/g, "D")
     .toLowerCase()
@@ -112,15 +78,8 @@ function flattenCategories(categories: Category[]): Category[] {
   ]);
 }
 
-function formatCount(productCount?: number) {
-  if (!productCount || productCount <= 0) {
-    return "Khám phá ngay";
-  }
-
-  return `${productCount.toLocaleString("vi-VN")} cuốn`;
-}
-
 export default function HomePage() {
+  const { t, locale } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const { data: categories = [] } = useQuery({
     queryKey: ["home-showcase-categories"],
@@ -142,10 +101,47 @@ export default function HomePage() {
 
     return {
       ...genre,
+      label: t(genre.labelKey),
       href: matchedCategory ? `/categories?id=${matchedCategory.id}` : "/categories",
-      countLabel: formatCount(matchedCategory?.productCount),
+      countLabel:
+        typeof matchedCategory?.productCount === "number" && matchedCategory.productCount > 0
+          ? `${matchedCategory.productCount.toLocaleString(locale === "vi" ? "vi-VN" : "en-US")} ${
+              locale === "vi" ? "cuốn" : "titles"
+            }`
+          : t("home.showcaseFallback"),
     };
   });
+
+  const featureHighlights = [
+    {
+      icon: Truck,
+      title: t("home.featureShippingTitle"),
+      subtitle: t("home.featureShippingSubtitle"),
+      iconWrapperClassName: "bg-blue-100",
+      iconClassName: "text-blue-600",
+    },
+    {
+      icon: Shield,
+      title: t("home.featureAuthenticTitle"),
+      subtitle: t("home.featureAuthenticSubtitle"),
+      iconWrapperClassName: "bg-green-100",
+      iconClassName: "text-green-600",
+    },
+    {
+      icon: CreditCard,
+      title: t("home.featurePaymentTitle"),
+      subtitle: t("home.featurePaymentSubtitle"),
+      iconWrapperClassName: "bg-purple-100",
+      iconClassName: "text-purple-600",
+    },
+    {
+      icon: BookOpen,
+      title: t("home.featureReturnsTitle"),
+      subtitle: t("home.featureReturnsSubtitle"),
+      iconWrapperClassName: "bg-orange-100",
+      iconClassName: "text-orange-600",
+    },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -186,36 +182,33 @@ export default function HomePage() {
               >
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm mb-6">
                   <Sparkles className="h-4 w-4 text-yellow-400" />
-                  <span className="text-sm font-medium">Hơn 10.000 đầu sách chất lượng</span>
+                  <span className="text-sm font-medium">{t("home.libraryBadge")}</span>
                 </div>
 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                  Khám phá{" "}
+                  {t("home.heroTitleLead")}{" "}
                   <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent">
-                    thế giới sách
+                    {t("home.heroTitleAccent")}
                   </span>
                   <br />
-                  <span className="text-3xl md:text-4xl lg:text-5xl">mọi lúc, mọi nơi</span>
+                  <span className="text-3xl md:text-4xl lg:text-5xl">{t("home.heroTitleTail")}</span>
                 </h1>
 
-                <p className="text-lg md:text-xl text-blue-100/90 mb-8 max-w-lg">
-                  Từ văn học, kinh doanh đến khoa học và kỹ năng sống, BookStore giúp bạn
-                  tìm được cuốn sách phù hợp với trải nghiệm mua sắm nhanh, đẹp và đáng tin cậy.
-                </p>
+                <p className="text-lg md:text-xl text-blue-100/90 mb-8 max-w-lg">{t("home.heroDescription")}</p>
 
                 <div className="flex flex-wrap gap-4">
                   <Link
                     href="/products"
                     className="group inline-flex items-center rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 px-8 py-4 font-bold text-gray-900 shadow-xl shadow-amber-500/30 transition-all duration-300 hover:from-yellow-400 hover:to-amber-400 hover:scale-105 hover:shadow-amber-500/50"
                   >
-                    Mua ngay
+                    {t("home.shopNow")}
                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Link>
                   <Link
                     href="/categories"
                     className="group inline-flex items-center rounded-xl border-2 border-white/30 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10"
                   >
-                    Khám phá danh mục
+                    {t("home.browseCategories")}
                     <BookMarked className="ml-2 h-5 w-5 transition-transform group-hover:rotate-12" />
                   </Link>
                 </div>
@@ -223,11 +216,11 @@ export default function HomePage() {
                 <div className="mt-10 flex items-center gap-6 border-t border-white/10 pt-10">
                   <div className="flex items-center gap-2">
                     <Shield className="h-5 w-5 text-green-400" />
-                    <span className="text-sm text-blue-100/80">100% sách chính hãng</span>
+                    <span className="text-sm text-blue-100/80">{t("home.authenticBooks")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Truck className="h-5 w-5 text-green-400" />
-                    <span className="text-sm text-blue-100/80">Giao hàng nhanh toàn quốc</span>
+                    <span className="text-sm text-blue-100/80">{t("home.nationwideDelivery")}</span>
                   </div>
                 </div>
               </div>
@@ -264,7 +257,7 @@ export default function HomePage() {
                     <div className="absolute -top-4 -right-4 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 px-4 py-2 text-gray-900 shadow-lg">
                       <div className="flex items-center gap-2">
                         <Heart className="h-4 w-4" />
-                        <span className="text-sm font-bold">10K+ yêu thích</span>
+                        <span className="text-sm font-bold">{t("home.showcaseLikes")}</span>
                       </div>
                     </div>
                   </div>
@@ -311,29 +304,24 @@ export default function HomePage() {
           <div className="container mx-auto px-4 text-center relative z-10">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm mb-6">
               <Sparkles className="h-4 w-4 text-yellow-400" />
-              <span className="text-sm font-medium text-white/90">
-                Ưu đãi đặc biệt cho thành viên mới
-              </span>
+              <span className="text-sm font-medium text-white/90">{t("home.newMemberBadge")}</span>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Bắt đầu hành trình
+              {t("home.ctaTitleLead")}
               <br />
               <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent">
-                đọc sách ngay hôm nay
+                {t("home.ctaTitleAccent")}
               </span>
             </h2>
 
-            <p className="mx-auto mb-10 max-w-2xl text-xl text-blue-100/90">
-              Đăng ký để nhận ưu đãi <span className="font-bold text-yellow-400">10%</span> cho
-              đơn hàng đầu tiên và lưu lại những cuốn sách bạn yêu thích.
-            </p>
+            <p className="mx-auto mb-10 max-w-2xl text-xl text-blue-100/90">{t("home.ctaDescription")}</p>
 
             <Link
               href="/register"
               className="group inline-flex items-center rounded-2xl bg-gradient-to-r from-yellow-500 to-amber-500 px-10 py-5 font-bold text-gray-900 shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:from-yellow-400 hover:to-amber-400 hover:scale-105 hover:shadow-amber-500/50"
             >
-              <span className="mr-2">Đăng ký ngay</span>
+              <span className="mr-2">{t("home.registerNow")}</span>
               <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>

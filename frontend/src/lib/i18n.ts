@@ -10,6 +10,14 @@ export const translations: Record<Locale, Record<string, unknown>> = {
   en,
 };
 
+export function isLocale(value: string | null | undefined): value is Locale {
+  return value === "vi" || value === "en";
+}
+
+export function parseLocale(value: string | null | undefined): Locale {
+  return isLocale(value) ? value : defaultLocale;
+}
+
 export function getTranslation(locale: Locale, key: string): string {
   const keys = key.split(".");
   let value: Record<string, unknown> | unknown = translations[locale];
@@ -23,6 +31,13 @@ export function getTranslation(locale: Locale, key: string): string {
   }
   
   return typeof value === "string" ? value : key;
+}
+
+export function interpolate(template: string, variables: Record<string, string | number>): string {
+  return Object.entries(variables).reduce(
+    (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
+    template
+  );
 }
 
 export function formatCurrency(amount: number, locale: Locale = "vi"): string {
@@ -49,9 +64,9 @@ export function getLocaleFromCookie(): Locale {
   const cookies = document.cookie.split(";");
   for (const cookie of cookies) {
     const [name, value] = cookie.trim().split("=");
-    if (name === "NEXT_LOCALE" && (value === "vi" || value === "en")) {
+    if (name === "NEXT_LOCALE" && isLocale(value)) {
       return value;
     }
   }
-  return "vi";
+  return defaultLocale;
 }

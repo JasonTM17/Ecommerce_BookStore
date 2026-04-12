@@ -3,11 +3,12 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Package, ShoppingCart, Search, ChevronLeft, ChevronRight, Eye, Clock, CheckCircle, Truck, DollarSign } from "lucide-react";
 import { api } from "@/lib/api";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -15,37 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Package,
-  ShoppingCart,
-  DollarSign,
-  Truck,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Clock,
-  CheckCircle,
-  XCircle,
-  ArrowRight,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/components/providers/language-provider";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   PENDING: { bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-200" },
@@ -55,16 +29,6 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }
   DELIVERED: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
   CANCELLED: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
 };
-
-const STATUS_LABELS = [
-  { val: "", label: "Tất cả" },
-  { val: "PENDING", label: "Chờ xác nhận" },
-  { val: "CONFIRMED", label: "Đã xác nhận" },
-  { val: "PROCESSING", label: "Đang xử lý" },
-  { val: "SHIPPED", label: "Đang giao" },
-  { val: "DELIVERED", label: "Đã giao" },
-  { val: "CANCELLED", label: "Đã hủy" },
-];
 
 const PAYMENT_COLORS: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: "bg-yellow-100", text: "text-yellow-800" },
@@ -103,15 +67,98 @@ interface PageResponse<T> {
   size: number;
 }
 
+const COPY = {
+  vi: {
+    dashboard: "Dashboard",
+    title: "Quản lý đơn hàng",
+    subtitle: "Tổng cộng {count} đơn hàng",
+    totalOrders: "Tổng đơn",
+    pending: "Chờ xác nhận",
+    shipping: "Đang giao",
+    delivered: "Đã giao",
+    listTitle: "Danh sách đơn hàng",
+    searchPlaceholder: "Tìm theo mã đơn, email...",
+    statusPlaceholder: "Trạng thái",
+    all: "Tất cả",
+    orderCode: "Mã đơn",
+    customer: "Khách hàng",
+    date: "Ngày đặt",
+    amount: "Tổng tiền",
+    status: "Trạng thái",
+    payment: "Thanh toán",
+    products: "SP",
+    action: "Hành động",
+    empty: "Không có đơn hàng nào",
+    page: "Trang {current} / {total}",
+    prev: "Trước",
+    next: "Sau",
+    statusLabels: {
+      PENDING: "Chờ xác nhận",
+      CONFIRMED: "Đã xác nhận",
+      PROCESSING: "Đang xử lý",
+      SHIPPED: "Đang giao",
+      DELIVERED: "Đã giao",
+      CANCELLED: "Đã hủy",
+    },
+    paymentLabels: {
+      PENDING: "Chờ thanh toán",
+      PAID: "Đã thanh toán",
+      FAILED: "Thanh toán thất bại",
+      REFUNDED: "Đã hoàn tiền",
+    },
+  },
+  en: {
+    dashboard: "Dashboard",
+    title: "Order management",
+    subtitle: "{count} orders in total",
+    totalOrders: "Total orders",
+    pending: "Pending",
+    shipping: "Shipping",
+    delivered: "Delivered",
+    listTitle: "Order list",
+    searchPlaceholder: "Search by order code or email...",
+    statusPlaceholder: "Status",
+    all: "All",
+    orderCode: "Order code",
+    customer: "Customer",
+    date: "Date",
+    amount: "Amount",
+    status: "Status",
+    payment: "Payment",
+    products: "Items",
+    action: "Action",
+    empty: "No orders found",
+    page: "Page {current} / {total}",
+    prev: "Previous",
+    next: "Next",
+    statusLabels: {
+      PENDING: "Pending",
+      CONFIRMED: "Confirmed",
+      PROCESSING: "Processing",
+      SHIPPED: "Shipping",
+      DELIVERED: "Delivered",
+      CANCELLED: "Cancelled",
+    },
+    paymentLabels: {
+      PENDING: "Awaiting payment",
+      PAID: "Paid",
+      FAILED: "Payment failed",
+      REFUNDED: "Refunded",
+    },
+  },
+} as const;
+
 export default function AdminOrdersPage() {
   const router = useRouter();
   const { isAdmin } = useAuth();
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
 
-  const { data, isLoading, isError } = useQuery<PageResponse<Order>>({
-    queryKey: ["admin-orders", page, status],
+  const { data, isLoading } = useQuery<PageResponse<Order>>({
+    queryKey: ["admin-orders", page, status, search],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -119,7 +166,7 @@ export default function AdminOrdersPage() {
       });
       if (status) params.append("status", status);
       if (search) params.append("search", search);
-      const res = await api.get(`/admin/orders?${params}`);
+      const res = await api.get(`/admin/orders?${params.toString()}`);
       return res.data;
     },
     retry: false,
@@ -132,36 +179,43 @@ export default function AdminOrdersPage() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Bạn không có quyền truy cập trang này.</p>
+        <p className="text-gray-500">{locale === "vi" ? "Bạn không có quyền truy cập trang này." : "You do not have access to this page."}</p>
       </div>
     );
   }
 
-  // Stats
   const pendingCount = orders.filter((o) => o.status === "PENDING").length;
   const shippedCount = orders.filter((o) => o.status === "SHIPPED").length;
   const deliveredCount = orders.filter((o) => o.status === "DELIVERED").length;
+
+  const statusOptions = [
+    { val: "all", label: copy.all },
+    { val: "PENDING", label: copy.statusLabels.PENDING },
+    { val: "CONFIRMED", label: copy.statusLabels.CONFIRMED },
+    { val: "PROCESSING", label: copy.statusLabels.PROCESSING },
+    { val: "SHIPPED", label: copy.statusLabels.SHIPPED },
+    { val: "DELIVERED", label: copy.statusLabels.DELIVERED },
+    { val: "CANCELLED", label: copy.statusLabels.CANCELLED },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-gray-100 to-blue-50/30">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-            <Link href="/admin" className="hover:text-blue-600 transition-colors">Dashboard</Link>
+            <Link href="/admin" className="hover:text-blue-600 transition-colors">{copy.dashboard}</Link>
             <span>/</span>
-            <span className="text-gray-900 font-medium">Quản lý đơn hàng</span>
+            <span className="text-gray-900 font-medium">{copy.title}</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Quản lý Đơn hàng
+            {copy.title}
           </h1>
           <p className="text-gray-500 mt-1">
-            Tổng cộng <span className="font-semibold text-blue-600">{totalElements}</span> đơn hàng
+            {copy.subtitle.replace("{count}", String(totalElements))}
           </p>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card className="rounded-2xl border-0 shadow-lg">
             <CardContent className="p-5">
@@ -170,7 +224,7 @@ export default function AdminOrdersPage() {
                   <Clock className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Chờ xác nhận</p>
+                  <p className="text-sm text-gray-500">{copy.pending}</p>
                   <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
                 </div>
               </div>
@@ -183,7 +237,7 @@ export default function AdminOrdersPage() {
                   <Truck className="w-6 h-6 text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Đang giao</p>
+                  <p className="text-sm text-gray-500">{copy.shipping}</p>
                   <p className="text-2xl font-bold text-gray-900">{shippedCount}</p>
                 </div>
               </div>
@@ -196,7 +250,7 @@ export default function AdminOrdersPage() {
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Đã giao</p>
+                  <p className="text-sm text-gray-500">{copy.delivered}</p>
                   <p className="text-2xl font-bold text-gray-900">{deliveredCount}</p>
                 </div>
               </div>
@@ -209,7 +263,7 @@ export default function AdminOrdersPage() {
                   <ShoppingCart className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Tổng đơn</p>
+                  <p className="text-sm text-gray-500">{copy.totalOrders}</p>
                   <p className="text-2xl font-bold text-gray-900">{totalElements}</p>
                 </div>
               </div>
@@ -222,26 +276,26 @@ export default function AdminOrdersPage() {
             <div className="flex flex-col md:flex-row gap-4 items-end md:items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Package className="w-5 h-5 text-blue-600" />
-                <span>Danh sách đơn hàng</span>
+                <span>{copy.listTitle}</span>
               </CardTitle>
               <div className="flex gap-3 w-full md:w-auto">
                 <div className="relative flex-1 md:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Tìm theo mã đơn, email..."
+                    placeholder={copy.searchPlaceholder}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9 h-10 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <Select value={status} onValueChange={setStatus}>
+                <Select value={status || "all"} onValueChange={(v) => setStatus(v === "all" ? "" : v)}>
                   <SelectTrigger className="w-44 h-10 rounded-xl bg-white border-gray-200">
-                    <SelectValue placeholder="Trạng thái" />
+                    <SelectValue placeholder={copy.statusPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATUS_LABELS.map((s) => (
-                      <SelectItem key={s.val} value={s.val}>
-                        {s.label}
+                    {statusOptions.map((item) => (
+                      <SelectItem key={item.val || "all"} value={item.val}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -254,92 +308,74 @@ export default function AdminOrdersPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50/50">
-                    <TableHead className="w-32">Mã đơn</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead className="w-24">Ngày đặt</TableHead>
-                    <TableHead className="text-right w-32">Tổng tiền</TableHead>
-                    <TableHead className="w-28">Trạng thái</TableHead>
-                    <TableHead className="w-24">Thanh toán</TableHead>
-                    <TableHead className="text-center w-16">SP</TableHead>
-                    <TableHead className="w-20">Hành động</TableHead>
+                    <TableHead className="w-32">{copy.orderCode}</TableHead>
+                    <TableHead>{copy.customer}</TableHead>
+                    <TableHead className="w-24">{copy.date}</TableHead>
+                    <TableHead className="text-right w-32">{copy.amount}</TableHead>
+                    <TableHead className="w-28">{copy.status}</TableHead>
+                    <TableHead className="w-24">{copy.payment}</TableHead>
+                    <TableHead className="text-center w-16">{copy.products}</TableHead>
+                    <TableHead className="w-20">{copy.action}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoading
-                    ? Array.from({ length: 8 }).map((_, i) => (
-                        <TableRow key={i}>
-                          {Array.from({ length: 8 }).map((_, j) => (
-                            <TableCell key={j}>
-                              <Skeleton className="h-5 w-full" />
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    : orders.length === 0
-                    ? (
-                        <TableRow>
-                          <TableCell colSpan={8} className="text-center py-12">
-                            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500">Không có đơn hàng nào</p>
+                  {isLoading ? (
+                    Array.from({ length: 8 }).map((_, i) => (
+                      <TableRow key={i}>
+                        {Array.from({ length: 8 }).map((_, j) => (
+                          <TableCell key={j}>
+                            <Skeleton className="h-5 w-full" />
                           </TableCell>
-                        </TableRow>
-                      )
-                    : orders.map((order) => (
-                        <TableRow key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                          <TableCell className="font-mono text-xs font-medium text-blue-600">
-                            {order.orderNumber}
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <p className="font-medium text-gray-900">{order.user.fullName}</p>
-                              <p className="text-gray-400 text-xs">{order.user.email}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString("vi-VN")}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold text-gray-900">
-                            {formatCurrency(order.totalAmount)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={cn(
-                                "text-xs font-medium",
-                                STATUS_COLORS[order.status]?.bg,
-                                STATUS_COLORS[order.status]?.text
-                              )}
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : orders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-12">
+                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500">{copy.empty}</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    orders.map((order) => (
+                      <TableRow key={order.id} className="hover:bg-gray-50/50 transition-colors">
+                        <TableCell className="font-mono text-xs font-medium text-blue-600">{order.orderNumber}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <p className="font-medium text-gray-900">{order.user.fullName}</p>
+                            <p className="text-gray-400 text-xs">{order.user.email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US")}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-gray-900">{formatCurrency(order.totalAmount)}</TableCell>
+                        <TableCell>
+                          <Badge className={cn("text-xs font-medium", STATUS_COLORS[order.status]?.bg, STATUS_COLORS[order.status]?.text)}>
+                            {copy.statusLabels[order.status as keyof typeof copy.statusLabels] ?? order.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={cn("text-xs font-medium", PAYMENT_COLORS[order.paymentStatus]?.bg, PAYMENT_COLORS[order.paymentStatus]?.text)}>
+                            {copy.paymentLabels[order.paymentStatus as keyof typeof copy.paymentLabels] ?? order.paymentStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-gray-500">{order.orderItems.length}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
+                              onClick={() => router.push(`/admin/orders/${order.id}`)}
                             >
-                              {STATUS_LABELS.find((s) => s.val === order.status)?.label ?? order.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={cn(
-                                "text-xs font-medium",
-                                PAYMENT_COLORS[order.paymentStatus]?.bg,
-                                PAYMENT_COLORS[order.paymentStatus]?.text
-                              )}
-                            >
-                              {order.paymentStatus}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center text-sm text-gray-500">
-                            {order.orderItems.length}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center justify-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
-                                onClick={() => router.push(`/admin/orders/${order.id}`)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -347,27 +383,15 @@ export default function AdminOrdersPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50/50">
                 <p className="text-sm text-gray-500">
-                  Trang {page + 1} / {totalPages}
+                  {copy.page.replace("{current}", String(page + 1)).replace("{total}", String(totalPages))}
                 </p>
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(0, p - 1))}
-                    disabled={page === 0}
-                    className="rounded-xl h-9"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} className="rounded-xl h-9">
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Trước
+                    {copy.prev}
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={page >= totalPages - 1}
-                    className="rounded-xl h-9"
-                  >
-                    Sau
+                  <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1} className="rounded-xl h-9">
+                    {copy.next}
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>

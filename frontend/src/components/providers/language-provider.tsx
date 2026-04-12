@@ -1,7 +1,16 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { getLocaleFromCookie, getTranslation } from "@/lib/i18n";
+import {
+  createContext,
+  startTransition,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
+import { getLocaleFromCookie, getTranslation, isLocale } from "@/lib/i18n";
 
 export type Locale = "vi" | "en";
 
@@ -15,10 +24,6 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 const localeCookieMaxAge = 60 * 60 * 24 * 365;
 
-function isLocale(value: string | null): value is Locale {
-  return value === "vi" || value === "en";
-}
-
 export function LanguageProvider({
   children,
   initialLocale = "vi",
@@ -26,6 +31,7 @@ export function LanguageProvider({
   children: ReactNode;
   initialLocale?: Locale;
 }) {
+  const router = useRouter();
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,18 +39,28 @@ export function LanguageProvider({
     const savedLocale = localStorage.getItem("locale");
     const nextLocale = isLocale(savedLocale) ? savedLocale : getLocaleFromCookie();
 
-    setLocaleState(nextLocale);
+    if (nextLocale !== locale) {
+      setLocaleState(nextLocale);
+    }
     localStorage.setItem("locale", nextLocale);
     document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=${localeCookieMaxAge}`;
-  }, []);
+  }, [locale]);
 
   const setLocale = useCallback((newLocale: Locale) => {
-    setIsLoading(true);
-    setLocaleState(newLocale);
+    if (newLocale === locale) {
+      return;
+    }
+
     localStorage.setItem("locale", newLocale);
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=${localeCookieMaxAge}`;
-    setIsLoading(false);
-  }, []);
+    setLocaleState(newLocale);
+    setIsLoading(true);
+
+    startTransition(() => {
+      router.refresh();
+      setIsLoading(false);
+    });
+  }, [locale, router]);
 
   const t = useCallback(
     (key: string): string => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   BookOpen,
@@ -19,6 +19,7 @@ import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { ChatConversations } from "./ChatConversations";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import {
   chatbotApi,
   ChatMessage as ChatMessageType,
@@ -35,6 +36,48 @@ interface ChatbotWidgetProps {
 }
 
 type HealthKind = "checking" | "ready" | "degraded" | "disabled";
+type WidgetLocale = "vi" | "en";
+
+interface WidgetCopy {
+  checkingBadge: string;
+  checkingHeadline: string;
+  checkingMessage: string;
+  checkingPlaceholder: string;
+  checkingError: string;
+  disabledBadge: string;
+  disabledHeadline: string;
+  disabledMessage: string;
+  disabledPlaceholder: string;
+  degradedBadge: string;
+  degradedHeadline: string;
+  degradedMessage: string;
+  degradedPlaceholder: string;
+  readyBadge: (model: string) => string;
+  readyHeadline: string;
+  readyMessage: string;
+  readyPlaceholder: string;
+  readySuccess: string;
+  helperText: string;
+  disabledHelperText: string;
+  subtitle: string;
+  guestTitle: string;
+  guestDescription: string;
+  guestLoginCta: string;
+  startConversationTitle: string;
+  startConversationDescription: string;
+  serviceLabel: string;
+  sendError: string;
+  sendErrorDescription: string;
+  fallbackReply: string;
+  openAriaLabel: string;
+  closeAriaLabel: string;
+  guestActions: Array<{
+    label: string;
+    icon: typeof BookOpen;
+    path: string;
+  }>;
+  authenticatedSuggestions: string[];
+}
 
 interface HealthMeta {
   kind: HealthKind;
@@ -45,44 +88,139 @@ interface HealthMeta {
   inputPlaceholder: string;
 }
 
-const authenticatedSuggestions = [
-  "Tìm sách về Python",
-  "Gợi ý sách kỹ năng sống",
-  "Đơn hàng của tôi đang ở đâu?",
-  "Có mã giảm giá nào đang dùng được?",
-];
-
-const guestActions = [
-  { label: "Khám phá sách", icon: BookOpen, path: "/products" },
-  { label: "Xem khuyến mãi", icon: TicketPercent, path: "/promotions" },
-  { label: "Tìm theo danh mục", icon: Compass, path: "/categories" },
-];
+const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
+  vi: {
+    checkingBadge: "Đang kiểm tra",
+    checkingHeadline: "Đang xác nhận kết nối Grok",
+    checkingMessage:
+      "BookStore đang kiểm tra trạng thái tư vấn AI để hiển thị trải nghiệm phù hợp nhất.",
+    checkingPlaceholder: "Đang kiểm tra trạng thái chatbot...",
+    checkingError: "Không thể kiểm tra trạng thái chatbot.",
+    disabledBadge: "Đang tắt",
+    disabledHeadline: "Chatbot đang tạm tắt ở môi trường này",
+    disabledMessage:
+      "Bạn vẫn có thể khám phá sách, flash sale và coupon trực tiếp trên giao diện cửa hàng.",
+    disabledPlaceholder: "Chatbot đang tạm tắt",
+    degradedBadge: "Chế độ dự phòng",
+    degradedHeadline: "Grok đã được cấu hình nhưng chưa ổn định",
+    degradedMessage:
+      "Một số phản hồi có thể quay về chế độ hỗ trợ cơ bản cho tới khi kết nối Grok ổn định hơn.",
+    degradedPlaceholder: "Nhập tin nhắn, chatbot sẽ trả lời ở chế độ dự phòng nếu cần...",
+    readyBadge: (model) => `Grok sẵn sàng · ${model}`,
+    readyHeadline: "Chatbot đã sẵn sàng hỗ trợ",
+    readyMessage:
+      "Bạn có thể hỏi về sách, tình trạng đơn hàng, khuyến mãi hoặc nhờ gợi ý sản phẩm phù hợp.",
+    readyPlaceholder: "Nhập câu hỏi về sách, đơn hàng hoặc khuyến mãi...",
+    readySuccess: "Grok đã phản hồi thành công.",
+    helperText: "Nhấn Enter để gửi, Shift + Enter để xuống dòng",
+    disabledHelperText:
+      "Chatbot đang tạm tắt. Bạn vẫn có thể duyệt sách và khuyến mãi trực tiếp.",
+    subtitle: "Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng.",
+    guestTitle: "Chào bạn!",
+    guestDescription:
+      "Đăng nhập để trò chuyện 1:1 với trợ lý BookStore, theo dõi đơn hàng của bạn và nhận gợi ý sách cá nhân hóa.",
+    guestLoginCta: "Đăng nhập để bắt đầu chat",
+    startConversationTitle: "Bắt đầu một cuộc trò chuyện mới",
+    startConversationDescription:
+      "Hỏi về sách đang bán, lịch sử đơn hàng, mã giảm giá hoặc nhờ gợi ý một tủ sách phù hợp với bạn.",
+    serviceLabel: "BookStore Assistant",
+    sendError: "Không thể gửi tin nhắn. Vui lòng thử lại.",
+    sendErrorDescription: "Lỗi",
+    fallbackReply:
+      "Xin lỗi bạn, hiện tại mình đang gặp chút trục trặc kỹ thuật. Bạn có thể thử lại sau hoặc tiếp tục duyệt sách trực tiếp trong cửa hàng.",
+    openAriaLabel: "Mở chatbot",
+    closeAriaLabel: "Đóng chatbot",
+    guestActions: [
+      { label: "Khám phá sách", icon: BookOpen, path: "/products" },
+      { label: "Xem khuyến mãi", icon: TicketPercent, path: "/promotions" },
+      { label: "Tìm theo danh mục", icon: Compass, path: "/categories" },
+    ],
+    authenticatedSuggestions: [
+      "Tìm sách về Python",
+      "Gợi ý sách kỹ năng sống",
+      "Đơn hàng của tôi đang ở đâu?",
+      "Có mã giảm giá nào đang dùng được?",
+    ],
+  },
+  en: {
+    checkingBadge: "Checking",
+    checkingHeadline: "Confirming the Grok connection",
+    checkingMessage:
+      "BookStore is checking the AI assistant status so it can show the most relevant experience.",
+    checkingPlaceholder: "Checking chatbot status...",
+    checkingError: "Unable to check chatbot status.",
+    disabledBadge: "Disabled",
+    disabledHeadline: "Chatbot is temporarily off in this environment",
+    disabledMessage:
+      "You can still explore books, flash sales, and coupons directly in the store.",
+    disabledPlaceholder: "Chatbot is temporarily off",
+    degradedBadge: "Fallback mode",
+    degradedHeadline: "Grok is configured, but not fully stable",
+    degradedMessage:
+      "Some replies may fall back to the basic assistant experience until the Grok connection settles.",
+    degradedPlaceholder: "Type a message and the chatbot will fall back if needed...",
+    readyBadge: (model) => `Grok ready · ${model}`,
+    readyHeadline: "Chatbot is ready to help",
+    readyMessage:
+      "Ask about books, order status, promotions, or get recommendations tailored to you.",
+    readyPlaceholder: "Ask about books, orders, or promotions...",
+    readySuccess: "Grok replied successfully.",
+    helperText: "Press Enter to send, Shift + Enter for a new line",
+    disabledHelperText: "The chatbot is temporarily off. You can still browse the store directly.",
+    subtitle: "Book suggestions, orders, and deals right inside the store.",
+    guestTitle: "Hello there!",
+    guestDescription:
+      "Sign in to chat one-on-one with the BookStore assistant, track your orders, and get personalized book recommendations.",
+    guestLoginCta: "Sign in to start chatting",
+    startConversationTitle: "Start a new conversation",
+    startConversationDescription:
+      "Ask about books on sale, order history, coupon codes, or get recommendations for a shelf that fits your taste.",
+    serviceLabel: "BookStore Assistant",
+    sendError: "Unable to send the message. Please try again.",
+    sendErrorDescription: "Error",
+    fallbackReply:
+      "Sorry, I’m having a small technical hiccup right now. You can try again later or keep browsing books directly in the store.",
+    openAriaLabel: "Open chatbot",
+    closeAriaLabel: "Close chatbot",
+    guestActions: [
+      { label: "Browse books", icon: BookOpen, path: "/products" },
+      { label: "View promotions", icon: TicketPercent, path: "/promotions" },
+      { label: "Browse categories", icon: Compass, path: "/categories" },
+    ],
+    authenticatedSuggestions: [
+      "Find books about Python",
+      "Recommend self-help books",
+      "Where is my order?",
+      "Any coupon codes I can use right now?",
+    ],
+  },
+};
 
 function resolveHealthMeta(
   health: ChatbotHealth | null,
   isCheckingHealth: boolean,
-  healthError: string | null
+  healthError: string | null,
+  copy: WidgetCopy
 ): HealthMeta {
   if (isCheckingHealth && !health) {
     return {
       kind: "checking",
-      badgeLabel: "Đang kiểm tra",
+      badgeLabel: copy.checkingBadge,
       badgeClassName: "border-amber-400/30 bg-amber-400/10 text-amber-100",
-      headline: "Đang xác nhận kết nối Grok",
-      message: "BookStore đang kiểm tra trạng thái tư vấn AI để hiển thị trải nghiệm phù hợp nhất.",
-      inputPlaceholder: "Đang kiểm tra trạng thái chatbot...",
+      headline: copy.checkingHeadline,
+      message: copy.checkingMessage,
+      inputPlaceholder: copy.checkingPlaceholder,
     };
   }
 
   if (healthError) {
     return {
       kind: "degraded",
-      badgeLabel: "Kiểm tra thất bại",
+      badgeLabel: copy.degradedBadge,
       badgeClassName: "border-amber-400/30 bg-amber-400/10 text-amber-100",
-      headline: "Không kiểm tra được trạng thái Grok",
-      message:
-        "Backend vẫn đang chạy, nhưng chưa xác nhận được kết nối Grok. Chatbot có thể phản hồi ở chế độ dự phòng.",
-      inputPlaceholder: "Nhập tin nhắn để thử chế độ dự phòng...",
+      headline: copy.degradedHeadline,
+      message: copy.degradedMessage,
+      inputPlaceholder: copy.degradedPlaceholder,
     };
   }
 
@@ -90,41 +228,36 @@ function resolveHealthMeta(
     case "DISABLED":
       return {
         kind: "disabled",
-        badgeLabel: "Đang tắt",
+        badgeLabel: copy.disabledBadge,
         badgeClassName: "border-slate-300/30 bg-slate-500/10 text-slate-100",
-        headline: "Chatbot đang tạm tắt ở môi trường này",
-        message:
-          health.message ||
-          "Bạn vẫn có thể khám phá sách, flash sale và coupon trực tiếp trên giao diện cửa hàng.",
-        inputPlaceholder: "Chatbot đang tạm tắt",
+        headline: copy.disabledHeadline,
+        message: copy.disabledMessage,
+        inputPlaceholder: copy.disabledPlaceholder,
       };
     case "DEGRADED":
       return {
         kind: "degraded",
-        badgeLabel: "Chế độ dự phòng",
+        badgeLabel: copy.degradedBadge,
         badgeClassName: "border-orange-400/30 bg-orange-400/10 text-orange-100",
-        headline: "Grok đã được cấu hình nhưng chưa ổn định",
-        message:
-          health.message ||
-          "Một số phản hồi có thể quay về chế độ hỗ trợ cơ bản cho tới khi kết nối Grok ổn định hơn.",
-        inputPlaceholder: "Nhập tin nhắn, chatbot sẽ trả lời ở chế độ dự phòng nếu cần...",
+        headline: copy.degradedHeadline,
+        message: copy.degradedMessage,
+        inputPlaceholder: copy.degradedPlaceholder,
       };
     default:
       return {
         kind: "ready",
-        badgeLabel: `Grok sẵn sàng · ${health?.model || "grok-3"}`,
+        badgeLabel: copy.readyBadge(health?.model || "grok-3"),
         badgeClassName: "border-emerald-400/30 bg-emerald-400/10 text-emerald-100",
-        headline: "Chatbot đã sẵn sàng hỗ trợ",
-        message:
-          health?.message ||
-          "Bạn có thể hỏi về sách, tình trạng đơn hàng, khuyến mãi hoặc nhờ gợi ý sản phẩm phù hợp.",
-        inputPlaceholder: "Nhập câu hỏi về sách, đơn hàng hoặc khuyến mãi...",
+        headline: copy.readyHeadline,
+        message: copy.readyMessage,
+        inputPlaceholder: copy.readyPlaceholder,
       };
   }
 }
 
 export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
   const router = useRouter();
+  const { locale } = useLanguage();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -138,11 +271,11 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const copy = widgetCopy[locale as WidgetLocale] ?? widgetCopy.vi;
   const healthMeta = useMemo(
-    () => resolveHealthMeta(health, isCheckingHealth, healthError),
-    [health, isCheckingHealth, healthError]
+    () => resolveHealthMeta(health, isCheckingHealth, healthError, copy),
+    [copy, health, healthError, isCheckingHealth]
   );
-
   const canSendMessages = isAuthenticated && healthMeta.kind !== "disabled";
 
   const scrollToBottom = () => {
@@ -161,18 +294,18 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
     router.push(buildLoginRedirect(getCurrentPath()));
   };
 
-  const loadHealth = async () => {
+  const loadHealth = useCallback(async () => {
     setIsCheckingHealth(true);
     try {
       const response = await chatbotApi.checkHealth();
       setHealth(response);
       setHealthError(null);
     } catch {
-      setHealthError("Không thể kiểm tra trạng thái chatbot.");
+      setHealthError(copy.checkingError);
     } finally {
       setIsCheckingHealth(false);
     }
-  };
+  }, [copy.checkingError]);
 
   useEffect(() => {
     if (isOpen) {
@@ -184,7 +317,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
     if (isOpen) {
       void loadHealth();
     }
-  }, [isOpen]);
+  }, [isOpen, loadHealth]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -215,7 +348,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           status: "UP",
           service: "Grok AI Chatbot",
           model: response.modelUsed || "grok-3",
-          message: "Grok đã phản hồi thành công.",
+          message: copy.readySuccess,
           providerEnabled: "true",
         }
       );
@@ -234,9 +367,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
       notifyToast(
         toast,
         "error",
-        error?.response?.data?.message || "Không thể gửi tin nhắn. Vui lòng thử lại.",
+        error?.response?.data?.message || copy.sendError,
         {
-          description: "Lỗi",
+          description: copy.sendErrorDescription,
         }
       );
 
@@ -245,7 +378,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           ? {
               ...prev,
               status: "DEGRADED",
-              message: "BookStore đã chuyển chatbot sang chế độ dự phòng sau lần gọi vừa rồi.",
+              message: copy.degradedMessage,
             }
           : prev
       );
@@ -253,8 +386,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
       const fallbackMsg: ChatMessageType = {
         id: Date.now() + 1,
         role: "assistant",
-        content:
-          "Xin lỗi bạn, hiện tại mình đang gặp chút trục trặc kỹ thuật. Bạn có thể thử lại sau hoặc tiếp tục duyệt sách trực tiếp trong cửa hàng.",
+        content: copy.fallbackReply,
         createdAt: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
@@ -296,7 +428,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           "fixed bottom-5 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-all duration-300 active:scale-95 sm:bottom-6 sm:right-6",
           "bg-gradient-to-br from-slate-950 via-blue-800 to-blue-600 hover:scale-105 hover:shadow-blue-500/30"
         )}
-        aria-label={isOpen ? "Đóng chatbot" : "Mở chatbot"}
+        aria-label={isOpen ? copy.closeAriaLabel : copy.openAriaLabel}
       >
         {isOpen ? (
           <X className="h-6 w-6 text-white" />
@@ -334,7 +466,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           isMinimized={isMinimized}
           statusLabel={healthMeta.badgeLabel}
           statusClassName={healthMeta.badgeClassName}
-          subtitle="Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng."
+          subtitle={copy.subtitle}
           canManageConversations={isAuthenticated}
         />
 
@@ -372,7 +504,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                     onClick={() => void loadHealth()}
                     className="shrink-0 text-xs text-slate-500 hover:text-slate-900"
                   >
-                    Kiểm tra lại
+                    {locale === "vi" ? "Kiểm tra lại" : "Check again"}
                   </Button>
                 </div>
               </div>
@@ -381,7 +513,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                 className="flex-1 space-y-4 overflow-y-auto p-4"
                 role="log"
                 aria-live="polite"
-                aria-label="Tin nhắn chatbot"
+                aria-label={locale === "vi" ? "Tin nhắn chatbot" : "Chatbot messages"}
               >
                 {!isAuthenticated ? (
                   <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center shadow-sm">
@@ -390,16 +522,14 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                         <MessageCircle className="h-8 w-8 text-white" />
                       </div>
                       <h3 className="mb-2 flex items-center justify-center gap-2 text-lg font-semibold text-slate-900">
-                        Chào bạn! <Hand className="h-4 w-4 text-blue-500" />
+                        {copy.guestTitle} <Hand className="h-4 w-4 text-blue-500" />
                       </h3>
-                      <p className="text-sm leading-6 text-slate-500">
-                        Đăng nhập để trò chuyện 1:1 với trợ lý BookStore, theo dõi đơn hàng của bạn và nhận gợi ý sách cá nhân hóa.
-                      </p>
+                      <p className="text-sm leading-6 text-slate-500">{copy.guestDescription}</p>
                     </div>
 
                     <div className="space-y-3">
                       <div className="grid gap-2 sm:grid-cols-3">
-                        {guestActions.map((action) => (
+                        {copy.guestActions.map((action) => (
                           <button
                             key={action.path}
                             type="button"
@@ -419,7 +549,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                         className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 py-6 text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-blue-800"
                       >
                         <LogIn className="mr-2 h-4 w-4" />
-                        Đăng nhập để bắt đầu chat
+                        {copy.guestLoginCta}
                       </Button>
                     </div>
                   </div>
@@ -429,22 +559,21 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-950 via-blue-800 to-blue-600 shadow-lg shadow-blue-500/25">
                         <MessageCircle className="h-8 w-8 text-white" />
                       </div>
-                      <h3 className="mb-2 text-lg font-semibold text-slate-900">Bắt đầu một cuộc trò chuyện mới</h3>
-                      <p className="text-sm leading-6 text-slate-500">
-                        Hỏi về sách đang bán, lịch sử đơn hàng, mã giảm giá hoặc nhờ gợi ý một tủ sách phù hợp với bạn.
-                      </p>
+                      <h3 className="mb-2 text-lg font-semibold text-slate-900">{copy.startConversationTitle}</h3>
+                      <p className="text-sm leading-6 text-slate-500">{copy.startConversationDescription}</p>
                     </div>
 
                     <div className="space-y-3">
                       <div className="flex flex-wrap justify-center gap-2">
-                        {(healthMeta.kind === "disabled" ? guestActions.map((item) => item.label) : authenticatedSuggestions).map(
-                          (suggestion) => (
+                        {(healthMeta.kind === "disabled"
+                          ? copy.guestActions.map((action) => action.label)
+                          : copy.authenticatedSuggestions).map((suggestion) => (
                             <button
                               key={suggestion}
                               type="button"
                               onClick={() => {
                                 if (healthMeta.kind === "disabled") {
-                                  const matchingAction = guestActions.find((item) => item.label === suggestion);
+                                  const matchingAction = copy.guestActions.find((item) => item.label === suggestion);
                                   if (matchingAction) {
                                     handleGuestAction(matchingAction.path);
                                   }
@@ -457,13 +586,12 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                             >
                               {suggestion}
                             </button>
-                          )
-                        )}
+                          ))}
                       </div>
 
                       <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
                         <Sparkles className="h-3.5 w-3.5" />
-                        <span>{health?.service || "BookStore Assistant"}</span>
+                        <span>{health?.service || copy.serviceLabel}</span>
                       </div>
                     </div>
                   </div>
@@ -499,11 +627,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                   isTyping={isTyping}
                   disabled={!canSendMessages || isAuthLoading}
                   placeholder={healthMeta.inputPlaceholder}
-                  helperText={
-                    canSendMessages
-                      ? "Nhấn Enter để gửi, Shift + Enter để xuống dòng"
-                      : "Chatbot đang tạm tắt. Bạn có thể duyệt sách và khuyến mãi trực tiếp."
-                  }
+                  helperText={canSendMessages ? copy.helperText : copy.disabledHelperText}
                 />
               ) : null}
             </div>
