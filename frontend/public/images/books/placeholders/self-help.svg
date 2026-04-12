@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Self help placeholder cover">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" rx="36" fill="url(#bg)"/>
+  <rect x="64" y="80" width="472" height="640" rx="28" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)"/>
+  <path d="M300 232c48 0 88 40 88 88 0 92-88 164-88 164s-88-72-88-164c0-48 40-88 88-88z" fill="none" stroke="#faf5ff" stroke-width="18"/>
+  <path d="M300 282v116M242 340h116" stroke="#faf5ff" stroke-width="18" stroke-linecap="round"/>
+  <text x="300" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#faf5ff">Self Growth</text>
+  <text x="300" y="636" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="rgba(250,245,255,0.9)">Reader Favorite</text>
+</svg>

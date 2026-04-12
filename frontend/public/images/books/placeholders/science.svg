@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Science placeholder cover">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" rx="36" fill="url(#bg)"/>
+  <rect x="64" y="80" width="472" height="640" rx="28" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)"/>
+  <circle cx="300" cy="298" r="92" fill="none" stroke="#f0f9ff" stroke-width="18"/>
+  <circle cx="300" cy="298" r="28" fill="#f0f9ff"/>
+  <ellipse cx="300" cy="298" rx="150" ry="48" fill="none" stroke="rgba(240,249,255,0.9)" stroke-width="12"/>
+  <ellipse cx="300" cy="298" rx="48" ry="150" fill="none" stroke="rgba(240,249,255,0.7)" stroke-width="12"/>
+  <text x="300" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#f0f9ff">Science</text>
+  <text x="300" y="636" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="rgba(240,249,255,0.9)">Showcase Series</text>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Art placeholder cover">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" rx="36" fill="url(#bg)"/>
+  <rect x="64" y="80" width="472" height="640" rx="28" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)"/>
+  <path d="M212 446c0-74 40-172 96-212 56 40 96 138 96 212-24 28-50 42-96 42s-72-14-96-42z" fill="none" stroke="#fdf2f8" stroke-width="18" stroke-linejoin="round"/>
+  <circle cx="260" cy="320" r="18" fill="#fde68a"/>
+  <circle cx="338" cy="284" r="18" fill="#bfdbfe"/>
+  <circle cx="358" cy="360" r="18" fill="#bbf7d0"/>
+  <text x="300" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#fdf2f8">Art & Design</text>
+  <text x="300" y="636" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="rgba(253,242,248,0.9)">Creative Shelf</text>
+</svg>

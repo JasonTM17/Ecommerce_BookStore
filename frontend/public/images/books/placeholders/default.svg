@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Default placeholder cover">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" rx="36" fill="url(#bg)"/>
+  <rect x="64" y="80" width="472" height="640" rx="28" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.18)"/>
+  <path d="M196 236c40 0 70 10 104 28 34-18 64-28 104-28v236c-36 0-68 10-104 28-36-18-68-28-104-28z" fill="none" stroke="#e2e8f0" stroke-width="18" stroke-linejoin="round"/>
+  <text x="300" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#e2e8f0">BookStore</text>
+  <text x="300" y="636" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="rgba(226,232,240,0.85)">Signature Edition</text>
+</svg>

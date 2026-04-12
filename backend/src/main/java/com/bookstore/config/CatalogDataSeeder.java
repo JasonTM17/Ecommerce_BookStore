@@ -10,8 +10,11 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Tách logic seed danh mục / NXB / sách để tái sử dụng khi DB có user nhưng chưa có sản phẩm.
@@ -275,12 +278,28 @@ public final class CatalogDataSeeder {
 
         for (Category cat : categorySlots) {
             int themeIndex = resolveThemeIndex(cat);
+            List<ShowcaseBookCatalog.ShowcaseBookSeed> showcaseBooks = ShowcaseBookCatalog.forCategory(cat.getName());
+            Set<String> curatedTitles = new HashSet<>();
 
-            for (int i = 0; i < PRODUCTS_PER_SLOT; i++) {
+            for (int curatedIndex = 0; curatedIndex < showcaseBooks.size() && curatedIndex < PRODUCTS_PER_SLOT; curatedIndex++) {
+                ShowcaseBookCatalog.ShowcaseBookSeed showcaseBook = showcaseBooks.get(curatedIndex);
+                Brand brand = resolveBrand(brands, showcaseBook.publisher(), rand);
+                products.add(buildCuratedProduct(cat, brand, showcaseBook, curatedIndex, rand));
+                curatedTitles.add(showcaseBook.title().toLowerCase(Locale.ROOT));
+            }
+
+            for (int i = showcaseBooks.size(); i < PRODUCTS_PER_SLOT; i++) {
+                int genericIndex = i - showcaseBooks.size();
                 String[] themeTitles = bookTitles[themeIndex];
-                String title = buildVariantTitle(themeTitles[i % themeTitles.length], i / themeTitles.length);
-                String author = authors[themeIndex][i % authors[themeIndex].length];
-                String publisher = publishers[themeIndex][i % publishers[themeIndex].length];
+                String baseTitle = themeTitles[genericIndex % themeTitles.length];
+                int variantIndex = genericIndex / themeTitles.length;
+                String title = buildVariantTitle(baseTitle, variantIndex);
+                if (variantIndex == 0 && curatedTitles.contains(baseTitle.toLowerCase(Locale.ROOT))) {
+                    title = buildVariantTitle(baseTitle, 1);
+                }
+
+                String author = authors[themeIndex][genericIndex % authors[themeIndex].length];
+                String publisher = publishers[themeIndex][genericIndex % publishers[themeIndex].length];
                 int basePrice = priceRanges[rand.nextInt(priceRanges.length)];
                 int discountPercent = rand.nextInt(5) == 0 ? 0 : rand.nextInt(35) + 5;
                 BigDecimal price = BigDecimal.valueOf(basePrice);
@@ -308,6 +327,9 @@ public final class CatalogDataSeeder {
                 boolean isFeatured = i < 3;
                 boolean isBestseller = i < 4;
                 boolean isNew = i >= 2 && i < 6;
+                String imageUrl = resolvePlaceholderPath(cat);
+                String shortDesc = buildShortDescription(cat.getName(), author, publisher);
+                String description = buildLongDescription(cat.getName(), author, publisher, pages);
 
                 Product product = Product.builder()
                         .name(title)
@@ -334,17 +356,66 @@ public final class CatalogDataSeeder {
                         .reviewCount(rand.nextInt(220) + 20)
                         .soldCount(rand.nextInt(2400) + 50)
                         .viewCount(rand.nextInt(12000) + 500)
-                        .imageUrl("https://picsum.photos/seed/" + title.hashCode() + "/300/400")
-                        .images(List.of(
-                                "https://picsum.photos/seed/" + title.hashCode() + "/300/400",
-                                "https://picsum.photos/seed/" + (title.hashCode() + 1) + "/300/400",
-                                "https://picsum.photos/seed/" + (title.hashCode() + 2) + "/300/400"
-                        ))
+                        .imageUrl(imageUrl)
+                        .images(List.of(imageUrl))
                         .build();
                 products.add(product);
             }
         }
         return products;
+    }
+
+    private static Product buildCuratedProduct(
+            Category category,
+            Brand brand,
+            ShowcaseBookCatalog.ShowcaseBookSeed showcaseBook,
+            int slotIndex,
+            Random rand) {
+
+        int[] pageCounts = {224, 256, 288, 320, 352, 384, 416, 448, 512, 560};
+        int[] weights = {180, 220, 260, 300, 340, 380, 420, 480, 540, 620};
+        int[] prices = {129000, 149000, 169000, 189000, 219000, 249000, 279000, 319000};
+
+        BigDecimal price = BigDecimal.valueOf(prices[Math.min(slotIndex % prices.length, prices.length - 1)]);
+        int discountPercent = 10 + rand.nextInt(16);
+        BigDecimal discountPrice = price.multiply(BigDecimal.valueOf(100 - discountPercent))
+                .divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+
+        boolean isFeatured = slotIndex < 2;
+        boolean isBestseller = slotIndex < 2;
+        boolean isNew = slotIndex == 1;
+
+        int pages = pageCounts[Math.min(slotIndex % pageCounts.length, pageCounts.length - 1)];
+        int weight = weights[Math.min(slotIndex % weights.length, weights.length - 1)];
+
+        return Product.builder()
+                .name(showcaseBook.title())
+                .author(showcaseBook.author())
+                .publisher(showcaseBook.publisher())
+                .isbn(showcaseBook.isbn())
+                .price(price)
+                .discountPrice(discountPrice)
+                .discountPercent(discountPercent)
+                .stockQuantity(45 + slotIndex * 10)
+                .shortDescription(buildShowcaseShortDescription(showcaseBook, category.getName()))
+                .description(buildShowcaseLongDescription(showcaseBook, category.getName()))
+                .category(category)
+                .brand(brand)
+                .pageCount(pages)
+                .publishedYear(showcaseBook.publishedYear())
+                .weightGrams(weight)
+                .language(showcaseBook.language())
+                .isFeatured(isFeatured)
+                .isBestseller(isBestseller)
+                .isNew(isNew)
+                .isActive(true)
+                .avgRating(4.5 + (slotIndex * 0.1))
+                .reviewCount(120 + slotIndex * 24)
+                .soldCount(1800 - slotIndex * 80)
+                .viewCount(9000 - slotIndex * 240)
+                .imageUrl(showcaseBook.coverUrl())
+                .images(List.of(showcaseBook.coverUrl()))
+                .build();
     }
 
     private static String buildVariantTitle(String baseTitle, int variantIndex) {
@@ -376,5 +447,60 @@ public final class CatalogDataSeeder {
 
     private static String resolveLanguage(Category category) {
         return resolveThemeIndex(category) == 6 ? "English" : "Vietnamese";
+    }
+
+    private static Brand resolveBrand(List<Brand> brands, String publisher, Random rand) {
+        return brands.stream()
+                .filter(brand -> brand.getName() != null && brand.getName().equalsIgnoreCase(publisher))
+                .findFirst()
+                .or(() -> brands.stream()
+                        .filter(brand -> brand.getName() != null
+                                && (publisher.toLowerCase(Locale.ROOT).contains(brand.getName().toLowerCase(Locale.ROOT))
+                                || brand.getName().toLowerCase(Locale.ROOT).contains(publisher.toLowerCase(Locale.ROOT))))
+                        .findFirst())
+                .orElseGet(() -> brands.get(rand.nextInt(brands.size())));
+    }
+
+    private static String buildShortDescription(String categoryName, String author, String publisher) {
+        return "Tựa sách tuyển chọn thuộc nhóm " + categoryName + ", được biên soạn bởi "
+                + author + " và phát hành bởi " + publisher + ".";
+    }
+
+    private static String buildLongDescription(String categoryName, String author, String publisher, int pageCount) {
+        return buildShortDescription(categoryName, author, publisher)
+                + "\n\nCuốn sách mang đến nội dung cô đọng, dễ tiếp cận và phù hợp cho người đọc đang muốn mở rộng kiến thức về "
+                + categoryName + ". Ấn bản demo này có khoảng " + pageCount
+                + " trang, trình bày hiện đại và phù hợp để giới thiệu trong không gian mua sắm trực tuyến.";
+    }
+
+    private static String buildShowcaseShortDescription(
+            ShowcaseBookCatalog.ShowcaseBookSeed showcaseBook,
+            String categoryName) {
+        return showcaseBook.title() + " là tựa sách nổi bật trong danh mục " + categoryName
+                + ", phù hợp để giới thiệu ở các khu vực showcase, wishlist và flash sale.";
+    }
+
+    private static String buildShowcaseLongDescription(
+            ShowcaseBookCatalog.ShowcaseBookSeed showcaseBook,
+            String categoryName) {
+        return showcaseBook.title() + " của " + showcaseBook.author()
+                + " là đầu sách được tuyển chọn cho catalog demo chuyên nghiệp của BookStore."
+                + "\n\nTựa sách thuộc nhóm " + categoryName
+                + ", sử dụng bìa thật từ nguồn công khai ổn định để các màn hình homepage, product detail, order history và flash sale hiển thị thuyết phục hơn."
+                + "\n\nPhù hợp cho người đọc yêu thích những cuốn sách có giá trị lâu dài, nội dung dễ tiếp cận và trải nghiệm trình bày đẹp mắt.";
+    }
+
+    private static String resolvePlaceholderPath(Category category) {
+        return switch (ShowcaseBookCatalog.forCategory(category.getName()).isEmpty() ? resolveThemeIndex(category) : resolveThemeIndex(category)) {
+            case 0, 6 -> "/images/books/placeholders/literature.svg";
+            case 1 -> "/images/books/placeholders/business.svg";
+            case 2, 7 -> "/images/books/placeholders/science.svg";
+            case 3 -> "/images/books/placeholders/self-help.svg";
+            case 4 -> "/images/books/placeholders/children.svg";
+            case 5 -> "/images/books/placeholders/history.svg";
+            case 8 -> "/images/books/placeholders/cooking.svg";
+            case 9 -> "/images/books/placeholders/art.svg";
+            default -> "/images/books/placeholders/default.svg";
+        };
     }
 }
