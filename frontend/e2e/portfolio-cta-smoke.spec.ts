@@ -88,7 +88,7 @@ test.describe("Portfolio CTA smoke", () => {
       firstCard.getByTestId("product-card-add-to-cart").click(),
     ]);
 
-    await expect(page.getByText("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng")).toBeVisible();
+    await expect(page.getByTestId("login-redirect-notice")).toContainText("thêm sản phẩm vào giỏ hàng");
   });
 
   test("guest wishlist on product cards redirects back through login", async ({ page }) => {
@@ -168,5 +168,25 @@ test.describe("Portfolio CTA smoke", () => {
 
     const openCalls = await page.evaluate(() => window.__openCalls || []);
     expect(openCalls[0]?.[0]).toContain("mailto:contact@bookstore.com");
+  });
+
+  test("chatbot widget shows guest guidance and live Grok status after login", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByTestId("chatbot-launcher").click();
+    await expect(page.getByText(/đăng nhập để trò chuyện 1:1/i)).toBeVisible();
+    await expect(page.getByTestId("chatbot-status-badge")).toBeVisible();
+
+    await Promise.all([
+      page.waitForURL(/\/login\?redirect=%2F$/),
+      page.getByTestId("chatbot-login-cta").click(),
+    ]);
+
+    await login(page);
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.getByTestId("chatbot-launcher").click();
+    await expect(page.getByTestId("chatbot-status-badge")).toContainText(/grok sẵn sàng/i);
+    await expect(page.getByText(/chatbot đã sẵn sàng hỗ trợ/i)).toBeVisible();
   });
 });
