@@ -47,8 +47,11 @@ backend/logs/
 # Uploads
 uploads/
 
-# Docker
-.dockerignore
+# Docker volumes
+docker-data/
+
+# Third-party embedded repos
+agency-agents/
 
 # Misc
 *.log
@@ -62,5 +65,5 @@ frontend/test-results/
 frontend/artifacts/
 
 
-# Cursor — plan/todos cục bộ, không đưa vào Git
+# Cursor
 .cursor/

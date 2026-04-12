@@ -118,17 +118,17 @@ cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
 
 ```text
 Ecommerce_BookStore/
-â”œâ”€â”€ backend/
-â”œâ”€â”€ frontend/
-â”œâ”€â”€ mobile/
-â”œâ”€â”€ docs/
-â”œâ”€â”€ docker-compose.yml
-â”œâ”€â”€ Dockerfile.backend
-â””â”€â”€ Dockerfile.frontend
+|-- backend/          # Spring Boot REST API
+|-- frontend/         # Next.js 14 App Router
+|-- docs/             # Project documentation
+|-- scripts/          # CI/E2E helper scripts
+|-- docker-compose.yml
+|-- Dockerfile.backend
++-- Dockerfile.frontend
 ```
 
 ## Notes
 
 - This repository is optimized for portfolio and demo flows first.
 - CI coverage gates are kept honest against the current baseline.
-- `agency-agents/` remains outside the current app-directory rename scope.
+- Do not commit real secrets — always use `.env` (gitignored) for local overrides.
