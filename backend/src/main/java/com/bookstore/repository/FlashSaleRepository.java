@@ -22,6 +22,27 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, Long> {
 
     Page<FlashSale> findByIsActiveTrueOrderByStartTimeDesc(Pageable pageable);
 
+    @Query("SELECT fs FROM FlashSale fs WHERE fs.isActive = true AND fs.endTime < :now")
+    List<FlashSale> findExpiredActiveFlashSales(@Param("now") LocalDateTime now);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(fs) > 0 THEN true ELSE false END
+            FROM FlashSale fs
+            WHERE fs.isActive = true
+              AND fs.startTime <= :endTime
+              AND fs.endTime >= :startTime
+            """)
+    boolean existsOverlappingActiveFlashSales(@Param("startTime") LocalDateTime startTime,
+                                              @Param("endTime") LocalDateTime endTime);
+
+    @Query("""
+            SELECT DISTINCT fs.product.id
+            FROM FlashSale fs
+            WHERE fs.isActive = true
+              AND fs.endTime >= :now
+            """)
+    List<Long> findScheduledProductIdsFrom(@Param("now") LocalDateTime now);
+
     @Query("SELECT fs FROM FlashSale fs JOIN FETCH fs.product WHERE fs.id = :id")
     FlashSale findByIdWithProduct(@Param("id") Long id);
 }
