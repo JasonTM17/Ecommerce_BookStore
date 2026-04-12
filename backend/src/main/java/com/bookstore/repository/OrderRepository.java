@@ -33,10 +33,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.orderStatus = :status")
     long countByOrderStatus(OrderStatus status);
 
-    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.paymentStatus = 'PAID'")
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.paymentStatus = 'SUCCESS'")
     BigDecimal calculateTotalRevenue();
 
-    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.paymentStatus = 'PAID' AND o.createdAt >= :startDate AND o.createdAt <= :endDate")
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.paymentStatus = 'SUCCESS' AND o.createdAt >= :startDate AND o.createdAt <= :endDate")
     BigDecimal calculateRevenueBetweenDates(LocalDateTime startDate, LocalDateTime endDate);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt >= :startDate AND o.createdAt <= :endDate")
@@ -45,7 +45,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o.orderStatus, COUNT(o) FROM Order o GROUP BY o.orderStatus")
     List<Object[]> countOrdersByStatus();
 
-    @Query("SELECT MONTH(o.createdAt), SUM(o.totalAmount) FROM Order o WHERE YEAR(o.createdAt) = :year AND o.paymentStatus = 'PAID' GROUP BY MONTH(o.createdAt)")
+    @Query("SELECT MONTH(o.createdAt), SUM(o.totalAmount) FROM Order o WHERE YEAR(o.createdAt) = :year AND o.paymentStatus = 'SUCCESS' GROUP BY MONTH(o.createdAt)")
     List<Object[]> getMonthlyRevenue(int year);
 
     @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.product WHERE o.id = :id")
