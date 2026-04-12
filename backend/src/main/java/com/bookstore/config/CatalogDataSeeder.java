@@ -17,7 +17,14 @@ import java.util.Random;
  * Tách logic seed danh mục / NXB / sách để tái sử dụng khi DB có user nhưng chưa có sản phẩm.
  */
 public final class CatalogDataSeeder {
-    private static final int PRODUCTS_PER_SLOT = 12;
+    private static final int PRODUCTS_PER_SLOT = 15;
+    private static final String[] TITLE_VARIANTS = {
+            "Ấn bản đặc biệt",
+            "Bản bìa cứng",
+            "Phiên bản cập nhật",
+            "Tái bản chọn lọc",
+            "Bản sưu tầm"
+    };
 
     private CatalogDataSeeder() {
     }
@@ -271,7 +278,7 @@ public final class CatalogDataSeeder {
 
             for (int i = 0; i < PRODUCTS_PER_SLOT; i++) {
                 String[] themeTitles = bookTitles[themeIndex];
-                String title = themeTitles[i % themeTitles.length] + (i / themeTitles.length > 0 ? " - Tập " + (i / themeTitles.length + 1) : "");
+                String title = buildVariantTitle(themeTitles[i % themeTitles.length], i / themeTitles.length);
                 String author = authors[themeIndex][i % authors[themeIndex].length];
                 String publisher = publishers[themeIndex][i % publishers[themeIndex].length];
                 int basePrice = priceRanges[rand.nextInt(priceRanges.length)];
@@ -280,7 +287,7 @@ public final class CatalogDataSeeder {
                 BigDecimal discountPrice = discountPercent > 0
                         ? price.multiply(BigDecimal.valueOf(100 - discountPercent)).divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP)
                         : null;
-                int stock = rand.nextInt(200) + 10;
+                int stock = rand.nextInt(180) + 20;
                 int pages = pageCounts[rand.nextInt(pageCounts.length)];
                 int year = years[rand.nextInt(years.length)];
                 int weight = weights[rand.nextInt(weights.length)];
@@ -298,9 +305,9 @@ public final class CatalogDataSeeder {
                         "Với " + pages + " trang, cuốn sách được trình bày đẹp mắt với chất lượng in ấn cao cấp.\n\n" +
                         "Sách phù hợp với mọi lứa tuổi, đặc biệt là những ai quan tâm đến " + cat.getName() + ".";
 
-                boolean isFeatured = i < 2;
-                boolean isBestseller = i < 2;
-                boolean isNew = i < 3;
+                boolean isFeatured = i < 3;
+                boolean isBestseller = i < 4;
+                boolean isNew = i >= 2 && i < 6;
 
                 Product product = Product.builder()
                         .name(title)
@@ -323,10 +330,10 @@ public final class CatalogDataSeeder {
                         .isBestseller(isBestseller)
                         .isNew(isNew)
                         .isActive(true)
-                        .avgRating(Math.round((3.5 + rand.nextDouble() * 1.5) * 10.0) / 10.0)
-                        .reviewCount(rand.nextInt(100))
-                        .soldCount(rand.nextInt(500))
-                        .viewCount(rand.nextInt(2000))
+                        .avgRating(Math.round((4.0 + rand.nextDouble()) * 10.0) / 10.0)
+                        .reviewCount(rand.nextInt(220) + 20)
+                        .soldCount(rand.nextInt(2400) + 50)
+                        .viewCount(rand.nextInt(12000) + 500)
                         .imageUrl("https://picsum.photos/seed/" + title.hashCode() + "/300/400")
                         .images(List.of(
                                 "https://picsum.photos/seed/" + title.hashCode() + "/300/400",
@@ -338,6 +345,15 @@ public final class CatalogDataSeeder {
             }
         }
         return products;
+    }
+
+    private static String buildVariantTitle(String baseTitle, int variantIndex) {
+        if (variantIndex <= 0) {
+            return baseTitle;
+        }
+
+        String variant = TITLE_VARIANTS[(variantIndex - 1) % TITLE_VARIANTS.length];
+        return baseTitle + " - " + variant;
     }
 
     private static int resolveThemeIndex(Category category) {
