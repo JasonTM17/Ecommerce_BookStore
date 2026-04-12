@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,10 @@ public class GrokChatbotService extends AbstractChatbotService {
 
     @Value("${grok.max.context.messages:10}")
     private int maxContextMessages;
+
+    private volatile LocalDateTime lastSuccessAt;
+    private volatile LocalDateTime lastFailureAt;
+    private volatile String lastFailureMessage;
 
     public GrokChatbotService(
             ChatConversationRepository conversationRepository,
@@ -85,14 +90,17 @@ public class GrokChatbotService extends AbstractChatbotService {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode choices = root.path("choices");
                 if (choices.isArray() && !choices.isEmpty()) {
+                    markSuccess();
                     return choices.get(0).path("message").path("content").asText(getFallbackResponse());
                 }
             }
 
             log.error("Grok API returned unexpected response: {}", response.getStatusCode());
+            markFailure("Grok API returned " + response.getStatusCode());
             return getFallbackResponse();
         } catch (Exception e) {
             log.error("Error calling Grok API: {}", e.getMessage());
+            markFailure(e.getMessage());
             return getFallbackResponse();
         }
     }
@@ -104,7 +112,15 @@ public class GrokChatbotService extends AbstractChatbotService {
 
     @Override
     protected String getStatus() {
-        return (grokApiKey == null || grokApiKey.isBlank()) ? "DEGRADED" : "UP";
+        if (grokApiKey == null || grokApiKey.isBlank()) {
+            return "DEGRADED";
+        }
+
+        if (lastFailureAt != null && (lastSuccessAt == null || lastFailureAt.isAfter(lastSuccessAt))) {
+            return "DEGRADED";
+        }
+
+        return "UP";
     }
 
     @Override
@@ -115,5 +131,30 @@ public class GrokChatbotService extends AbstractChatbotService {
     @Override
     protected int getMaxContextMessages() {
         return maxContextMessages;
+    }
+
+    @Override
+    protected String getStatusMessage() {
+        if (grokApiKey == null || grokApiKey.isBlank()) {
+            return "Grok đang bật nhưng chưa có API key trong environment.";
+        }
+
+        if (lastFailureAt != null && (lastSuccessAt == null || lastFailureAt.isAfter(lastSuccessAt))) {
+            return "Grok đã được cấu hình nhưng lần gọi gần nhất thất bại: "
+                    + (lastFailureMessage != null ? lastFailureMessage : "không rõ nguyên nhân");
+        }
+
+        return "Grok đã được cấu hình và sẵn sàng trả lời.";
+    }
+
+    private void markSuccess() {
+        lastSuccessAt = LocalDateTime.now();
+        lastFailureAt = null;
+        lastFailureMessage = null;
+    }
+
+    private void markFailure(String failureMessage) {
+        lastFailureAt = LocalDateTime.now();
+        lastFailureMessage = failureMessage;
     }
 }

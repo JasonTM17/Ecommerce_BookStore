@@ -56,6 +56,14 @@ export interface ChatMessageRequest {
   conversationTitle?: string;
 }
 
+export interface ChatbotHealth {
+  status: string;
+  service: string;
+  model: string;
+  message?: string;
+  providerEnabled?: string;
+}
+
 export const chatbotApi = {
   sendMessage: async (request: ChatMessageRequest) => {
     const response = await api.post<{ data: ChatbotResponse }>(
@@ -98,7 +106,7 @@ export const chatbotApi = {
   },
 
   checkHealth: async () => {
-    const response = await api.get<{ data: { status: string } }>(
+    const response = await api.get<{ data: ChatbotHealth }>(
       "/chatbot/health"
     );
     return response.data.data;

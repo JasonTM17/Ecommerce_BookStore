@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -139,11 +140,21 @@ public abstract class AbstractChatbotService implements ChatbotService {
 
     @Override
     public Map<String, String> getHealthStatus() {
-        return Map.of(
-                "status", getStatus(),
-                "service", getServiceName(),
-                "model", getModelName()
-        );
+        Map<String, String> health = new LinkedHashMap<>();
+        health.put("status", getStatus());
+        health.put("service", getServiceName());
+        health.put("model", getModelName());
+        health.put("message", getStatusMessage());
+        health.put("providerEnabled", Boolean.toString(isProviderEnabled()));
+        return health;
+    }
+
+    protected String getStatusMessage() {
+        return switch (getStatus()) {
+            case "DISABLED" -> "Chatbot đang được tắt cho môi trường này.";
+            case "DEGRADED" -> "Chatbot đang chạy ở chế độ dự phòng.";
+            default -> "Chatbot sẵn sàng hỗ trợ.";
+        };
     }
 
     protected String getFallbackResponse() {

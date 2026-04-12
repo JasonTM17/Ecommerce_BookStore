@@ -1,21 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { chatbotApi } from "@/lib/chatbot";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => Promise<void>;
   isTyping?: boolean;
   disabled?: boolean;
+  placeholder?: string;
+  helperText?: string;
 }
 
 export function ChatInput({
   onSendMessage,
   isTyping = false,
   disabled = false,
+  placeholder = "Nhập tin nhắn...",
+  helperText = "Nhấn Enter để gửi, Shift + Enter để xuống dòng",
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
 
@@ -31,29 +34,26 @@ export function ChatInput({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      void handleSubmit(e);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-gray-100">
+    <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white p-3">
       <div className="flex items-end gap-2">
-        <div className="flex-1 relative">
+        <div className="relative flex-1">
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Nhập tin nhắn..."
+            placeholder={placeholder}
             disabled={disabled || isTyping}
             rows={1}
             className={cn(
-              "w-full px-4 py-3 pr-12 rounded-xl",
-              "bg-gray-50 border border-gray-200",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500",
-              "resize-none text-sm",
-              "placeholder:text-gray-400",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-              "transition-all duration-200"
+              "w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm transition-all duration-200",
+              "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/15",
+              "placeholder:text-slate-400",
+              "disabled:cursor-not-allowed disabled:opacity-60"
             )}
             style={{
               minHeight: "48px",
@@ -62,7 +62,7 @@ export function ChatInput({
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
               target.style.height = "auto";
-              target.style.height = Math.min(target.scrollHeight, 120) + "px";
+              target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
             }}
           />
         </div>
@@ -72,25 +72,16 @@ export function ChatInput({
           size="icon"
           disabled={!message.trim() || isTyping || disabled}
           className={cn(
-            "h-12 w-12 rounded-xl shrink-0",
-            "bg-gradient-to-br from-blue-600 to-blue-700",
+            "h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/25 transition-all duration-200",
             "hover:from-blue-700 hover:to-blue-800",
-            "shadow-lg shadow-blue-500/30",
-            "transition-all duration-200",
-            (message === "" || isTyping || disabled) && "opacity-50 cursor-not-allowed"
+            (!message.trim() || isTyping || disabled) && "cursor-not-allowed opacity-50"
           )}
         >
-          {isTyping ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Send className="h-5 w-5" />
-          )}
+          {isTyping ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
         </Button>
       </div>
 
-      <p className="text-[10px] text-gray-400 mt-2 text-center">
-        Nhấn Enter để gửi, Shift + Enter để xuống dòng
-      </p>
+      <p className="mt-2 text-center text-[10px] text-slate-400">{helperText}</p>
     </form>
   );
 }
