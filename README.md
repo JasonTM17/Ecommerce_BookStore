@@ -1,110 +1,63 @@
-# BookStore — Nền tảng thương mại điện tử sách (E-Commerce Bookstore)
+# BookStore
 
-[![Java](https://img.shields.io/badge/Java-17+-ED8B00?style=flat-square&logo=java&logoColor=white)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+Portfolio full-stack bookstore built with Spring Boot, Next.js, MySQL, Docker Compose, Vitest, Playwright, and GitHub Actions.
 
-Ứng dụng web bán sách full-stack: **Spring Boot (REST API)** + **Next.js (App Router)** + **MySQL**, có Docker Compose, test (JUnit, Vitest, Playwright) và CI trên GitHub Actions.
+## Stack
 
-> **Mục đích:** Dự án phục vụ **học tập** và **portfolio** — không dùng cho môi trường production thật nếu chưa được rà soát bảo mật và cấu hình đầy đủ.
+- `backend/`: Spring Boot 3.2, JPA/Hibernate, JWT auth, MySQL, Swagger, Actuator
+- `frontend/`: Next.js 14 App Router, Tailwind CSS, Vitest, Playwright
+- `mobile/`: mobile app workspace kept for future expansion
 
----
+## Demo-first quick start
 
-## Tác giả
-
-| | |
-|---|---|
-| **Họ tên** | Nguyễn Sơn |
-| **Email** | [jasonbmt06@gmail.com](mailto:jasonbmt06@gmail.com) |
-| **Repository** | Dự án portfolio cá nhân |
-
----
-
-## Tính năng chính (tóm tắt)
-
-- Đăng ký / đăng nhập JWT + refresh token, phân quyền Admin / Customer  
-- Danh mục, sản phẩm, giỏ hàng, đơn hàng, thanh toán (VNPay sandbox)  
-- Flash sale, mã giảm giá, wishlist, chatbot (tích hợp API), theo dõi đọc sách (reading tracker)  
-- Giao diện Next.js + Tailwind, SEO cơ bản, PWA/manifest, health check API  
-
-Chi tiết lộ trình và checklist: [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md).
-
----
-
-## Kiến trúc
-
-```text
-[Browser] → Next.js (frontend) → REST API Spring Boot (backend) → MySQL
-                                              ↘ Email (SMTP, tùy cấu hình)
-```
-
----
-
-## Yêu cầu môi trường
-
-- **Docker Desktop** (khuyến nghị cho chạy nhanh toàn stack)  
-- Hoặc: **Java 17+**, **Node.js 18+**, **MySQL 8** nếu chạy từng service tay  
-
----
-
-## Chạy nhanh với Docker
-
-1. Sao chép biến môi trường:
+1. Create local environment variables:
 
    ```bash
    copy .env.example .env
    ```
 
-   Set `GROK_ENABLED=true` together with `GROK_API_KEY=...` if you want Grok enabled in local/dev.
+2. Update `.env` if needed:
+   - database credentials
+   - `GROK_ENABLED=true` and `GROK_API_KEY=...` if you want Grok enabled locally
+   - `FLASHSALE_AUTO_*` if you want to tune the weekly flash sale rotation
 
-2. Chỉnh `.env` (database, JWT, mail nếu cần).
-
-3. Khởi động:
+3. Start the full stack:
 
    ```bash
    docker compose up -d --build
    ```
 
-4. Truy cập:
+4. Open the demo:
+   - Frontend: [http://localhost:3001](http://localhost:3001)
+   - Backend API: [http://localhost:8080/api](http://localhost:8080/api)
+   - Swagger UI: [http://localhost:8080/api/swagger-ui.html](http://localhost:8080/api/swagger-ui.html)
+   - Health check: [http://localhost:8080/api/actuator/health/liveness](http://localhost:8080/api/actuator/health/liveness)
 
-   | Dịch vụ | URL |
-   |---------|-----|
-| Frontend | http://localhost:3001 |
-   | API (context `/api`) | http://localhost:8080/api |
-   | Swagger UI | http://localhost:8080/api/swagger-ui.html |
-| Health (actuator liveness) | http://localhost:8080/api/actuator/health/liveness |
+## Demo accounts
 
----
+- Admin: `admin@bookstore.com` / `Admin123!`
+- Manager: `manager@bookstore.com` / `Manager123!`
+- Customer: `customer@example.com` / `Customer123!`
 
-## Tài khoản demo (ví dụ)
+## Local development
 
-| Vai trò | Email | Mật khẩu |
-|---------|-------|----------|
-| Admin | `admin@bookstore.com` | `Admin123!` |
-
-*(Có thể thay đổi theo dữ liệu seed trong backend — xem tài liệu backend / migration.)*
-
----
-
-## Chạy dev không Docker
-
-**Backend**
+### Backend
 
 ```bash
 cd backend
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-If you want the `dev` profile instead, run:
+To use the `dev` profile instead:
 
 ```bash
 cd backend
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-**Frontend**
+Backend local/dev reads the repo-root `.env` file through Spring config import, so you do not need to manually export `GROK_*`, mail, or flash-sale automation variables first.
+
+### Frontend
 
 ```bash
 cd frontend
@@ -112,83 +65,70 @@ npm install
 npm run dev
 ```
 
-Backend local/dev now reads variables from the repo-root `.env` file without requiring a manual shell export.
-Docker Compose uses the same `.env` file to pass `GROK_*`, mail, and backend runtime variables into containers.
+## Weekly flash sale automation
 
-Đảm bảo MySQL và biến môi trường trùng với `application.properties` / `.env`.
+The backend now supports a weekly auto-rotation for flash sale campaigns.
 
----
+- Default schedule: `00:05` every Monday
+- Timezone: `Asia/Bangkok`
+- Default batch size: `4` books
+- Default discount range: `15% - 30%`
+- Default stock window: `20 - 60`
+- Safety rule: skip generation if an active or upcoming campaign already overlaps the next week window
 
-## Kiểm thử
+Supported environment variables:
+
+- `FLASHSALE_AUTO_ENABLED`
+- `FLASHSALE_AUTO_CRON`
+- `FLASHSALE_AUTO_TIMEZONE`
+- `FLASHSALE_AUTO_BATCH_SIZE`
+- `FLASHSALE_AUTO_DISCOUNT_MIN`
+- `FLASHSALE_AUTO_DISCOUNT_MAX`
+- `FLASHSALE_AUTO_STOCK_MIN`
+- `FLASHSALE_AUTO_STOCK_MAX`
+- `FLASHSALE_AUTO_MAX_PER_USER`
+
+## Testing
 
 ```bash
 # Backend
 cd backend && mvn test
 
-# Frontend unit
+# Frontend unit tests
 cd frontend && npm run test:run
 
-# E2E (cần app đang chạy tại BASE_URL mặc định)
-cd frontend && npx playwright install && npm run test:e2e
+# Frontend production build
+cd frontend && npm run build
 ```
 
-Docker-first portfolio smoke:
+Portfolio smoke path:
 
 ```bash
 docker compose up -d --build
 cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
 ```
 
-Pipeline CI: [.github/workflows/ci.yml](.github/workflows/ci.yml).
+## Chatbot and Grok
 
-CI currently enforces honest baseline line-coverage gates while the suite is being expanded:
-- Backend: 50%
-- Frontend: 15%
+- `GROK_ENABLED=false` by default
+- Set `GROK_ENABLED=true` together with `GROK_API_KEY` to enable Grok in local/dev or Docker
+- Frontend chatbot health is driven by `/api/chatbot/health`
 
----
-
-## Bảo mật (nhắc nhở cho portfolio)
-
-- Không commit file `.env` hoặc secret thật.  
-- Đổi `JWT_SECRET`, mật khẩu DB và tắt endpoint test email trước khi public repo nếu deploy thật.  
-- Cấu hình CORS và HTTPS theo domain thực tế.
-
----
-
-## Cấu trúc thư mục
+## Repository layout
 
 ```text
 Ecommerce_BookStore/
-├── backend/               # Spring Boot API
-├── frontend/              # Next.js 14 (App Router)
-├── mobile/                # Ứng dụng React Native (tham khảo)
-├── docs/                   # MASTER_PLAN và tài liệu
-├── docker-compose.yml
-├── Dockerfile.backend
-└── Dockerfile.frontend
+â”œâ”€â”€ backend/
+â”œâ”€â”€ frontend/
+â”œâ”€â”€ mobile/
+â”œâ”€â”€ docs/
+â”œâ”€â”€ docker-compose.yml
+â”œâ”€â”€ Dockerfile.backend
+â””â”€â”€ Dockerfile.frontend
 ```
 
----
+## Notes
 
-## Giấy phép
-
-Mã nguồn trong khuôn khổ dự án học tập/portfolio — xem [LICENSE](LICENSE) (MIT) nếu có trong repo.
-
----
-
-<div align="center">
-
-**Nguyễn Sơn** · [jasonbmt06@gmail.com](mailto:jasonbmt06@gmail.com)  
-*Dự án học tập & portfolio — 2026*
-
-### Grok env loading
-
-Backend local/dev reads Grok settings from `.env` and container env values.
-
-- `GROK_ENABLED=false` by default
-- Set `GROK_ENABLED=true` together with `GROK_API_KEY` to enable Grok locally
-- Use `GROK_MODEL` and `GROK_API_URL` to override the default model or endpoint
-
-When running through Docker Compose, the backend service receives these values from `.env` automatically.
-
-</div>
+- This repository is optimized for portfolio and demo flows first.
+- CI coverage gates are kept honest against the current baseline.
+- `agency-agents/` remains outside the current app-directory rename scope.
