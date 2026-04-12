@@ -25,6 +25,13 @@ vi.mock("@/hooks/useAddToCart", () => ({
   }),
 }));
 
+vi.mock("@/components/providers/language-provider", () => ({
+  useLanguage: () => ({
+    locale: "vi",
+    isLoading: false,
+  }),
+}));
+
 vi.mock("@/hooks/useWishlist", () => ({
   useWishlist: () => ({
     wishlistItems: [

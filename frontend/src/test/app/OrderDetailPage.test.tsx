@@ -22,6 +22,13 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/components/providers/language-provider", () => ({
+  useLanguage: () => ({
+    locale: "vi",
+    isLoading: false,
+  }),
+}));
+
 vi.mock("@/lib/store", async () => {
   const actual = await vi.importActual<typeof import("@/lib/store")>("@/lib/store");
   return {
@@ -94,7 +101,7 @@ describe("OrderDetailPage", () => {
 
     expect(await screen.findByText("ORD-101")).toBeInTheDocument();
     expect(screen.getByText("Clean Architecture")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /shipping information/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Thông tin giao hàng" })).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
   });
 });

@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ProductsPage from "@/app/products/page";
 import { api } from "@/lib/api";
 
+const localeState = { locale: "vi" as "vi" | "en" };
+
 vi.mock("@/components/layout/header", () => ({
   Header: () => <div>Header</div>,
 }));
@@ -21,6 +23,13 @@ vi.mock("@/hooks/useAddToCart", () => ({
   useAddToCart: () => ({
     addToCart: vi.fn(),
     isAddingToCart: false,
+  }),
+}));
+
+vi.mock("@/components/providers/language-provider", () => ({
+  useLanguage: () => ({
+    locale: localeState.locale,
+    isLoading: false,
   }),
 }));
 
@@ -46,6 +55,7 @@ function renderWithQueryClient(ui: ReactElement) {
 describe("ProductsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localeState.locale = "vi";
 
     vi.mocked(api.get).mockImplementation(async (url: string) => {
       if (url.startsWith("/products?")) {
@@ -75,5 +85,13 @@ describe("ProductsPage", () => {
     await waitFor(() => {
       expect(searchInput).toHaveFocus();
     });
+  });
+
+  it("switches the visible product heading with locale", async () => {
+    localeState.locale = "en";
+
+    renderWithQueryClient(<ProductsPage />);
+
+    expect(await screen.findByRole("heading", { name: "All products" })).toBeInTheDocument();
   });
 });

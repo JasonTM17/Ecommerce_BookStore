@@ -48,9 +48,9 @@ async function installBrowserActionSpies(page: Page) {
 }
 
 async function getFirstProductPath(page: Page) {
-  await page.goto("/products");
+  await page.goto("/products", { waitUntil: "networkidle" });
   const firstCard = page.getByTestId("product-card").first();
-  await expect(firstCard).toBeVisible();
+  await expect(firstCard).toBeVisible({ timeout: 15000 });
 
   const productLink = firstCard.locator('a[href^="/products/"]').first();
   const productPath = await productLink.getAttribute("href");
@@ -125,7 +125,7 @@ test.describe("Portfolio CTA smoke", () => {
     await login(page);
     await expect(page).toHaveURL(new RegExp(`${escapeRegExp(productPath)}$`));
 
-    await page.getByRole("button", { name: /Thêm vào giỏ hàng/i }).click();
+    await page.getByTestId("product-detail-add-to-cart").click();
     await expect(page.getByText(/Đã thêm/)).toBeVisible();
 
     const wishlistButton = page.getByTestId("product-detail-wishlist");

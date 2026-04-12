@@ -21,6 +21,27 @@ vi.mock("@/components/providers/auth-provider", () => ({
   }),
 }));
 
+vi.mock("@/components/providers/language-provider", () => ({
+  useLanguage: () => ({
+    locale: "vi",
+    t: (key: string) =>
+      (
+        {
+          "common.noImage": "Chưa có ảnh bìa",
+          "common.newArrival": "Mới",
+          "common.bestseller": "Bán chạy",
+          "common.addToCart": "Thêm vào giỏ hàng",
+          "common.addingToCart": "Đang thêm...",
+          "common.inStock": "Còn hàng",
+          "common.outOfStock": "Hết hàng",
+          "common.reviews": "đánh giá",
+          "common.addToWishlist": "Thêm vào danh sách yêu thích",
+          "common.removeFromWishlist": "Xóa khỏi danh sách yêu thích",
+        } as Record<string, string>
+      )[key] ?? key,
+  }),
+}));
+
 vi.mock("@/hooks/useWishlist", () => ({
   useWishlist: () => ({
     isInWishlist: () => wishlistState.isWishlisted,
@@ -105,7 +126,7 @@ describe("ProductCard", () => {
     const onAddToCart = vi.fn();
     render(<ProductCard product={mockProduct} onAddToCart={onAddToCart} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /thêm vào giỏ/i }));
+    fireEvent.click(screen.getByRole("button", { name: /thêm vào giỏ hàng/i }));
 
     expect(onAddToCart).toHaveBeenCalledWith(mockProduct);
   });

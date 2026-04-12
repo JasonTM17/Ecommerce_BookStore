@@ -24,6 +24,13 @@ vi.mock("@/hooks/useAddToCart", () => ({
   }),
 }));
 
+vi.mock("@/components/providers/language-provider", () => ({
+  useLanguage: () => ({
+    locale: "vi",
+    isLoading: false,
+  }),
+}));
+
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
