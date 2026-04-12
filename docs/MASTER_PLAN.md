@@ -233,14 +233,14 @@ text-4xl text-gray-300">📚</div>
 
 ## CÁC FILES UI CẦN CHỈNH SỬA
 
-1. `Frontend_NextJS/src/components/product-card.tsx`
-2. `Frontend_NextJS/src/app/categories/page.tsx`
-3. `Frontend_NextJS/src/app/cart/page.tsx`
-4. `Frontend_NextJS/src/app/login/page.tsx`
-5. `Frontend_NextJS/src/components/chatbot/ChatbotWidget.tsx`
-6. `Frontend_NextJS/src/components/flashsale/FlashSaleBanner.tsx`
-7. `Frontend_NextJS/src/components/home-section.tsx`
-8. `Frontend_NextJS/src/app/page.tsx`
+1. `frontend/src/components/product-card.tsx`
+2. `frontend/src/app/categories/page.tsx`
+3. `frontend/src/app/cart/page.tsx`
+4. `frontend/src/app/login/page.tsx`
+5. `frontend/src/components/chatbot/ChatbotWidget.tsx`
+6. `frontend/src/components/flashsale/FlashSaleBanner.tsx`
+7. `frontend/src/components/home-section.tsx`
+8. `frontend/src/app/page.tsx`
 
 ---
 
@@ -259,7 +259,7 @@ Xây dựng hệ thống test chuyên nghiệp:
 
 ### 4.1 Cấu trúc Tests
 ```
-Backend_Java/src/test/java/com/bookstore/controller/
+backend/src/test/java/com/bookstore/controller/
 ├── AuthControllerTest.java
 ├── ProductControllerTest.java
 ├── CartControllerTest.java
@@ -329,7 +329,7 @@ class AuthControllerTest {
 
 ### 5.1 Mở rộng Integration Tests
 ```
-Backend_Java/src/test/java/com/bookstore/integration/
+backend/src/test/java/com/bookstore/integration/
 ├── AuthFlowIntegrationTest.java      # Đã có
 ├── EmailIntegrationTest.java          # Đã có
 ├── ProductIntegrationTest.java       # Mới
@@ -376,7 +376,7 @@ class ProductIntegrationTest {
 
 ### 6.1 Cài đặt Vitest + React Testing Library
 ```bash
-cd Frontend_NextJS
+cd frontend
 npm install -D vitest @vitejs/plugin-react jsdom
 npm install -D @testing-library/react @testing-library/jest-dom
 ```
@@ -403,7 +403,7 @@ export default defineConfig({
 
 ### 6.3 Test Files Structure
 ```
-Frontend_NextJS/src/test/
+frontend/src/test/
 ├── setup.ts                      # Test setup + mocks
 ├── lib/
 │   ├── api.test.ts              # API client tests
@@ -509,16 +509,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: Frontend_NextJS/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Dependencies
-        run: cd Frontend_NextJS && npm ci
+        run: cd frontend && npm ci
 
       - name: Run Vitest
-        run: cd Frontend_NextJS && npm run test:unit
+        run: cd frontend && npm run test:unit
 
       - name: Run Playwright Tests
-        run: cd Frontend_NextJS && npm run test:e2e
+        run: cd frontend && npm run test:e2e
 ```
 
 ---
@@ -528,33 +528,33 @@ jobs:
 ### UI/UX Files
 | File | Mô tả |
 |------|-------|
-| `Frontend_NextJS/src/components/product-card.tsx` | Thay emoji bằng BookOpen icon |
-| `Frontend_NextJS/src/app/categories/page.tsx` | Thay emoji bằng category icons |
-| `Frontend_NextJS/src/app/cart/page.tsx` | Thay emoji bằng ShoppingBag icon |
-| `Frontend_NextJS/src/app/login/page.tsx` | Thay emoji bằng Shield icon |
-| `Frontend_NextJS/src/components/chatbot/ChatbotWidget.tsx` | Thay emoji bằng Hand icon |
-| `Frontend_NextJS/src/components/flashsale/FlashSaleBanner.tsx` | Thay emoji bằng Zap icon |
+| `frontend/src/components/product-card.tsx` | Thay emoji bằng BookOpen icon |
+| `frontend/src/app/categories/page.tsx` | Thay emoji bằng category icons |
+| `frontend/src/app/cart/page.tsx` | Thay emoji bằng ShoppingBag icon |
+| `frontend/src/app/login/page.tsx` | Thay emoji bằng Shield icon |
+| `frontend/src/components/chatbot/ChatbotWidget.tsx` | Thay emoji bằng Hand icon |
+| `frontend/src/components/flashsale/FlashSaleBanner.tsx` | Thay emoji bằng Zap icon |
 
 ### Backend Test Files
 | File | Mô tả |
 |------|-------|
-| `Backend_Java/src/test/java/com/bookstore/controller/AuthControllerTest.java` | Test Auth API |
-| `Backend_Java/src/test/java/com/bookstore/controller/ProductControllerTest.java` | Test Product API |
-| `Backend_Java/src/test/java/com/bookstore/controller/CartControllerTest.java` | Test Cart API |
-| `Backend_Java/src/test/java/com/bookstore/controller/OrderControllerTest.java` | Test Order API |
-| `Backend_Java/src/test/java/com/bookstore/controller/CouponControllerTest.java` | Test Coupon API |
-| `Backend_Java/src/test/java/com/bookstore/integration/ProductIntegrationTest.java` | Product integration |
-| `Backend_Java/src/test/java/com/bookstore/integration/OrderIntegrationTest.java` | Order integration |
+| `backend/src/test/java/com/bookstore/controller/AuthControllerTest.java` | Test Auth API |
+| `backend/src/test/java/com/bookstore/controller/ProductControllerTest.java` | Test Product API |
+| `backend/src/test/java/com/bookstore/controller/CartControllerTest.java` | Test Cart API |
+| `backend/src/test/java/com/bookstore/controller/OrderControllerTest.java` | Test Order API |
+| `backend/src/test/java/com/bookstore/controller/CouponControllerTest.java` | Test Coupon API |
+| `backend/src/test/java/com/bookstore/integration/ProductIntegrationTest.java` | Product integration |
+| `backend/src/test/java/com/bookstore/integration/OrderIntegrationTest.java` | Order integration |
 
 ### Frontend Test Files
 | File | Mô tả |
 |------|-------|
-| `Frontend_NextJS/vitest.config.ts` | Vitest configuration |
-| `Frontend_NextJS/src/test/setup.ts` | Test setup + mocks |
-| `Frontend_NextJS/src/test/lib/api.test.ts` | API tests |
-| `Frontend_NextJS/src/test/components/product-card.test.tsx` | Product card tests |
-| `Frontend_NextJS/src/test/components/coupon-input.test.tsx` | Coupon tests |
-| `Frontend_NextJS/src/test/hooks/useWishlist.test.ts` | Wishlist hook tests |
+| `frontend/vitest.config.ts` | Vitest configuration |
+| `frontend/src/test/setup.ts` | Test setup + mocks |
+| `frontend/src/test/lib/api.test.ts` | API tests |
+| `frontend/src/test/components/product-card.test.tsx` | Product card tests |
+| `frontend/src/test/components/coupon-input.test.tsx` | Coupon tests |
+| `frontend/src/test/hooks/useWishlist.test.ts` | Wishlist hook tests |
 
 ### CI/CD Files
 | File | Mô tả |
@@ -573,7 +573,7 @@ Tối ưu hóa SEO toàn diện: meta tags, structured data, sitemap, performanc
 ## GIAI ĐOẠN 8: SEO Meta Tags & Open Graph
 
 ### 8.1 SEO Metadata Component
-**File**: `Frontend_NextJS/src/components/SEO.tsx` (hoặc `src/app/seo.tsx`)
+**File**: `frontend/src/components/SEO.tsx` (hoặc `src/app/seo.tsx`)
 
 ```tsx
 // Tạo Metadata object cho Next.js App Router
@@ -664,7 +664,7 @@ export default function robots(): MetadataRoute.Robots {
 ## GIAI ĐOẠN 10: JSON-LD Structured Data
 
 ### 10.1 Book Schema (trang chi tiết sản phẩm)
-**File**: `Frontend_NextJS/src/components/BookSchema.tsx`
+**File**: `frontend/src/components/BookSchema.tsx`
 
 ```tsx
 const BookSchema = ({ book }) => {
@@ -875,7 +875,7 @@ const ProductModal = ({ isOpen, onClose }) => {
 Tích hợp tracking để hiểu hành vi người dùng.
 
 ### 13.1 Google Analytics 4 Integration
-**File**: `Frontend_NextJS/src/components/analytics/GA4Provider.tsx`
+**File**: `frontend/src/components/analytics/GA4Provider.tsx`
 
 ```tsx
 'use client'
@@ -927,7 +927,7 @@ trackEvent('add_to_cart', {
 Ứng dụng có thể cài đặt và hoạt động offline.
 
 ### 14.1 manifest.json
-**File**: `Frontend_NextJS/public/manifest.json`
+**File**: `frontend/public/manifest.json`
 
 ```json
 {
@@ -946,7 +946,7 @@ trackEvent('add_to_cart', {
 ```
 
 ### 14.2 Service Worker
-**File**: `Frontend_NextJS/public/sw.js`
+**File**: `frontend/public/sw.js`
 
 ```js
 const CACHE_NAME = 'bookstore-v1'
@@ -994,7 +994,7 @@ export const metadata: Metadata = {
 Tăng cường bảo mật: CSP headers, helmet, rate limiting monitoring.
 
 ### 15.1 Security Headers (Next.js config)
-**File**: `Frontend_NextJS/next.config.js`
+**File**: `frontend/next.config.js`
 
 ```js
 const securityHeaders = [
@@ -1044,7 +1044,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 Health check, logging chuẩn, alerting cơ bản.
 
 ### 16.1 Health Check Endpoint
-**File**: `Backend_Java/src/main/java/com/bookstore/controller/HealthController.java`
+**File**: `backend/src/main/java/com/bookstore/controller/HealthController.java`
 
 ```java
 @RestController
@@ -1085,7 +1085,7 @@ public class HealthController {
 
 ### 16.2 Structured Logging
 ```xml
-<!-- Logback config - Backend_Java/src/main/resources/logback-spring.xml -->
+<!-- Logback config - backend/src/main/resources/logback-spring.xml -->
 <encoder>
   <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
 </encoder>
@@ -1110,39 +1110,39 @@ management.metrics.enable.process=true
 ### SEO Files
 | File | Mô tả |
 |------|-------|
-| `Frontend_NextJS/src/components/SEO.tsx` | SEO metadata generator |
-| `Frontend_NextJS/src/app/sitemap.ts` | Dynamic sitemap |
-| `Frontend_NextJS/src/app/robots.ts` | robots.txt |
-| `Frontend_NextJS/src/components/BookSchema.tsx` | JSON-LD Book schema |
-| `Frontend_NextJS/src/components/BreadcrumbSchema.tsx` | JSON-LD BreadcrumbList |
-| `Frontend_NextJS/src/components/OrganizationSchema.tsx` | JSON-LD Organization |
+| `frontend/src/components/SEO.tsx` | SEO metadata generator |
+| `frontend/src/app/sitemap.ts` | Dynamic sitemap |
+| `frontend/src/app/robots.ts` | robots.txt |
+| `frontend/src/components/BookSchema.tsx` | JSON-LD Book schema |
+| `frontend/src/components/BreadcrumbSchema.tsx` | JSON-LD BreadcrumbList |
+| `frontend/src/components/OrganizationSchema.tsx` | JSON-LD Organization |
 
 ### Performance Files
 | File | Mô tả |
 |------|-------|
-| `Frontend_NextJS/next.config.js` | Image optimization, headers |
-| `Frontend_NextJS/src/lib/analytics.ts` | GA4 event tracking |
-| `Frontend_NextJS/src/components/analytics/GA4Provider.tsx` | GA4 provider |
+| `frontend/next.config.js` | Image optimization, headers |
+| `frontend/src/lib/analytics.ts` | GA4 event tracking |
+| `frontend/src/components/analytics/GA4Provider.tsx` | GA4 provider |
 
 ### PWA Files
 | File | Mô tả |
 |------|-------|
-| `Frontend_NextJS/public/manifest.json` | PWA manifest |
-| `Frontend_NextJS/public/sw.js` | Service worker |
+| `frontend/public/manifest.json` | PWA manifest |
+| `frontend/public/sw.js` | Service worker |
 
 ### Security & Monitoring Files
 | File | Mô tả |
 |------|-------|
-| `Frontend_NextJS/next.config.js` | Security headers (bổ sung) |
-| `Backend_Java/src/main/java/com/bookstore/controller/HealthController.java` | Health check endpoint |
-| `Backend_Java/src/main/resources/logback-spring.xml` | Structured logging |
+| `frontend/next.config.js` | Security headers (bổ sung) |
+| `backend/src/main/java/com/bookstore/controller/HealthController.java` | Health check endpoint |
+| `backend/src/main/resources/logback-spring.xml` | Structured logging |
 
 ### Accessibility Files
 | File | Mô tả |
 |------|-------|
-| `Frontend_NextJS/src/app/layout.tsx` | Skip to content, ARIA root |
-| `Frontend_NextJS/src/components/product-card.tsx` | ARIA labels (trong UI-1) |
-| `Frontend_NextJS/src/components/Modal.tsx` | Accessible modal |
+| `frontend/src/app/layout.tsx` | Skip to content, ARIA root |
+| `frontend/src/components/product-card.tsx` | ARIA labels (trong UI-1) |
+| `frontend/src/components/Modal.tsx` | Accessible modal |
 
 ---
 
@@ -1456,7 +1456,7 @@ npm install next-intl
 ```
 
 ### 9.2 Cấu hình
-**File**: `Frontend_NextJS/i18n.ts`
+**File**: `frontend/i18n.ts`
 
 ```ts
 import {getRequestConfig} from 'next-intl/server'
@@ -1514,7 +1514,7 @@ export function LanguageSwitcher() {
 Xử lý lỗi graceful: error boundary, fallback UI, retry logic.
 
 ### 10.1 Global Error Boundary
-**File**: `Frontend_NextJS/src/components/ErrorBoundary.tsx`
+**File**: `frontend/src/components/ErrorBoundary.tsx`
 
 ```tsx
 'use client'
@@ -1557,7 +1557,7 @@ export class ErrorBoundary extends Component<Props, State> {
 ```
 
 ### 10.2 API Error Interceptor
-**File**: `Frontend_NextJS/src/lib/api-client.ts`
+**File**: `frontend/src/lib/api-client.ts`
 
 ```ts
 class ApiClient {
@@ -1672,7 +1672,7 @@ const queryClient = new QueryClient({
 Bật/tắt tính năng mà không cần deploy lại.
 
 ### 12.1 Local Feature Flags
-**File**: `Frontend_NextJS/src/config/features.ts`
+**File**: `frontend/src/config/features.ts`
 
 ```ts
 export const features = {
@@ -1760,7 +1760,7 @@ CREATE TABLE users (...);
 Dockerize toàn bộ ứng dụng: MySQL + Backend + Frontend.
 
 ### 14.1 Backend Dockerfile
-**File**: `Backend_Java/Dockerfile`
+**File**: `backend/Dockerfile`
 
 ```dockerfile
 FROM eclipse-temurin:21-jdk-alpine AS builder
@@ -1778,7 +1778,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
 ### 14.2 Frontend Dockerfile
-**File**: `Frontend_NextJS/Dockerfile`
+**File**: `frontend/Dockerfile`
 
 ```dockerfile
 FROM node:20-alpine AS builder
@@ -1814,10 +1814,10 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./Backend_Java/src/main/resources/db/migration:/docker-entrypoint-initdb.d
+      - ./backend/src/main/resources/db/migration:/docker-entrypoint-initdb.d
 
   backend:
-    build: ./Backend_Java
+    build: ./backend
     ports:
       - "8080:8080"
     environment:
@@ -1829,7 +1829,7 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ./Frontend_NextJS
+    build: ./frontend
     ports:
       - "3000:3000"
     environment:
@@ -1979,3 +1979,4 @@ Refs: PLAN-001
 - [ ] Commit message tuân thủ format trên
 - [ ] Không commit file `.env` hoặc secrets
 - [ ] File sinh ra tự động (lock files, build output) đã ignore
+

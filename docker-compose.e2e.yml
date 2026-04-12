@@ -1,13 +1,11 @@
-version: '3.8'
-
 # ==============================================================================
 # docker-compose.e2e.yml - E2E Testing Stack
 # Chạy cả local và GitHub Actions
 #
 # Usage:
-#   Local:  docker-compose -f docker-compose.e2e.yml --profile e2e up -d
-#   DB only: docker-compose -f docker-compose.e2e.yml --profile db-only up -d
-#   Stop:   docker-compose -f docker-compose.e2e.yml down -v
+#   Local:  docker compose -f docker-compose.e2e.yml --profile e2e up -d
+#   DB only: docker compose -f docker-compose.e2e.yml --profile db-only up -d
+#   Stop:   docker compose -f docker-compose.e2e.yml down -v
 #
 # Services:
 #   mysql        - MySQL 8.4 ephemeral (tmpfs), test DB sạch mỗi lần
@@ -23,7 +21,7 @@ services:
   mysql:
     image: mysql:8.4
     container_name: bookstore-e2e-mysql
-    profile: ["e2e", "db-only"]
+    profiles: ["e2e", "db-only"]
     # tmpfs cho ephemeral test DB - dữ liệu bị xóa khi container stop
     tmpfs:
       - /var/lib/mysql:size=512m
@@ -65,7 +63,7 @@ services:
         DB_USERNAME: bookstore
         DB_PASSWORD: bookstore123
     container_name: bookstore-e2e-backend
-    profile: ["e2e"]
+    profiles: ["e2e"]
     environment:
       SPRING_PROFILES_ACTIVE: prod
       # MySQL
@@ -83,7 +81,7 @@ services:
       # JWT
       JWT_SECRET: YourSuperSecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong!
       # CORS
-      CORS_ORIGINS: http://localhost:3000,http://frontend:3000
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://frontend:3000
       # JPA
       JPA_DDL_AUTO: create-drop
       # Rate Limiting
@@ -110,7 +108,7 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health/liveness"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -132,12 +130,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_URL: /api
+        NEXT_PUBLIC_APP_NAME: BookStore E2E
+        NEXT_PUBLIC_APP_DESCRIPTION: E2E Test Environment
+        API_PROXY_TARGET: http://backend:8080/api
     container_name: bookstore-e2e-frontend
-    profile: ["e2e"]
+    profiles: ["e2e"]
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8080/api
+      NEXT_PUBLIC_API_URL: /api
       NEXT_PUBLIC_APP_NAME: BookStore E2E
       NEXT_PUBLIC_APP_DESCRIPTION: E2E Test Environment
+      API_PROXY_TARGET: http://backend:8080/api
       NEXT_TELEMETRY_DISABLED: "1"
       # Disable optimization cho faster build
       NODE_ENV: test
@@ -162,13 +166,14 @@ services:
   e2e-runner:
     image: mcr.microsoft.com/playwright:v1.50.0-jammy
     container_name: bookstore-e2e-runner
-    profile: ["e2e"]
+    profiles: ["e2e"]
     # Chạy như root để có quyền install browser
     user: root
     working_dir: /e2e
     environment:
-      # Backend URL cho Playwright
-      NEXT_PUBLIC_API_URL: http://frontend:3000
+      # Base URLs cho Playwright
+      BASE_URL: http://frontend:3000
+      API_URL: http://frontend:3000/api
       BACKEND_URL: http://backend:8080/api
       FRONTEND_URL: http://frontend:3000
       # Playwright config
@@ -192,7 +197,7 @@ services:
         echo '========================================';
         
         # Install dependencies
-        cd /e2e/Frontend_NextJS && npm install --prefer-offline;
+        cd /e2e/frontend && npm install --prefer-offline;
         
         # Chờ frontend sẵn sàng
         echo 'Waiting for frontend...';
@@ -200,11 +205,11 @@ services:
         
         # Chạy E2E tests
         echo 'Running E2E tests...';
-        cd /e2e/Frontend_NextJS && npx playwright test;
+        cd /e2e/frontend && npx playwright test;
         
         # Copy report ra ngoài
         echo 'Copying reports...';
-        cp -r /e2e/Frontend_NextJS/playwright-report /e2e/playwright-report/ 2>/dev/null || true;
+        cp -r /e2e/frontend/playwright-report /e2e/playwright-report/ 2>/dev/null || true;
         
         echo 'E2E tests completed!';
         exit 0;
