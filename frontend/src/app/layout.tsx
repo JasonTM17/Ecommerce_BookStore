@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import dynamic from "next/dynamic";
-import { Inter } from "next/font/google";
+import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
@@ -25,7 +25,12 @@ const FlashSaleBanner = dynamic(
   }
 );
 
-const inter = Inter({ subsets: ["latin"] });
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
 
@@ -116,7 +121,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={inter.className}>
+      <body className={beVietnamPro.className}>
         <SkipLink />
         <OrganizationSchema />
         <WebSiteSchema />

@@ -56,7 +56,7 @@ describe("PromotionsPage", () => {
     renderWithQueryClient(<PromotionsPage />);
 
     expect(await screen.findByText("SAVE20")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /available coupons/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /go to cart/i })).toHaveAttribute("href", "/cart");
+    expect(screen.getByRole("heading", { name: /coupon đang khả dụng/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /đến giỏ hàng/i })).toHaveAttribute("href", "/cart");
   });
 });

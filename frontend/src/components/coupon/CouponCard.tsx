@@ -97,6 +97,7 @@ export function CouponCard({ coupon, onSelect, showDetails = true }: CouponCardP
 
   return (
     <div
+      data-testid="coupon-card"
       onClick={onSelect ? () => onSelect(coupon) : undefined}
       className={cn(
         "relative bg-white border border-gray-200 rounded-xl p-4 transition-all",

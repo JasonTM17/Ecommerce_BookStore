@@ -18,19 +18,19 @@ export default function PromotionsPage() {
             <div className="max-w-3xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur">
                 <TicketPercent className="h-4 w-4" />
-                Public coupons that can be copied right away
+                Mã giảm giá công khai có thể sao chép ngay
               </div>
-              <h1 className="text-4xl font-bold sm:text-5xl">Promotions</h1>
+              <h1 className="text-4xl font-bold sm:text-5xl">Khuyến mãi</h1>
               <p className="mt-4 text-lg text-blue-50">
-                Browse active coupon codes, copy the ones you need, then apply them in cart or checkout without changing the purchase flow.
+                Xem các mã giảm giá đang hoạt động, sao chép mã phù hợp và áp dụng ngay ở giỏ hàng hoặc bước thanh toán như luồng mua sắm hiện tại.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/cart">
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50">Go to cart</Button>
+                  <Button className="bg-white text-blue-600 hover:bg-blue-50">Đến giỏ hàng</Button>
                 </Link>
                 <Link href="/checkout">
                   <Button variant="outline" className="border-white/60 bg-transparent text-white hover:bg-white/10">
-                    Continue to checkout
+                    Tiếp tục thanh toán
                   </Button>
                 </Link>
               </div>
@@ -46,9 +46,9 @@ export default function PromotionsPage() {
                   <Gift className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Available coupons</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">Coupon đang khả dụng</h2>
                   <p className="mt-1 text-gray-500">
-                    Copy a code now and apply it when you review your cart or finalize checkout.
+                    Sao chép mã bạn cần ngay bây giờ và áp dụng ở bước xem giỏ hàng hoặc hoàn tất thanh toán.
                   </p>
                 </div>
               </div>
@@ -57,19 +57,19 @@ export default function PromotionsPage() {
 
             <aside className="space-y-6">
               <section className="rounded-3xl bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-900">How to use them</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Cách sử dụng</h2>
                 <div className="mt-4 space-y-3 text-sm text-gray-600">
                   <div className="rounded-2xl bg-gray-50 p-4">
-                    <p className="font-medium text-gray-900">1. Copy a code</p>
-                    <p className="mt-1">Use the quick copy button on any coupon card.</p>
+                    <p className="font-medium text-gray-900">1. Sao chép mã</p>
+                    <p className="mt-1">Dùng nút sao chép nhanh trên bất kỳ coupon card nào.</p>
                   </div>
                   <div className="rounded-2xl bg-gray-50 p-4">
-                    <p className="font-medium text-gray-900">2. Review requirements</p>
-                    <p className="mt-1">Check minimum order value, expiry date, and remaining usage.</p>
+                    <p className="font-medium text-gray-900">2. Xem điều kiện áp dụng</p>
+                    <p className="mt-1">Kiểm tra giá trị đơn tối thiểu, hạn sử dụng và lượt dùng còn lại.</p>
                   </div>
                   <div className="rounded-2xl bg-gray-50 p-4">
-                    <p className="font-medium text-gray-900">3. Apply in cart or checkout</p>
-                    <p className="mt-1">The official apply flow stays exactly where it already lives.</p>
+                    <p className="font-medium text-gray-900">3. Áp dụng tại giỏ hàng hoặc checkout</p>
+                    <p className="mt-1">Luồng nhập coupon chính thức vẫn giữ đúng ở nơi người dùng đã quen thao tác.</p>
                   </div>
                 </div>
               </section>
@@ -78,19 +78,19 @@ export default function PromotionsPage() {
                 <div className="flex items-start gap-3">
                   <ShoppingBag className="mt-1 h-5 w-5 text-blue-300" />
                   <div>
-                    <h2 className="text-xl font-semibold">Ready to use a code?</h2>
+                    <h2 className="text-xl font-semibold">Sẵn sàng dùng mã giảm giá?</h2>
                     <p className="mt-2 text-sm leading-6 text-gray-300">
-                      Pick your books, then head to cart or checkout to apply the coupon during the normal purchase flow.
+                      Chọn sách bạn muốn mua rồi đi tới giỏ hàng hoặc bước thanh toán để áp dụng mã trong đúng luồng mua sắm hiện tại.
                     </p>
                   </div>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link href="/products">
-                    <Button variant="secondary">Browse books</Button>
+                    <Button variant="secondary">Xem danh mục sách</Button>
                   </Link>
                   <Link href="/cart">
                     <Button variant="outline" className="border-gray-600 bg-transparent text-white hover:bg-white/10">
-                      Open cart
+                      Mở giỏ hàng
                     </Button>
                   </Link>
                 </div>

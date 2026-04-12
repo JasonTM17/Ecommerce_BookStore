@@ -5,56 +5,56 @@ import { StaticInfoPageShell } from "@/components/static-info-page";
 
 const values = [
   {
-    title: "Curated catalog",
+    title: "Catalog được tuyển chọn",
     description:
-      "We keep the catalog focused on books that are easy to browse, compare, and buy without extra clutter.",
+      "Catalog được giữ gọn, dễ duyệt, dễ so sánh và dễ mua mà không gây rối mắt bởi những thành phần thừa.",
     icon: BookOpen,
   },
   {
-    title: "Fast buying flow",
+    title: "Luồng mua hàng nhanh",
     description:
-      "From product search to checkout, every step is designed to reduce friction and help users move quickly.",
+      "Từ tìm kiếm sản phẩm tới thanh toán, từng bước đều được tối ưu để giảm thao tác và giúp người dùng đi nhanh hơn.",
     icon: Truck,
   },
   {
-    title: "Trusted shopping",
+    title: "Trải nghiệm mua sắm đáng tin cậy",
     description:
-      "Order details, checkout steps, and support entry points stay clear so buyers always know what happens next.",
+      "Thông tin đơn hàng, các bước checkout và điểm chạm hỗ trợ đều được trình bày rõ để người mua luôn biết điều gì diễn ra tiếp theo.",
     icon: ShieldCheck,
   },
 ];
 
 const stats = [
-  { value: "10K+", label: "books ready to browse" },
-  { value: "24/7", label: "product and order access" },
-  { value: "100%", label: "focus on reading and buying" },
+  { value: "10K+", label: "đầu sách sẵn sàng để khám phá" },
+  { value: "24/7", label: "truy cập sản phẩm và đơn hàng" },
+  { value: "100%", label: "tập trung vào trải nghiệm đọc và mua" },
 ];
 
 export default function AboutPage() {
   return (
-    <StaticInfoPageShell
-      accentClassName="from-blue-900 via-blue-800 to-indigo-900"
-      badgeText="About BookStore"
-      breadcrumbs={[{ label: "About" }]}
-      description="BookStore is a simple place to discover books, compare options, and place an order with a clean and trustworthy flow."
-      icon={<Heart className="h-8 w-8" />}
-      title="About BookStore"
+      <StaticInfoPageShell
+        accentClassName="from-blue-900 via-blue-800 to-indigo-900"
+        badgeText="Về BookStore"
+        breadcrumbs={[{ label: "Giới thiệu" }]}
+        description="BookStore là nơi giúp bạn khám phá sách, so sánh lựa chọn và đặt hàng trong một luồng mua sắm gọn gàng, đáng tin cậy."
+        icon={<Heart className="h-8 w-8" />}
+        title="Giới thiệu BookStore"
     >
       <div className="space-y-8">
         <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
               <Sparkles className="h-4 w-4" />
-              A calmer way to shop for books
+              Một cách mua sách gọn gàng và dễ chịu hơn
             </div>
             <h2 className="text-2xl font-bold text-gray-900">
-              We built this store to keep the buying experience focused on books, not friction.
+              Chúng tôi xây dựng cửa hàng này để người dùng tập trung vào sách, không phải vào các thao tác rườm rà.
             </h2>
             <p className="mt-4 leading-7 text-gray-600">
-              The layout stays direct: search, compare, add to cart, and complete checkout without jumping through extra pages.
+              Bố cục được giữ trực diện: tìm kiếm, so sánh, thêm vào giỏ và hoàn tất thanh toán mà không phải nhảy qua những trang phụ không cần thiết.
             </p>
             <p className="mt-4 leading-7 text-gray-600">
-              Users can move from discovery to order tracking with the same route map, so the experience stays easy to follow.
+              Người dùng có thể đi từ khám phá sản phẩm tới theo dõi đơn hàng trong cùng một route map rõ ràng, giúp trải nghiệm luôn dễ theo dõi.
             </p>
           </div>
 
@@ -83,22 +83,22 @@ export default function AboutPage() {
         <section className="rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-indigo-50 p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Start here</p>
-              <h2 className="mt-2 text-2xl font-bold text-gray-900">Browse the catalog or jump straight into categories.</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Bắt đầu tại đây</p>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900">Bắt đầu từ catalog hoặc đi thẳng vào danh mục.</h2>
               <p className="mt-3 leading-7 text-gray-600">
-                If you want to keep shopping, these two routes are the fastest way to continue.
+                Nếu muốn tiếp tục mua sắm, đây là hai route nhanh nhất để bắt đầu.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/products">
                 <Button size="lg" className="gap-2">
-                  View products
+                  Xem sản phẩm
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/categories">
                 <Button size="lg" variant="outline">
-                  View categories
+                  Xem danh mục
                 </Button>
               </Link>
             </div>

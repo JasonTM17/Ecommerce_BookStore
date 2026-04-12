@@ -5,53 +5,53 @@ import { StaticInfoPageShell } from "@/components/static-info-page";
 
 const faqs = [
   {
-    question: "How do I find books quickly?",
+    question: "Làm sao để tìm sách nhanh hơn?",
     answer:
-      "Use the product page, category filters, and search input to narrow results. The / shortcut and Ctrl/Cmd+K also open search.",
+      "Hãy dùng trang sản phẩm, bộ lọc danh mục và ô tìm kiếm để thu hẹp kết quả. Phím tắt / và Ctrl/Cmd+K cũng mở tìm kiếm nhanh.",
   },
   {
-    question: "Where can I check my order?",
+    question: "Tôi kiểm tra đơn hàng ở đâu?",
     answer:
-      "After logging in, open the Orders page to see the list of orders and each order detail page for status updates.",
+      "Sau khi đăng nhập, mở trang Đơn hàng để xem danh sách đơn và từng trang chi tiết đơn để theo dõi trạng thái cập nhật.",
   },
   {
-    question: "Do you support returns?",
+    question: "Shop có hỗ trợ đổi trả không?",
     answer:
-      "Yes. The Returns page explains the time window, product condition, and support steps in a short and readable format.",
+      "Có. Trang Đổi trả trình bày ngắn gọn về thời hạn, điều kiện sản phẩm và các bước cần làm khi cần hỗ trợ.",
   },
   {
-    question: "Which shipping options are available?",
+    question: "Hiện có những lựa chọn giao hàng nào?",
     answer:
-      "Checkout shows the shipping options we support and calculates the final fee based on order value and location.",
+      "Ở bước checkout, hệ thống hiển thị các phương thức giao hàng được hỗ trợ và tính phí cuối cùng theo giá trị đơn cùng khu vực nhận hàng.",
   },
   {
-    question: "Where do coupons belong?",
+    question: "Coupon được dùng ở đâu?",
     answer:
-      "Promotions is the browse page for public coupons. The actual apply flow still happens in cart or checkout.",
+      "Trang Khuyến mãi là nơi để xem và sao chép coupon công khai. Việc áp dụng coupon vẫn diễn ra tại giỏ hàng hoặc checkout.",
   },
   {
-    question: "What if I need help fast?",
+    question: "Nếu cần hỗ trợ nhanh thì nên làm gì?",
     answer:
-      "Start with Contact if you need a direct reply. Orders and FAQ are also good shortcuts for common questions.",
+      "Hãy bắt đầu từ trang Liên hệ nếu bạn cần phản hồi trực tiếp. Trang Đơn hàng và FAQ cũng là các lối tắt tốt cho các câu hỏi phổ biến.",
   },
 ];
 
 const serviceCards = [
-  { icon: Truck, title: "Shipping", desc: "See delivery timing, fees, and tracking guidance." },
-  { icon: PackageCheck, title: "Ordering", desc: "Cart and checkout stay simple and easy to follow." },
-  { icon: RefreshCcw, title: "Returns", desc: "Return conditions are clearly listed before you ask for help." },
-  { icon: ShieldCheck, title: "Privacy", desc: "Account and order information stay in clear, private areas." },
+  { icon: Truck, title: "Giao hàng", desc: "Xem thời gian giao, phí vận chuyển và hướng dẫn theo dõi đơn." },
+  { icon: PackageCheck, title: "Đặt hàng", desc: "Giỏ hàng và checkout được giữ đơn giản, dễ theo dõi." },
+  { icon: RefreshCcw, title: "Đổi trả", desc: "Điều kiện đổi trả được liệt kê rõ trước khi bạn cần liên hệ hỗ trợ." },
+  { icon: ShieldCheck, title: "Riêng tư", desc: "Thông tin tài khoản và đơn hàng nằm trong những khu vực riêng tư, rõ ràng." },
 ];
 
 export default function FaqPage() {
   return (
-    <StaticInfoPageShell
-      accentClassName="from-violet-900 via-purple-800 to-indigo-900"
-      badgeText="Quick help"
-      breadcrumbs={[{ label: "FAQ" }]}
-      description="Short answers for the most common shopping, payment, shipping, and order-tracking questions."
-      icon={<CircleHelp className="h-8 w-8" />}
-      title="Frequently asked questions"
+      <StaticInfoPageShell
+        accentClassName="from-violet-900 via-purple-800 to-indigo-900"
+        badgeText="Hỗ trợ nhanh"
+        breadcrumbs={[{ label: "FAQ" }]}
+        description="Những câu trả lời ngắn gọn cho các câu hỏi phổ biến nhất về mua sắm, thanh toán, giao hàng và theo dõi đơn."
+        icon={<CircleHelp className="h-8 w-8" />}
+        title="Câu hỏi thường gặp"
     >
       <div className="space-y-8">
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -80,22 +80,22 @@ export default function FaqPage() {
         <section className="rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">Need more help?</p>
-              <h2 className="mt-2 text-2xl font-bold text-gray-900">If you did not find the answer, contact support directly.</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">Cần hỗ trợ thêm?</p>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900">Nếu chưa thấy câu trả lời phù hợp, hãy liên hệ hỗ trợ trực tiếp.</h2>
               <p className="mt-3 leading-7 text-gray-600">
-                FAQ is meant to reduce repeated questions. For a direct reply, Contact is the fastest next step.
+                FAQ được tạo ra để giảm các câu hỏi lặp lại. Nếu bạn cần phản hồi trực tiếp, Liên hệ là bước tiếp theo nhanh nhất.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/contact">
                 <Button size="lg" className="gap-2">
-                  Contact now
+                  Liên hệ ngay
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/shipping">
                 <Button size="lg" variant="outline">
-                  View shipping
+                  Xem giao hàng
                 </Button>
               </Link>
             </div>

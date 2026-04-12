@@ -91,7 +91,7 @@ describe("FlashSalePage", () => {
 
     expect(await screen.findByText("Active Deal")).toBeInTheDocument();
     expect(screen.getByText("Upcoming Deal")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /active campaigns/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /upcoming drops/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /chiến dịch đang chạy/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /lịch mở bán tiếp theo/i })).toBeInTheDocument();
   });
 });

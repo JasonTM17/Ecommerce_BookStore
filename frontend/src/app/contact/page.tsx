@@ -9,39 +9,39 @@ const contactItems = [
     label: "Hotline",
     value: "0901 234 567",
     href: "tel:+84901234567",
-    note: "Order support and checkout guidance",
+    note: "Hỗ trợ đơn hàng và hướng dẫn thanh toán",
   },
   {
     icon: Mail,
     label: "Email",
     value: "support@bookstore.com",
     href: "mailto:support@bookstore.com",
-    note: "General questions and partnership requests",
+    note: "Câu hỏi chung và đề xuất hợp tác",
   },
   {
     icon: MapPin,
-    label: "Address",
-    value: "123 ABC Street, District 1, HCMC",
+    label: "Địa chỉ",
+    value: "123 Đường ABC, Quận 1, TP. Hồ Chí Minh",
     href: "https://maps.google.com/?q=123%20ABC%20Street%2C%20District%201%2C%20HCMC",
-    note: "Office and support contact point",
+    note: "Văn phòng và điểm liên hệ hỗ trợ",
   },
 ];
 
 const supportHours = [
-  "Mon to Sat: 8:00 - 20:00",
-  "Sunday: 9:00 - 18:00",
-  "Order support replies within one business day",
+  "Thứ Hai đến Thứ Bảy: 8:00 - 20:00",
+  "Chủ Nhật: 9:00 - 18:00",
+  "Yêu cầu hỗ trợ đơn hàng được phản hồi trong vòng một ngày làm việc",
 ];
 
 export default function ContactPage() {
   return (
-    <StaticInfoPageShell
-      accentClassName="from-emerald-900 via-teal-800 to-cyan-900"
-      badgeText="Support"
-      breadcrumbs={[{ label: "Contact" }]}
-      description="Need help with an order, payment, or account? These are the fastest official contact paths."
-      icon={<MessageSquareText className="h-8 w-8" />}
-      title="Contact BookStore"
+      <StaticInfoPageShell
+        accentClassName="from-emerald-900 via-teal-800 to-cyan-900"
+        badgeText="Hỗ trợ"
+        breadcrumbs={[{ label: "Liên hệ" }]}
+        description="Cần hỗ trợ về đơn hàng, thanh toán hoặc tài khoản? Đây là những kênh liên hệ chính thức và nhanh nhất."
+        icon={<MessageSquareText className="h-8 w-8" />}
+        title="Liên hệ BookStore"
     >
       <div className="space-y-8">
         <section className="grid gap-5 lg:grid-cols-3">
@@ -62,7 +62,7 @@ export default function ContactPage() {
                 target={item.href.startsWith("http") ? "_blank" : undefined}
                 rel={item.href.startsWith("http") ? "noreferrer" : undefined}
               >
-                Contact now
+                Liên hệ ngay
                 <ArrowRight className="h-4 w-4" />
               </a>
             </article>
@@ -73,9 +73,9 @@ export default function ContactPage() {
           <div className="rounded-3xl border border-gray-100 bg-gray-50 p-8 shadow-sm">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm">
               <Clock3 className="h-4 w-4 text-emerald-600" />
-              Support hours
+              Khung giờ hỗ trợ
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Clear support hours, no form required.</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Khung giờ hỗ trợ rõ ràng, không cần form phức tạp.</h2>
             <ul className="mt-4 space-y-3 text-gray-600">
               {supportHours.map((item) => (
                 <li key={item} className="rounded-2xl bg-white px-4 py-3 shadow-sm">
@@ -86,22 +86,22 @@ export default function ContactPage() {
           </div>
 
           <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900">Need an order or FAQ shortcut?</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Cần lối tắt tới đơn hàng hoặc FAQ?</h2>
             <p className="mt-4 leading-7 text-gray-600">
-              If you are checking order status or want a fast answer, these two routes are usually the best next step.
+              Nếu bạn đang kiểm tra trạng thái đơn hàng hoặc cần một câu trả lời nhanh, đây thường là hai route hữu ích nhất.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/orders">
-                <Button size="lg">View orders</Button>
+                <Button size="lg">Xem đơn hàng</Button>
               </Link>
               <Link href="/faq">
                 <Button size="lg" variant="outline">
-                  View FAQ
+                  Xem FAQ
                 </Button>
               </Link>
             </div>
             <p className="mt-6 text-sm text-gray-500">
-              Or go back to the <Link href="/products" className="font-semibold text-emerald-700 hover:text-emerald-800">product catalog</Link> and keep shopping.
+              Hoặc quay lại <Link href="/products" className="font-semibold text-emerald-700 hover:text-emerald-800">catalog sản phẩm</Link> để tiếp tục mua sắm.
             </p>
           </div>
         </section>

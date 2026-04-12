@@ -5,43 +5,43 @@ import { StaticInfoPageShell } from "@/components/static-info-page";
 
 const articles = [
   {
-    title: "How to pick books by learning goal",
+    title: "Chọn sách theo mục tiêu học tập như thế nào?",
     excerpt:
-      "A short guide for matching books to study, work, or personal development goals.",
-    meta: "Guide",
-    tag: "Reading path",
+      "Một hướng dẫn ngắn để ghép đầu sách với nhu cầu học, làm việc hoặc phát triển bản thân.",
+    meta: "Hướng dẫn",
+    tag: "Lộ trình đọc",
   },
   {
-    title: "Five book types worth keeping on hand",
+    title: "Năm nhóm sách đáng có trong tủ sách cá nhân",
     excerpt:
-      "A simple list of practical categories that fit most home libraries and daily reading habits.",
-    meta: "Quick picks",
-    tag: "Top picks",
+      "Danh sách ngắn những nhóm sách hữu ích, phù hợp với thói quen đọc hàng ngày và hầu hết tủ sách gia đình.",
+    meta: "Gợi ý nhanh",
+    tag: "Nổi bật",
   },
   {
-    title: "Shop faster with better filters",
+    title: "Mua sách nhanh hơn với bộ lọc tốt hơn",
     excerpt:
-      "Use categories, authors, and keywords to reduce search time and reach the right product page faster.",
-    meta: "Shopping tip",
-    tag: "Search",
+      "Dùng danh mục, tác giả và từ khóa để rút ngắn thời gian tìm kiếm và đi tới đúng trang sản phẩm nhanh hơn.",
+    meta: "Mẹo mua sắm",
+    tag: "Tìm kiếm",
   },
 ];
 
 const highlights = [
-  "Curated articles that match reading and shopping needs",
-  "Lightweight route is ready now, even before a full CMS exists",
-  "No heavy blog engine in this pass, just a clean public page",
+  "Bài viết được chọn lọc để hỗ trợ nhu cầu đọc và mua sắm",
+  "Route public gọn nhẹ nhưng vẫn đủ chỉn chu cho bản demo hiện tại",
+  "Chưa cần blog engine nặng, chỉ cần một trang công khai sạch và dễ đọc",
 ];
 
 export default function BlogPage() {
   return (
-    <StaticInfoPageShell
-      accentClassName="from-slate-900 via-slate-800 to-indigo-900"
-      badgeText="Editorial"
-      breadcrumbs={[{ label: "Blog" }]}
-      description="A light editorial space for book picks, shopping tips, and simple reading ideas."
-      icon={<BookOpenText className="h-8 w-8" />}
-      title="BookStore Blog"
+      <StaticInfoPageShell
+        accentClassName="from-slate-900 via-slate-800 to-indigo-900"
+        badgeText="Góc đọc & chọn sách"
+        breadcrumbs={[{ label: "Blog" }]}
+        description="Không gian nội dung nhẹ nhàng cho gợi ý sách, mẹo mua sắm và cảm hứng đọc đơn giản."
+        icon={<BookOpenText className="h-8 w-8" />}
+        title="Blog BookStore"
     >
       <div className="space-y-8">
         <section className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
@@ -67,7 +67,7 @@ export default function BlogPage() {
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs text-gray-500">
                   <CalendarDays className="h-3.5 w-3.5" />
-                  Updated now
+                  Cập nhật gần đây
                 </span>
               </div>
               <h2 className="text-xl font-bold text-gray-900">{article.title}</h2>
@@ -80,22 +80,22 @@ export default function BlogPage() {
         <section className="rounded-3xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-slate-50 p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Keep going</p>
-              <h2 className="mt-2 text-2xl font-bold text-gray-900">Want to shop after reading?</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Tiếp tục khám phá</p>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900">Muốn mua sách ngay sau khi đọc?</h2>
               <p className="mt-3 leading-7 text-gray-600">
-                Jump to the catalog or categories to keep browsing without extra clicks.
+                Đi thẳng tới catalog hoặc danh mục để tiếp tục khám phá mà không cần thêm thao tác vòng vo.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/products">
                 <Button size="lg" className="gap-2">
-                  View products
+                  Xem sản phẩm
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/categories">
                 <Button size="lg" variant="outline">
-                  View categories
+                  Xem danh mục
                 </Button>
               </Link>
             </div>

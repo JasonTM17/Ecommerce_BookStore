@@ -27,6 +27,35 @@ function LoginContent() {
     setMounted(true);
   }, []);
 
+  const redirectTarget = resolveRedirectTarget(searchParams.get("redirect"));
+  const redirectNotice = (() => {
+    if (!redirectTarget) {
+      return null;
+    }
+
+    if (redirectTarget === "/products") {
+      return "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.";
+    }
+
+    if (redirectTarget.startsWith("/products/")) {
+      return "Đăng nhập để tiếp tục với cuốn sách bạn vừa chọn.";
+    }
+
+    if (redirectTarget === "/orders") {
+      return "Đăng nhập để xem đơn hàng và trạng thái giao hàng của bạn.";
+    }
+
+    if (redirectTarget === "/checkout") {
+      return "Đăng nhập để tiếp tục thanh toán an toàn.";
+    }
+
+    if (redirectTarget === "/wishlist") {
+      return "Đăng nhập để đồng bộ danh sách yêu thích của bạn.";
+    }
+
+    return "Đăng nhập để tiếp tục hành động bạn vừa chọn.";
+  })();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -43,7 +72,6 @@ function LoginContent() {
       useAuthStore.getState().setUser(data.user);
 
       const isAdmin = data.user?.roles?.includes("ADMIN") || data.user?.roles?.includes("MANAGER");
-      const redirectTarget = resolveRedirectTarget(searchParams.get("redirect"));
       const destination = redirectTarget || (isAdmin ? "/admin" : "/");
       router.replace(destination);
       router.refresh();
@@ -84,6 +112,15 @@ function LoginContent() {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error}
+            </div>
+          )}
+
+          {redirectNotice && (
+            <div
+              data-testid="login-redirect-notice"
+              className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700"
+            >
+              {redirectNotice}
             </div>
           )}
 

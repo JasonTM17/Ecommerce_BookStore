@@ -42,7 +42,7 @@ export function StaticInfoPageShell({
           <div className="container mx-auto px-4 relative z-10">
             <nav className="mb-4 flex items-center gap-2 text-sm text-white/75" aria-label="Breadcrumb">
               <Link href="/" className="hover:text-white transition-colors">
-                Home
+                Trang chủ
               </Link>
               {breadcrumbs.map((crumb) => (
                 <div key={crumb.label} className="flex items-center gap-2">

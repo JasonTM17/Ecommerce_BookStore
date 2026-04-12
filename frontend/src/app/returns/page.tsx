@@ -4,36 +4,36 @@ import { Button } from "@/components/ui/button";
 import { StaticInfoPageShell } from "@/components/static-info-page";
 
 const returnSteps = [
-  "Check the return window within 7 days after delivery.",
-  "Contact support to confirm the item state and return reason.",
-  "Keep the product, accessories, and invoice in good condition if possible.",
-  "Send the item back using the support instructions and wait for confirmation.",
+  "Kiểm tra thời hạn đổi trả trong vòng 7 ngày sau khi giao hàng thành công.",
+  "Liên hệ hỗ trợ để xác nhận tình trạng sản phẩm và lý do đổi trả.",
+  "Giữ sản phẩm, phụ kiện và hóa đơn trong tình trạng tốt nếu có thể.",
+  "Gửi hàng hoàn lại theo hướng dẫn từ bộ phận hỗ trợ và chờ xác nhận xử lý.",
 ];
 
 const policies = [
   {
-    title: "Accepted",
-    desc: "Unused items, wrong items, print defects, or transit damage.",
+    title: "Được chấp nhận",
+    desc: "Sản phẩm chưa sử dụng, giao sai hàng, lỗi in ấn hoặc hư hỏng trong vận chuyển.",
   },
   {
-    title: "Not accepted",
-    desc: "Used items, missing pages, missing accessories, or late requests.",
+    title: "Không chấp nhận",
+    desc: "Sản phẩm đã qua sử dụng, thiếu trang, thiếu phụ kiện hoặc yêu cầu gửi quá hạn.",
   },
   {
-    title: "Processing time",
-    desc: "Refunds or replacements are handled after inspection in about 7-14 business days.",
+    title: "Thời gian xử lý",
+    desc: "Hoàn tiền hoặc đổi sản phẩm sẽ được xử lý sau khi kiểm tra trong khoảng 7-14 ngày làm việc.",
   },
 ];
 
 export default function ReturnsPage() {
   return (
-    <StaticInfoPageShell
-      accentClassName="from-rose-900 via-red-800 to-orange-900"
-      badgeText="Returns"
-      breadcrumbs={[{ label: "Returns" }]}
-      description="A short return policy page that makes conditions, steps, and timelines easy to scan."
-      icon={<RefreshCcw className="h-8 w-8" />}
-      title="Returns policy"
+      <StaticInfoPageShell
+        accentClassName="from-rose-900 via-red-800 to-orange-900"
+        badgeText="Đổi trả"
+        breadcrumbs={[{ label: "Đổi trả" }]}
+        description="Trang chính sách đổi trả ngắn gọn, giúp người dùng nắm nhanh điều kiện, quy trình và thời gian xử lý."
+        icon={<RefreshCcw className="h-8 w-8" />}
+        title="Chính sách đổi trả"
     >
       <div className="space-y-8">
         <section className="grid gap-5 md:grid-cols-3">
@@ -50,7 +50,7 @@ export default function ReturnsPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
           <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900">Return request steps</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Các bước gửi yêu cầu đổi trả</h2>
             <div className="mt-6 space-y-4">
               {returnSteps.map((step, index) => (
                 <div key={step} className="flex gap-4 rounded-2xl bg-gray-50 p-4">
@@ -64,20 +64,20 @@ export default function ReturnsPage() {
           </div>
 
           <div className="rounded-3xl border border-gray-100 bg-gradient-to-br from-rose-50 to-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900">Need a fast reply?</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Cần phản hồi nhanh?</h2>
             <p className="mt-4 leading-7 text-gray-600">
-              If you need to confirm an order before submitting a return, use Contact or open Orders first.
+              Nếu bạn cần xác nhận thông tin đơn hàng trước khi gửi yêu cầu đổi trả, hãy dùng trang Liên hệ hoặc mở Đơn hàng trước.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/contact">
                 <Button size="lg" className="gap-2">
-                  Contact support
+                  Liên hệ hỗ trợ
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/orders">
                 <Button size="lg" variant="outline">
-                  View orders
+                  Xem đơn hàng
                 </Button>
               </Link>
             </div>
