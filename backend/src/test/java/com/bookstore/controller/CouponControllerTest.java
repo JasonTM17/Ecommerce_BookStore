@@ -17,7 +17,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +28,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -53,11 +53,14 @@ class CouponControllerTest {
 
     private CouponResponse couponResponse;
     private User adminUser;
+    private User customerUser;
 
     @BeforeEach
     void setUp() {
         adminUser = userRepository.findByEmail("admin@bookstore.com")
                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
+        customerUser = userRepository.findByEmail("customer@example.com")
+                .orElseThrow(() -> new RuntimeException("Customer user not found"));
 
         couponResponse = CouponResponse.builder()
                 .id(1L)
@@ -76,7 +79,6 @@ class CouponControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin@bookstore.com", roles = {"ADMIN"})
     @DisplayName("POST /api/coupons - creates coupon as admin")
     void createCoupon_asAdmin() throws Exception {
         when(couponService.createCoupon(any(CouponRequest.class), any(User.class)))
@@ -89,7 +91,8 @@ class CouponControllerTest {
                 .minOrderAmount(BigDecimal.valueOf(100000))
                 .build();
 
-        mockMvc.perform(post("/api/coupons")
+        mockMvc.perform(post("/coupons")
+                        .with(user(adminUser))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -103,13 +106,12 @@ class CouponControllerTest {
     void getAvailableCoupons_success() throws Exception {
         when(couponService.getAvailableCoupons()).thenReturn(List.of(couponResponse));
 
-        mockMvc.perform(get("/api/coupons/available"))
+        mockMvc.perform(get("/coupons/available"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].code").value("SAVE20"));
     }
 
     @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
     @DisplayName("POST /api/coupons/validate - validates coupon for user")
     void validateCoupon_success() throws Exception {
         when(couponService.validateCouponForUser(any(), any(), any()))
@@ -120,7 +122,8 @@ class CouponControllerTest {
                 .orderTotal(200000.0)
                 .build();
 
-        mockMvc.perform(post("/api/coupons/validate")
+        mockMvc.perform(post("/coupons/validate")
+                        .with(user(customerUser))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -130,22 +133,22 @@ class CouponControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin@bookstore.com", roles = {"ADMIN"})
     @DisplayName("GET /api/coupons - returns paginated coupons for admin")
     void getAllCoupons_asAdmin() throws Exception {
         when(couponService.getAllCoupons(any())).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(couponResponse)));
 
-        mockMvc.perform(get("/api/coupons")
+        mockMvc.perform(get("/coupons")
+                        .with(user(adminUser))
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
     @DisplayName("DELETE /api/coupons/{id} - returns 403 for non-admin")
     void deleteCoupon_asCustomer_forbidden() throws Exception {
-        mockMvc.perform(delete("/api/coupons/1")
+        mockMvc.perform(delete("/coupons/1")
+                        .with(user(customerUser))
                         .with(csrf()))
                 .andExpect(status().isForbidden());
     }

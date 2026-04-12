@@ -85,7 +85,7 @@ class FlashSaleControllerTest {
     void getActiveFlashSales_success() throws Exception {
         when(flashSaleService.getActiveFlashSales()).thenReturn(List.of(flashSaleResponse));
 
-        mockMvc.perform(get("/api/flash-sales/active"))
+        mockMvc.perform(get("/flash-sales/active"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value(1))
                 .andExpect(jsonPath("$.data[0].discountPercent").value(20));
@@ -96,7 +96,7 @@ class FlashSaleControllerTest {
     void getUpcomingFlashSales_success() throws Exception {
         when(flashSaleService.getUpcomingFlashSales()).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/flash-sales/upcoming"))
+        mockMvc.perform(get("/flash-sales/upcoming"))
                 .andExpect(status().isOk());
     }
 
@@ -105,7 +105,7 @@ class FlashSaleControllerTest {
     void getFlashSale_success() throws Exception {
         when(flashSaleService.getFlashSaleById(1L)).thenReturn(flashSaleResponse);
 
-        mockMvc.perform(get("/api/flash-sales/1"))
+        mockMvc.perform(get("/flash-sales/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(1))
                 .andExpect(jsonPath("$.data.salePrice").value(80000));
@@ -118,7 +118,7 @@ class FlashSaleControllerTest {
         when(flashSaleService.getAllFlashSales(any()))
                 .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(flashSaleResponse)));
 
-        mockMvc.perform(get("/api/admin/flash-sales")
+        mockMvc.perform(get("/admin/flash-sales")
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk());
@@ -144,7 +144,7 @@ class FlashSaleControllerTest {
                 .maxPerUser(2)
                 .build();
 
-        mockMvc.perform(post("/api/admin/flash-sales")
+        mockMvc.perform(post("/admin/flash-sales")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -165,7 +165,7 @@ class FlashSaleControllerTest {
                 .endTime(LocalDateTime.now().plusHours(12))
                 .build();
 
-        mockMvc.perform(post("/api/admin/flash-sales")
+        mockMvc.perform(post("/admin/flash-sales")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

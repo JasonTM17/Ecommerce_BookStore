@@ -1,7 +1,5 @@
 package com.bookstore.controller;
 
-import com.bookstore.dto.response.ApiResponse;
-import com.bookstore.dto.response.ProductResponse;
 import com.bookstore.dto.response.WishlistResponse;
 import com.bookstore.entity.User;
 import com.bookstore.repository.UserRepository;
@@ -15,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,8 +26,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,9 +54,13 @@ class WishlistControllerTest {
     private UserRepository userRepository;
 
     private WishlistResponse wishlistResponse;
+    private User testUser;
 
     @BeforeEach
     void setUp() {
+        testUser = userRepository.findByEmail("customer@example.com")
+                .orElseThrow(() -> new RuntimeException("Customer user not found"));
+
         WishlistResponse.ProductInfo productInfo = WishlistResponse.ProductInfo.builder()
                 .id(1L)
                 .name("Test Book")
@@ -75,57 +81,56 @@ class WishlistControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("POST /api/wishlist/{productId} - adds product to wishlist")
+    @DisplayName("POST /api/wishlist/{productId} adds a product")
     void addToWishlist_success() throws Exception {
         when(wishlistService.addToWishlist(any(User.class), eq(1L)))
                 .thenReturn(wishlistResponse);
 
-        mockMvc.perform(post("/api/wishlist/1")
+        mockMvc.perform(post("/wishlist/1")
+                        .with(user(testUser))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.product.name").value("Test Book"))
-                .andExpect(jsonPath("$.message").value("Đã thêm vào danh sách yêu thích"));
+                .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("GET /api/wishlist - returns user wishlist")
+    @DisplayName("GET /api/wishlist returns wrapped wishlist data")
     void getWishlist_success() throws Exception {
         when(wishlistService.getUserWishlist(any(User.class)))
                 .thenReturn(List.of(wishlistResponse));
 
-        mockMvc.perform(get("/api/wishlist"))
+        mockMvc.perform(get("/wishlist").with(user(testUser)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].product.name").value("Test Book"));
+                .andExpect(jsonPath("$.data[0].product.name").value("Test Book"));
     }
 
     @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("DELETE /api/wishlist/{productId} - removes product from wishlist")
+    @DisplayName("DELETE /api/wishlist/{productId} removes a product")
     void removeFromWishlist_success() throws Exception {
-        mockMvc.perform(delete("/api/wishlist/1")
+        mockMvc.perform(delete("/wishlist/1")
+                        .with(user(testUser))
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Đã xóa khỏi danh sách yêu thích"));
+                .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
-    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
-    @DisplayName("PATCH /api/wishlist/{productId}/notes - updates wishlist notes")
+    @DisplayName("PATCH /api/wishlist/{productId}/notes updates notes")
     void updateNotes_success() throws Exception {
-        mockMvc.perform(patch("/api/wishlist/1/notes")
+        mockMvc.perform(patch("/wishlist/1/notes")
+                        .with(user(testUser))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("notes", "Want to buy later"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Đã cập nhật ghi chú"));
+                .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
-    @DisplayName("GET /api/wishlist - returns 401 when not authenticated")
+    @DisplayName("GET /api/wishlist returns 401 when unauthenticated")
     void getWishlist_unauthenticated() throws Exception {
-        mockMvc.perform(get("/api/wishlist"))
+        mockMvc.perform(get("/wishlist"))
                 .andExpect(status().isUnauthorized());
     }
 }

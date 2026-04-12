@@ -1,12 +1,10 @@
 package com.bookstore.controller;
 
 import com.bookstore.dto.request.ChatMessageRequest;
-import com.bookstore.dto.response.ApiResponse;
 import com.bookstore.dto.response.ChatbotResponse;
 import com.bookstore.dto.response.ConversationResponse;
 import com.bookstore.entity.User;
-import com.bookstore.repository.UserRepository;
-import com.bookstore.service.GrokChatbotService;
+import com.bookstore.service.ChatbotService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,10 +25,14 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,10 +48,7 @@ class ChatbotControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private GrokChatbotService chatbotService;
-
-    @Autowired
-    private UserRepository userRepository;
+    private ChatbotService chatbotService;
 
     private ChatbotResponse chatbotResponse;
     private ConversationResponse conversationResponse;
@@ -57,16 +56,16 @@ class ChatbotControllerTest {
     @BeforeEach
     void setUp() {
         chatbotResponse = ChatbotResponse.builder()
-                .reply("Xin chào! Tôi có thể giúp gì cho bạn hôm nay?")
+                .reply("Xin chao! Toi co the giup gi cho ban hom nay?")
                 .conversationId(1L)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         conversationResponse = ConversationResponse.builder()
                 .id(1L)
-                .title("Hội thoại 1")
+                .title("Hoi thoai 1")
                 .messageCount(5)
-                .lastMessage("Tin nhắn cuối")
+                .lastMessage("Tin nhan cuoi")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -76,19 +75,19 @@ class ChatbotControllerTest {
     @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
     @DisplayName("POST /api/chatbot/message - sends message and returns AI response")
     void sendMessage_success() throws Exception {
-        when(chatbotService.chat(any(User.class), any(ChatMessageRequest.class)))
+        when(chatbotService.chat(nullable(User.class), any(ChatMessageRequest.class)))
                 .thenReturn(chatbotResponse);
 
         ChatMessageRequest request = ChatMessageRequest.builder()
-                .message("Tìm sách về Python")
+                .message("Tim sach ve Python")
                 .build();
 
-        mockMvc.perform(post("/api/chatbot/message")
+        mockMvc.perform(post("/chatbot/message")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.reply").exists())
+                .andExpect(jsonPath("$.data.reply").value("Xin chao! Toi co the giup gi cho ban hom nay?"))
                 .andExpect(jsonPath("$.data.conversationId").value(1));
     }
 
@@ -96,22 +95,22 @@ class ChatbotControllerTest {
     @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
     @DisplayName("GET /api/chatbot/conversations - returns user conversations")
     void getConversations_success() throws Exception {
-        when(chatbotService.getUserConversations(any(User.class)))
+        when(chatbotService.getUserConversations(nullable(User.class)))
                 .thenReturn(List.of(conversationResponse));
 
-        mockMvc.perform(get("/api/chatbot/conversations"))
+        mockMvc.perform(get("/chatbot/conversations"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].title").value("Hội thoại 1"));
+                .andExpect(jsonPath("$.data[0].title").value("Hoi thoai 1"));
     }
 
     @Test
     @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
     @DisplayName("GET /api/chatbot/conversations/{id} - returns conversation detail")
     void getConversationDetail_success() throws Exception {
-        when(chatbotService.getConversationDetail(any(User.class), eq(1L)))
+        when(chatbotService.getConversationDetail(nullable(User.class), eq(1L)))
                 .thenReturn(conversationResponse);
 
-        mockMvc.perform(get("/api/chatbot/conversations/1"))
+        mockMvc.perform(get("/chatbot/conversations/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(1));
     }
@@ -120,10 +119,10 @@ class ChatbotControllerTest {
     @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
     @DisplayName("DELETE /api/chatbot/conversations/{id} - deletes conversation")
     void deleteConversation_success() throws Exception {
-        mockMvc.perform(delete("/api/chatbot/conversations/1")
+        mockMvc.perform(delete("/chatbot/conversations/1")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Hội thoại đã được xóa"));
+                .andExpect(jsonPath("$.message").value("Hoi thoai da duoc xoa"));
     }
 
     @Test
@@ -137,7 +136,7 @@ class ChatbotControllerTest {
                         "averageResponseTime", "1.2s"
                 ));
 
-        mockMvc.perform(get("/api/chatbot/stats"))
+        mockMvc.perform(get("/chatbot/stats"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.totalConversations").value(100));
     }
@@ -149,7 +148,7 @@ class ChatbotControllerTest {
                 .message("Hello")
                 .build();
 
-        mockMvc.perform(post("/api/chatbot/message")
+        mockMvc.perform(post("/chatbot/message")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -159,9 +158,17 @@ class ChatbotControllerTest {
     @Test
     @DisplayName("GET /api/chatbot/health - returns service health status")
     void checkHealth_success() throws Exception {
-        mockMvc.perform(get("/api/chatbot/health"))
+        when(chatbotService.getHealthStatus())
+                .thenReturn(Map.of(
+                        "status", "DISABLED",
+                        "service", "BookStore Chatbot",
+                        "model", "disabled"
+                ));
+
+        mockMvc.perform(get("/chatbot/health"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.status").value("UP"))
-                .andExpect(jsonPath("$.data.service").value("Grok AI Chatbot"));
+                .andExpect(jsonPath("$.data.status").value("DISABLED"))
+                .andExpect(jsonPath("$.data.service").value("BookStore Chatbot"))
+                .andExpect(jsonPath("$.data.model").value("disabled"));
     }
 }

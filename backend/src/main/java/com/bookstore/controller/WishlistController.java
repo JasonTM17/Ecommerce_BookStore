@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/wishlist")
+@RequestMapping("/wishlist")
 @RequiredArgsConstructor
 @Tag(name = "Wishlist", description = "API danh sách yêu thích")
 @SecurityRequirement(name = "bearerAuth")

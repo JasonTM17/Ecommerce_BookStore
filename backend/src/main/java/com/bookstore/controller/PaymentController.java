@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/payments")
 @RequiredArgsConstructor
 @Tag(name = "Payments", description = "API thanh toán VNPay")
 @SecurityRequirement(name = "bearerAuth")

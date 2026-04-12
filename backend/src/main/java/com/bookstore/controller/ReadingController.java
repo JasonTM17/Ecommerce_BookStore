@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/reading")
 @RequiredArgsConstructor
 @Tag(name = "Reading Tracker", description = "API theo dõi đọc sách")
 @SecurityRequirement(name = "bearerAuth")
@@ -24,7 +25,7 @@ public class ReadingController {
 
     private final ReadingTrackerService readingService;
 
-    @PostMapping("/api/reading/start/{productId}")
+    @PostMapping("/start/{productId}")
     @Operation(summary = "Bắt đầu đọc sách")
     public ResponseEntity<ApiResponse<ReadingProgressResponse>> startReading(
             @AuthenticationPrincipal User user, @PathVariable Long productId) {
@@ -32,7 +33,7 @@ public class ReadingController {
         return ResponseEntity.ok(ApiResponse.success(progress, "Đã bắt đầu đọc sách"));
     }
 
-    @GetMapping("/api/reading/progress")
+    @GetMapping("/progress")
     @Operation(summary = "Lấy danh sách tiến độ đọc")
     public ResponseEntity<ApiResponse<List<ReadingProgressResponse>>> getProgress(
             @AuthenticationPrincipal User user) {
@@ -40,7 +41,7 @@ public class ReadingController {
         return ResponseEntity.ok(ApiResponse.success(progress));
     }
 
-    @PutMapping("/api/reading/progress/{id}")
+    @PutMapping("/progress/{id}")
     @Operation(summary = "Cập nhật trang đang đọc")
     public ResponseEntity<ApiResponse<ReadingProgressResponse>> updateProgress(
             @AuthenticationPrincipal User user,
@@ -51,7 +52,7 @@ public class ReadingController {
         return ResponseEntity.ok(ApiResponse.success(progress, "Đã cập nhật tiến độ"));
     }
 
-    @PostMapping("/api/reading/finish/{id}")
+    @PostMapping("/finish/{id}")
     @Operation(summary = "Hoàn thành sách")
     public ResponseEntity<ApiResponse<ReadingProgressResponse>> finishBook(
             @AuthenticationPrincipal User user,
@@ -63,7 +64,7 @@ public class ReadingController {
         return ResponseEntity.ok(ApiResponse.success(progress, "Đã hoàn thành sách!"));
     }
 
-    @GetMapping("/api/reading/stats")
+    @GetMapping("/stats")
     @Operation(summary = "Lấy thống kê đọc sách")
     public ResponseEntity<ApiResponse<ReadingStatsResponse>> getStats(
             @AuthenticationPrincipal User user) {

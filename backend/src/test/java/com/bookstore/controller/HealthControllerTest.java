@@ -11,18 +11,10 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * HealthControllerTest - Kiểm tra các endpoint health check
- * 
- * Test coverage:
- * - GET /api/health       - Health check đầy đủ
- * - GET /api/health/live - Liveness probe
- * - GET /api/health/ready - Readiness probe
- * 
- * @author BookStore Team
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -32,41 +24,29 @@ class HealthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // ==========================================
-    // Liveness Probe Tests
-    // ==========================================
-
     @Test
-    @DisplayName("GET /api/health/live - returns 200 with status UP")
+    @DisplayName("GET /api/health/live returns UP")
     void liveness_returnsOk() throws Exception {
-        mockMvc.perform(get("/api/health/live"))
+        mockMvc.perform(get("/health/live"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"))
                 .andExpect(jsonPath("$.service").exists())
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
-    // ==========================================
-    // Readiness Probe Tests
-    // ==========================================
-
     @Test
-    @DisplayName("GET /api/health/ready - returns 200 when database is connected")
+    @DisplayName("GET /api/health/ready returns UP when database is connected")
     void readiness_returnsOk_whenDatabaseUp() throws Exception {
-        mockMvc.perform(get("/api/health/ready"))
+        mockMvc.perform(get("/health/ready"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"))
                 .andExpect(jsonPath("$.database").value("UP"));
     }
 
-    // ==========================================
-    // Full Health Check Tests
-    // ==========================================
-
     @Test
-    @DisplayName("GET /api/health - returns 200 with full health status")
+    @DisplayName("GET /api/health returns the full health payload")
     void healthCheck_returnsFullStatus() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/health"))
+        MvcResult result = mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"))
                 .andExpect(jsonPath("$.service").exists())
@@ -81,74 +61,70 @@ class HealthControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/health - database status is UP")
+    @DisplayName("GET /api/health shows database status")
     void healthCheck_databaseStatusUp() throws Exception {
-        mockMvc.perform(get("/api/health"))
+        mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.database.status").value("UP"))
                 .andExpect(jsonPath("$.database.database").exists());
     }
 
     @Test
-    @DisplayName("GET /api/health - memory status is UP or WARNING")
+    @DisplayName("GET /api/health shows memory details")
     void healthCheck_memoryStatus() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/health"))
+        MvcResult result = mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
-        // Memory status có thể là UP hoặc WARNING tùy vào memory usage
         assertThat(content).contains("heap");
         assertThat(content).contains("heap.percent");
     }
 
     @Test
-    @DisplayName("GET /api/health - disk status is UP")
+    @DisplayName("GET /api/health exposes flat disk keys")
     void healthCheck_diskStatusUp() throws Exception {
-        mockMvc.perform(get("/api/health"))
+        mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.disk.status").exists())
-                .andExpect(jsonPath("$.disk.root.total").exists())
-                .andExpect(jsonPath("$.disk.root.free").exists());
+                .andExpect(jsonPath("$.disk['root.total']").exists())
+                .andExpect(jsonPath("$.disk['root.free']").exists());
     }
 
     @Test
-    @DisplayName("GET /api/health - returns JSON content type")
+    @DisplayName("GET /api/health returns JSON")
     void healthCheck_returnsJson() throws Exception {
-        mockMvc.perform(get("/api/health"))
+        mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"));
     }
 
     @Test
-    @DisplayName("GET /api/health - response time is reasonable (< 5s)")
+    @DisplayName("GET /api/health responds quickly")
     void healthCheck_responseTimeReasonable() throws Exception {
         long startTime = System.currentTimeMillis();
-        
-        mockMvc.perform(get("/api/health"))
+        mockMvc.perform(get("/health"))
                 .andExpect(status().isOk());
-        
         long duration = System.currentTimeMillis() - startTime;
         assertThat(duration).isLessThan(5000);
     }
 
     @Test
-    @DisplayName("GET /api/health - timestamp is valid ISO format")
+    @DisplayName("GET /api/health returns an ISO-like timestamp")
     void healthCheck_validTimestamp() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/health"))
+        MvcResult result = mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
-        // Timestamp nên là ISO 8601 format
         assertThat(content).containsPattern("\\d{4}-\\d{2}-\\d{2}");
     }
 
     @Test
-    @DisplayName("Multiple calls - response is consistent")
+    @DisplayName("Multiple liveness calls stay consistent")
     void healthCheck_consistentResponse() throws Exception {
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(get("/api/health/live"))
+            mockMvc.perform(get("/health/live"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("UP"));
         }

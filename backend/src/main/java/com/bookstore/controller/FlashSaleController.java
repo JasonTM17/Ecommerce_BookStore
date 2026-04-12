@@ -26,28 +26,28 @@ public class FlashSaleController {
 
     private final FlashSaleService flashSaleService;
 
-    @GetMapping("/api/flash-sales/active")
+    @GetMapping("/flash-sales/active")
     @Operation(summary = "Lấy danh sách flash sale đang hoạt động")
     public ResponseEntity<ApiResponse<List<FlashSaleResponse>>> getActiveFlashSales() {
         List<FlashSaleResponse> sales = flashSaleService.getActiveFlashSales();
         return ResponseEntity.ok(ApiResponse.success(sales));
     }
 
-    @GetMapping("/api/flash-sales/upcoming")
+    @GetMapping("/flash-sales/upcoming")
     @Operation(summary = "Lấy danh sách flash sale sắp tới")
     public ResponseEntity<ApiResponse<List<FlashSaleResponse>>> getUpcomingFlashSales() {
         List<FlashSaleResponse> sales = flashSaleService.getUpcomingFlashSales();
         return ResponseEntity.ok(ApiResponse.success(sales));
     }
 
-    @GetMapping("/api/flash-sales/{id}")
+    @GetMapping("/flash-sales/{id}")
     @Operation(summary = "Lấy chi tiết flash sale")
     public ResponseEntity<ApiResponse<FlashSaleResponse>> getFlashSale(@PathVariable Long id) {
         FlashSaleResponse sale = flashSaleService.getFlashSaleById(id);
         return ResponseEntity.ok(ApiResponse.success(sale));
     }
 
-    @GetMapping("/api/admin/flash-sales")
+    @GetMapping("/admin/flash-sales")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Lấy tất cả flash sale (Admin)")
     public ResponseEntity<ApiResponse<Page<FlashSaleResponse>>> getAllFlashSales(
@@ -58,7 +58,7 @@ public class FlashSaleController {
         return ResponseEntity.ok(ApiResponse.success(sales));
     }
 
-    @PostMapping("/api/admin/flash-sales")
+    @PostMapping("/admin/flash-sales")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Tạo flash sale mới (Admin)")
     public ResponseEntity<ApiResponse<FlashSaleResponse>> createFlashSale(
@@ -67,7 +67,7 @@ public class FlashSaleController {
         return ResponseEntity.ok(ApiResponse.success(sale, "Flash sale đã được tạo"));
     }
 
-    @PutMapping("/api/admin/flash-sales/{id}")
+    @PutMapping("/admin/flash-sales/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Cập nhật flash sale (Admin)")
     public ResponseEntity<ApiResponse<FlashSaleResponse>> updateFlashSale(

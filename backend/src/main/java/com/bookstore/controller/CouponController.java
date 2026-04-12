@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
+@RequestMapping("/coupons")
 @RequiredArgsConstructor
 @Tag(name = "Coupons", description = "API quản lý coupon - mã giảm giá")
 @SecurityRequirement(name = "bearerAuth")
@@ -30,7 +31,7 @@ public class CouponController {
 
     private final CouponService couponService;
 
-    @PostMapping("/api/coupons")
+    @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Tạo coupon mới (Admin)")
     public ResponseEntity<ApiResponse<CouponResponse>> createCoupon(
@@ -40,14 +41,14 @@ public class CouponController {
         return ResponseEntity.ok(ApiResponse.success(coupon, "Tạo coupon thành công"));
     }
 
-    @GetMapping("/api/coupons/available")
+    @GetMapping("/available")
     @Operation(summary = "Lấy danh sách coupon khả dụng")
     public ResponseEntity<ApiResponse<List<CouponResponse>>> getAvailableCoupons() {
         List<CouponResponse> coupons = couponService.getAvailableCoupons();
         return ResponseEntity.ok(ApiResponse.success(coupons));
     }
 
-    @GetMapping("/api/coupons")
+    @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Lấy tất cả coupon (Admin)")
     public ResponseEntity<ApiResponse<Page<CouponResponse>>> getAllCoupons(
@@ -58,7 +59,7 @@ public class CouponController {
         return ResponseEntity.ok(ApiResponse.success(coupons));
     }
 
-    @GetMapping("/api/coupons/{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Lấy chi tiết coupon (Admin)")
     public ResponseEntity<ApiResponse<CouponResponse>> getCouponById(@PathVariable Long id) {
@@ -66,7 +67,7 @@ public class CouponController {
         return ResponseEntity.ok(ApiResponse.success(coupon));
     }
 
-    @PutMapping("/api/coupons/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Cập nhật coupon (Admin)")
     public ResponseEntity<ApiResponse<CouponResponse>> updateCoupon(
@@ -76,7 +77,7 @@ public class CouponController {
         return ResponseEntity.ok(ApiResponse.success(coupon, "Cập nhật coupon thành công"));
     }
 
-    @DeleteMapping("/api/coupons/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Xóa coupon (Admin)")
     public ResponseEntity<ApiResponse<Void>> deleteCoupon(@PathVariable Long id) {
@@ -84,7 +85,7 @@ public class CouponController {
         return ResponseEntity.ok(ApiResponse.success(null, "Xóa coupon thành công"));
     }
 
-    @PostMapping("/api/coupons/validate")
+    @PostMapping("/validate")
     @Operation(summary = "Kiểm tra coupon có hợp lệ không")
     public ResponseEntity<ApiResponse<CouponResponse>> validateCoupon(
             @AuthenticationPrincipal User user,
@@ -95,7 +96,7 @@ public class CouponController {
         return ResponseEntity.ok(ApiResponse.success(coupon, "Coupon hợp lệ"));
     }
 
-    @GetMapping("/api/coupons/search")
+    @GetMapping("/search")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Tìm kiếm coupon (Admin)")
     public ResponseEntity<ApiResponse<Page<CouponResponse>>> searchCoupons(
