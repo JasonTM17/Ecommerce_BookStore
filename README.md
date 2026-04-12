@@ -132,6 +132,13 @@ cd frontend && npm run test:run
 cd frontend && npx playwright install && npm run test:e2e
 ```
 
+Docker-first portfolio smoke:
+
+```bash
+docker compose up -d --build
+cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
+```
+
 Pipeline CI: [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 CI currently enforces honest baseline line-coverage gates while the suite is being expanded:
