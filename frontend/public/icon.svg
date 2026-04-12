@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="iconTitle">
+  <title id="iconTitle">BookStore icon</title>
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#iconGradient)" />
+  <path d="M152 126c0-17.673 14.327-32 32-32h176c17.673 0 32 14.327 32 32v254c0 17.673-14.327 32-32 32H184c-17.673 0-32-14.327-32-32V126Z" fill="#eff6ff" opacity="0.98"/>
+  <path d="M184 94h32v318h-32c-17.673 0-32-14.327-32-32V126c0-17.673 14.327-32 32-32Z" fill="#bfdbfe"/>
+  <path d="M240 164h104M240 214h104M240 264h104M240 314h72" stroke="#2563eb" stroke-linecap="round" stroke-width="20"/>
+  <circle cx="184" cy="392" r="22" fill="#1d4ed8"/>
+  <path d="M136 156c0-17.673 14.327-32 32-32h24v288h-24c-17.673 0-32-14.327-32-32V156Z" fill="#1d4ed8"/>
+</svg>

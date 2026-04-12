@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="ogTitle ogDesc">
+  <title id="ogTitle">BookStore Vietnam portfolio preview</title>
+  <desc id="ogDesc">Portfolio preview image for the BookStore Vietnam full-stack project.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="55%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <linearGradient id="card" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#dbeafe" stop-opacity="0.92" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <circle cx="1030" cy="110" r="180" fill="#ffffff" fill-opacity="0.08" />
+  <circle cx="110" cy="560" r="220" fill="#ffffff" fill-opacity="0.08" />
+  <rect x="88" y="86" width="1024" height="458" rx="40" fill="#0f172a" fill-opacity="0.18" stroke="#ffffff" stroke-opacity="0.18" />
+  <g transform="translate(120 150)">
+    <rect width="180" height="180" rx="36" fill="url(#card)" />
+    <path d="M44 44c0-10.493 8.507-19 19-19h85c10.493 0 19 8.507 19 19v95c0 10.493-8.507 19-19 19H63c-10.493 0-19-8.507-19-19V44Z" fill="#2563eb" fill-opacity="0.12"/>
+    <path d="M63 25h19v133H63c-10.493 0-19-8.507-19-19V44c0-10.493 8.507-19 19-19Z" fill="#2563eb"/>
+    <path d="M96 70h46M96 96h46M96 122h34" stroke="#2563eb" stroke-linecap="round" stroke-width="10"/>
+  </g>
+  <text x="350" y="235" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">BookStore Vietnam</text>
+  <text x="350" y="310" font-family="Arial, sans-serif" font-size="34" fill="#dbeafe">Full-stack bookstore portfolio with Spring Boot, Next.js, MySQL, Docker, and live demo flows.</text>
+  <g transform="translate(350 390)">
+    <rect width="236" height="64" rx="32" fill="#facc15" />
+    <text x="118" y="41" font-family="Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle" fill="#111827">Portfolio Ready</text>
+  </g>
+  <text x="350" y="510" font-family="Arial, sans-serif" font-size="28" fill="#bfdbfe">Catalog • Cart • Orders • Promotions • Flash Sale • Admin</text>
+</svg>

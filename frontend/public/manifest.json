@@ -1,0 +1,38 @@
+{
+  "name": "BookStore Vietnam",
+  "short_name": "BookStore",
+  "description": "Nền tảng bán sách trực tuyến hàng đầu Việt Nam",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "vi",
+  "categories": ["shopping", "books"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tìm kiếm sách",
+      "short_name": "Tìm kiếm",
+      "description": "Tìm kiếm sách yêu thích",
+      "url": "/products?focus=search",
+      "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Giỏ hàng",
+      "short_name": "Giỏ hàng",
+      "description": "Xem giỏ hàng của bạn",
+      "url": "/cart",
+      "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

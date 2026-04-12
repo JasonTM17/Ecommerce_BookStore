@@ -5,14 +5,24 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+ARG NEXT_PUBLIC_API_URL=/api
+ARG NEXT_PUBLIC_APP_NAME=BookStore
+ARG NEXT_PUBLIC_APP_DESCRIPTION="Professional Vietnamese E-Commerce BookStore Platform"
+ARG API_PROXY_TARGET=http://localhost:8080/api
+
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+ENV NEXT_PUBLIC_APP_DESCRIPTION=${NEXT_PUBLIC_APP_DESCRIPTION}
+ENV API_PROXY_TARGET=${API_PROXY_TARGET}
+
 # Copy package files first (for dependency caching)
-COPY Frontend_NextJS/package*.json ./
+COPY frontend/package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 # Copy source code
-COPY Frontend_NextJS/ ./
+COPY frontend/ ./
 
 # Build the application
 RUN npm run build
@@ -24,9 +34,18 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
+ARG NEXT_PUBLIC_API_URL=/api
+ARG NEXT_PUBLIC_APP_NAME=BookStore
+ARG NEXT_PUBLIC_APP_DESCRIPTION="Professional Vietnamese E-Commerce BookStore Platform"
+ARG API_PROXY_TARGET=http://localhost:8080/api
+
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
+ENV NEXT_PUBLIC_APP_DESCRIPTION=${NEXT_PUBLIC_APP_DESCRIPTION}
+ENV API_PROXY_TARGET=${API_PROXY_TARGET}
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" role="img" aria-labelledby="placeholderTitle">
+  <title id="placeholderTitle">Book cover placeholder</title>
+  <defs>
+    <linearGradient id="placeholderBg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="560" rx="36" fill="url(#placeholderBg)" />
+  <rect x="54" y="48" width="292" height="464" rx="28" fill="#ffffff" stroke="#bfdbfe" stroke-width="8" />
+  <rect x="54" y="48" width="52" height="464" rx="28" fill="#2563eb" />
+  <path d="M142 158h156M142 214h156M142 270h132M142 326h156" stroke="#2563eb" stroke-linecap="round" stroke-width="18"/>
+  <circle cx="200" cy="430" r="48" fill="#dbeafe" />
+  <path d="M200 392v76M162 430h76" stroke="#1d4ed8" stroke-linecap="round" stroke-width="16"/>
+</svg>

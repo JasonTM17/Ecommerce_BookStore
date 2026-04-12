@@ -36,8 +36,8 @@ yarn-error.log*
 Thumbs.db
 
 # Backend
-Backend_Java/target/
-Backend_Java/logs/
+backend/target/
+backend/logs/
 *.class
 *.jar
 *.war
@@ -57,8 +57,9 @@ uploads/
 .cache/
 
 # Playwright
-Frontend_NextJS/playwright-report/
-Frontend_NextJS/test-results/
+frontend/playwright-report/
+frontend/test-results/
+frontend/artifacts/
 
 
 # Cursor — plan/todos cục bộ, không đưa vào Git

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">BookStore Vietnam logo</title>
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="72" fill="url(#logoGradient)" />
+  <path d="M84 76c0-13.255 10.745-24 24-24h108c13.255 0 24 10.745 24 24v168c0 13.255-10.745 24-24 24H108c-13.255 0-24-10.745-24-24V76Z" fill="#eff6ff"/>
+  <path d="M108 52h24v216h-24c-13.255 0-24-10.745-24-24V76c0-13.255 10.745-24 24-24Z" fill="#93c5fd"/>
+  <path d="M150 114h54M150 150h54M150 186h54" stroke="#2563eb" stroke-linecap="round" stroke-width="12"/>
+  <text x="160" y="302" font-family="Arial, sans-serif" font-size="34" font-weight="700" text-anchor="middle" fill="#ffffff">BookStore</text>
+</svg>
