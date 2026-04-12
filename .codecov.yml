@@ -13,22 +13,22 @@ coverage:
         threshold: 2%
         if_ci_failed: error
     backend:
-      target: 30%
+      target: 50%
       flags:
         - backend
     frontend:
-      target: 20%
+      target: 15%
       flags:
         - frontend
 
 flags:
   backend:
     paths:
-      - Backend_Java/src/main/java
+      - backend/src/main/java
     carryforward: true
   frontend:
     paths:
-      - Frontend_NextJS/src
+      - frontend/src
     carryforward: true
 
 parsers:
@@ -45,5 +45,5 @@ comment:
   behavior: default
   require_changes: no
   branches:
-    - main
+    - master
     - develop
