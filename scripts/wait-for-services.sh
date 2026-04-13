@@ -212,23 +212,27 @@ for service in "${SERVICES[@]}"; do
     # Reset bộ đếm cho mỗi service
     RETRIES=0
     
+    # Loại bỏ tiền tố (mysql:, postgres:, http:, https:) nếu có để lấy địa chỉ thuần
+    local clean_addr=$(echo "$service" | sed -E 's/^(mysql:|postgres:|http:|https:)//')
+    
     case "$service" in
-        mysql|mysql:*)
-            check_mysql "$service" || FAILED=$((FAILED + 1))
+        mysql:*)
+            check_mysql "$clean_addr" || FAILED=$((FAILED + 1))
             ;;
-        postgres|postgres:*)
-            check_postgres "$service" || FAILED=$((FAILED + 1))
+        postgres:*)
+            check_postgres "$clean_addr" || FAILED=$((FAILED + 1))
             ;;
-        http://*|https://*)
-            check_http "$service" || FAILED=$((FAILED + 1))
+        http:* | https:*)
+            check_http "$service" || FAILED=$((FAILED + 1)) # HTTP vẫn cần nguyên URL
             ;;
         *)
-            # Thử nhận diện port từ chuỗi
-            if [[ "$service" =~ :[0-9]+$ ]]; then
-                check_http "http://$service/api/health/live" || FAILED=$((FAILED + 1))
+            # Mặc định: Nếu là port 3306/3307 thì coi là MySQL, 5432 là Postgres, còn lại là HTTP
+            if [[ "$service" == *:3306 ]] || [[ "$service" == *:3307 ]]; then
+                check_mysql "$service" || FAILED=$((FAILED + 1))
+            elif [[ "$service" == *:5432 ]]; then
+                check_postgres "$service" || FAILED=$((FAILED + 1))
             else
-                log_warn "Không nhận diện được service: $service, thử như HTTP..."
-                check_http "http://$service:8080/api/health/live" || FAILED=$((FAILED + 1))
+                check_http "http://$service/api/health/live" || FAILED=$((FAILED + 1))
             fi
             ;;
     esac
