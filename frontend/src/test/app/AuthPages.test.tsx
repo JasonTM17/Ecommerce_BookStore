@@ -45,8 +45,10 @@ describe("Auth pages bilingual runtime", () => {
   it("renders localized login copy", async () => {
     render(<LoginPage />);
 
-    expect(await screen.findByRole("heading", { name: "Đăng Nhập" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Đăng nhập" })).toBeInTheDocument();
     expect(screen.getByText("Chào mừng bạn quay trở lại!")).toBeInTheDocument();
+    expect(screen.queryByText(/admin@bookstore\.com/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/customer@example\.com/i)).not.toBeInTheDocument();
 
     cleanup();
     currentLocale = "en";

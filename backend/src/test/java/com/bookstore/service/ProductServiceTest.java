@@ -3,6 +3,7 @@ package com.bookstore.service;
 import com.bookstore.dto.request.ProductRequest;
 import com.bookstore.dto.response.ProductResponse;
 import com.bookstore.entity.Category;
+import com.bookstore.entity.FlashSale;
 import com.bookstore.entity.Product;
 import com.bookstore.exception.ResourceNotFoundException;
 import com.bookstore.repository.BrandRepository;
@@ -20,14 +21,25 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -109,8 +121,8 @@ class ProductServiceTest {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(productRepository.save(any(Product.class))).thenReturn(testProduct);
         when(effectivePricingService.resolve(any(Product.class))).thenAnswer(invocation -> pricingFor(invocation.getArgument(0)));
-        when(reviewRepository.calculateAverageRatingByProductId(anyLong())).thenReturn(4.5);
-        when(reviewRepository.countApprovedReviewsByProductId(anyLong())).thenReturn(100L);
+        when(reviewRepository.calculateAverageRatingByProductId(any(Long.class))).thenReturn(4.5);
+        when(reviewRepository.countApprovedReviewsByProductId(any(Long.class))).thenReturn(100L);
 
         ProductResponse response = productService.createProduct(productRequest);
 
@@ -128,8 +140,7 @@ class ProductServiceTest {
     void createProduct_CategoryNotFound_ThrowsException() {
         when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> 
-            productService.createProduct(productRequest));
+        assertThrows(ResourceNotFoundException.class, () -> productService.createProduct(productRequest));
 
         verify(categoryRepository).findById(1L);
         verify(productRepository, never()).save(any(Product.class));
@@ -145,17 +156,45 @@ class ProductServiceTest {
         assertNotNull(response);
         assertEquals(1L, response.getId());
         assertEquals("Đắc Nhân Tâm", response.getName());
+        assertNull(response.getActiveFlashSale());
 
         verify(productRepository).findDetailById(1L);
         verify(productRepository).incrementViewCount(1L);
     }
 
     @Test
+    void getProductById_IncludesActiveFlashSaleSummary() {
+        FlashSale flashSale = FlashSale.builder()
+                .id(25L)
+                .product(testProduct)
+                .originalPrice(new BigDecimal("59000"))
+                .salePrice(new BigDecimal("39000"))
+                .startTime(LocalDateTime.now().minusHours(1))
+                .endTime(LocalDateTime.now().plusHours(6))
+                .stockLimit(20)
+                .soldCount(4)
+                .isActive(true)
+                .maxPerUser(2)
+                .build();
+
+        when(productRepository.findDetailById(1L)).thenReturn(Optional.of(testProduct));
+        when(effectivePricingService.resolve(testProduct)).thenReturn(pricingFor(testProduct, flashSale));
+        doNothing().when(productRepository).incrementViewCount(1L);
+
+        ProductResponse response = productService.getProductById(1L);
+
+        assertNotNull(response.getActiveFlashSale());
+        assertEquals(25L, response.getActiveFlashSale().getId());
+        assertEquals(flashSale.getEndTime(), response.getActiveFlashSale().getEndTime());
+        assertEquals(flashSale.getRemainingStock(), response.getActiveFlashSale().getRemainingStock());
+        assertEquals(2, response.getActiveFlashSale().getMaxPerUser());
+    }
+
+    @Test
     void getProductById_NotFound_ThrowsException() {
         when(productRepository.findDetailById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> 
-            productService.getProductById(1L));
+        assertThrows(ResourceNotFoundException.class, () -> productService.getProductById(1L));
 
         verify(productRepository).findDetailById(1L);
         verify(productRepository, never()).incrementViewCount(any());
@@ -232,20 +271,11 @@ class ProductServiceTest {
                 .stockQuantity(150)
                 .build();
 
-        Product updatedProduct = Product.builder()
-                .id(1L)
-                .name("Đắc Nhân Tâm - Bản Mới")
-                .price(new BigDecimal("55000"))
-                .stockQuantity(150)
-                .category(testCategory)
-                .isActive(true)
-                .build();
-
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(effectivePricingService.resolve(any(Product.class))).thenAnswer(invocation -> pricingFor(invocation.getArgument(0)));
-        when(reviewRepository.calculateAverageRatingByProductId(anyLong())).thenReturn(4.5);
-        when(reviewRepository.countApprovedReviewsByProductId(anyLong())).thenReturn(100L);
+        when(reviewRepository.calculateAverageRatingByProductId(any(Long.class))).thenReturn(4.5);
+        when(reviewRepository.countApprovedReviewsByProductId(any(Long.class))).thenReturn(100L);
 
         ProductResponse response = productService.updateProduct(1L, updateRequest);
 
@@ -258,18 +288,26 @@ class ProductServiceTest {
     }
 
     private EffectiveProductPricing pricingFor(Product product) {
+        return pricingFor(product, null);
+    }
+
+    private EffectiveProductPricing pricingFor(Product product, FlashSale flashSale) {
         BigDecimal currentPrice = product.getDiscountPrice() != null && product.getDiscountPrice().compareTo(BigDecimal.ZERO) > 0
                 ? product.getDiscountPrice()
                 : product.getPrice();
+
+        if (flashSale != null) {
+            currentPrice = flashSale.getSalePrice();
+        }
 
         return new EffectiveProductPricing(
                 product.getPrice(),
                 product.getDiscountPrice(),
                 currentPrice,
-                product.getDiscountPercent(),
-                product.getStockQuantity(),
+                flashSale != null ? flashSale.getDiscountPercent().intValue() : product.getDiscountPercent(),
+                flashSale != null ? Math.min(product.getStockQuantity(), flashSale.getRemainingStock()) : product.getStockQuantity(),
                 product.getStockQuantity() != null && product.getStockQuantity() > 0,
-                null
+                flashSale
         );
     }
 }

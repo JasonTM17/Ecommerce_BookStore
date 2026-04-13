@@ -36,32 +36,32 @@ import java.util.stream.Collectors;
 public abstract class AbstractChatbotService implements ChatbotService {
 
     protected static final String SYSTEM_PROMPT = """
-        Ban la tro ly ban sach than thien cua BookStore - mot cua hang sach truc tuyen hang dau tai Viet Nam.
+        Bạn là trợ lý bán sách thân thiện của BookStore - một cửa hàng sách trực tuyến hàng đầu tại Việt Nam.
 
-        NHIEM VU CUA BAN:
-        - Tu van sach theo so thich, do tuoi, the loai yeu thich cua khach hang
-        - Tra loi cau hoi ve san pham, don hang, doi tra, van chuyen
-        - So sanh cac cuon sach khi duoc yeu cau
-        - Ho tro tim kiem sach theo tac gia, the loai, chu de
-        - Luon khuyen khich mua sach mot cach tu nhien
+        NHIỆM VỤ CỦA BẠN:
+        - Tư vấn sách theo sở thích, độ tuổi, thể loại yêu thích của khách hàng
+        - Trả lời câu hỏi về sản phẩm, đơn hàng, đổi trả, vận chuyển
+        - So sánh các cuốn sách khi được yêu cầu
+        - Hỗ trợ tìm kiếm sách theo tác giả, thể loại, chủ đề
+        - Luôn khuyến khích mua sách một cách tự nhiên
 
-        PHONG CACH TRA LOI:
-        - Than thien, gan gui nhu dang tro chuyen voi nguoi ban
-        - Su dung tieng Viet, co the xen lan tieng Anh cho ten sach/tac gia
-        - Tra loi NGAN GON (duoi 200 tu) tru khi can chi tiet
-        - Neu khong biet thi goi y hotline: 1900-xxxx hoac email: support@bookstore.com
+        PHONG CÁCH TRẢ LỜI:
+        - Thân thiện, gần gũi như đang trò chuyện với người bạn
+        - Sử dụng tiếng Việt, có thể xen lẫn tiếng Anh cho tên sách/tác giả
+        - Trả lời NGẮN GỌN (dưới 200 từ) trừ khi cần chi tiết
+        - Nếu không biết thì gợi ý hotline: 1900-xxxx hoặc email: support@bookstore.com
 
-        CAC TINH NANG CUA CUA HANG:
-        - Giao hang toan quoc, mien phi van chuyen cho don tu 200.000d
-        - Doi tra trong 7 ngay neu sach loi
-        - Thuong xuyen co flash sale va ma giam gia
-        - Ho tro thanh toan qua VNPay, COD
+        CÁC TÍNH NĂNG CỦA CỬA HÀNG:
+        - Giao hàng toàn quốc, miễn phí vận chuyển cho đơn từ 200.000đ
+        - Đổi trả trong 7 ngày nếu sách lỗi
+        - Thường xuyên có flash sale và mã giảm giá
+        - Hỗ trợ thanh toán qua VNPay, COD
 
-        QUY TAC QUAN TRONG:
-        - Khong bia dat thong tin sach
-        - Khong de cap la minh la AI/chatbot
-        - Luon hoi them de dua ra goi y chinh xac hon
-        - Khong spam quang cao, chi suggest khi phu hop
+        QUY TẮC QUAN TRỌNG:
+        - Không bịa đặt thông tin sách
+        - Không đề cập là mình là AI/chatbot
+        - Luôn hỏi thêm để đưa ra gợi ý chính xác hơn
+        - Không spam quảng cáo, chỉ suggest khi phù hợp
         """;
 
     protected final ChatConversationRepository conversationRepository;
@@ -159,27 +159,27 @@ public abstract class AbstractChatbotService implements ChatbotService {
 
     protected String getFallbackResponse() {
         return """
-            Xin loi ban, hien tai minh dang gap chut truc trac ky thuat.
+            Xin lỗi bạn, hiện tại mình đang gặp chút trục trặc kỹ thuật.
 
-            Ban co the:
-            - Thu hoi lai cau hoi cua minh
-            - Lien he hotline: 1900-xxxx de duoc ho tro nhanh hon
+            Bạn có thể:
+            - Thử hỏi lại câu hỏi của mình
+            - Liên hệ hotline: 1900-xxxx để được hỗ trợ nhanh hơn
             - Email: support@bookstore.com
 
-            Cam on ban da thong cam!
+            Cảm ơn bạn đã thông cảm!
             """;
     }
 
     protected String getDisabledResponse() {
         return """
-            Tinh nang tu van AI hien dang tam tat trong moi truong nay.
+            Tính năng tư vấn AI hiện đang tạm tắt trong môi trường này.
 
-            Ban van co the:
-            - Duyet danh muc sach va tim kiem truc tiep tren cua hang
-            - Lien he hotline: 1900-xxxx
+            Bạn vẫn có thể:
+            - Duyệt danh mục sách và tìm kiếm trực tiếp trên cửa hàng
+            - Liên hệ hotline: 1900-xxxx
             - Email: support@bookstore.com
 
-            Khi Grok duoc bat lai, minh se ho tro tu van chi tiet hon.
+            Khi trợ lý được bật lại, mình sẽ hỗ trợ tư vấn chi tiết hơn.
             """;
     }
 
@@ -189,7 +189,7 @@ public abstract class AbstractChatbotService implements ChatbotService {
                     .orElseThrow(() -> new ResourceNotFoundException("Conversation", "id", conversationId));
         }
 
-        String conversationTitle = title != null && !title.isBlank() ? title : "Cuoc tro chuyen moi";
+        String conversationTitle = title != null && !title.isBlank() ? title : "Cuộc trò chuyện mới";
         return conversationRepository.save(ChatConversation.builder()
                 .user(user)
                 .title(conversationTitle)
@@ -230,18 +230,18 @@ public abstract class AbstractChatbotService implements ChatbotService {
     }
 
     protected String buildUserContext(User user) {
-        StringBuilder context = new StringBuilder("\n\nTHONG TIN KHACH HANG:");
-        context.append("\n- Ten: ").append(user.getFullName());
+        StringBuilder context = new StringBuilder("\n\nTHÔNG TIN KHÁCH HÀNG:");
+        context.append("\n- Tên: ").append(user.getFullName());
         context.append("\n- Email: ").append(user.getEmail());
 
         try {
             var orders = orderRepository.findByUserId(user.getId(), PageRequest.of(0, 1));
-            context.append("\n- So don hang da mua: ").append(orders.getTotalElements());
+            context.append("\n- Số đơn hàng đã mua: ").append(orders.getTotalElements());
         } catch (Exception e) {
-            context.append("\n- So don hang da mua: 0");
+            context.append("\n- Số đơn hàng đã mua: 0");
         }
 
-        context.append("\n\nTra loi khach hang mot cach tu nhien, co the de cap den lich su mua hang neu phu hop.");
+        context.append("\n\nTrả lời khách hàng một cách tự nhiên, có thể đề cập đến lịch sử mua hàng nếu phù hợp.");
         return context.toString();
     }
 
@@ -279,7 +279,7 @@ public abstract class AbstractChatbotService implements ChatbotService {
                             .price(product.getCurrentPrice() != null ? product.getCurrentPrice().doubleValue() : 0.0)
                             .imageUrl(product.getImageUrl())
                             .averageRating(product.getAvgRating())
-                            .reason("Goi y tu AI")
+                            .reason("Gợi ý từ AI")
                             .build());
                 }
             } catch (Exception e) {
@@ -297,28 +297,28 @@ public abstract class AbstractChatbotService implements ChatbotService {
         if (lowerReply.contains("tim") || lowerReply.contains("search")) {
             actions.add(QuickAction.builder()
                     .action("search")
-                    .label("Tim kiem sach")
+                    .label("Tìm kiếm sách")
                     .icon("search")
                     .build());
         }
         if (lowerReply.contains("don hang") || lowerReply.contains("order")) {
             actions.add(QuickAction.builder()
                     .action("track_order")
-                    .label("Theo doi don hang")
+                    .label("Theo dõi đơn hàng")
                     .icon("package")
                     .build());
         }
         if (lowerReply.contains("gio hang") || lowerReply.contains("cart")) {
             actions.add(QuickAction.builder()
                     .action("view_cart")
-                    .label("Xem gio hang")
+                    .label("Xem giỏ hàng")
                     .icon("shopping-cart")
                     .build());
         }
         if (lowerReply.contains("khuyen mai") || lowerReply.contains("sale")) {
             actions.add(QuickAction.builder()
                     .action("view_promotions")
-                    .label("Xem khuyen mai")
+                    .label("Xem khuyến mãi")
                     .icon("tag")
                     .build());
         }
