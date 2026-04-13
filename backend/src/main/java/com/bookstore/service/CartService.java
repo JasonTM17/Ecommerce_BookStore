@@ -37,7 +37,7 @@ public class CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getProductId()));
 
         if (!product.getIsActive()) {
-            throw new BadRequestException("Sáº£n pháº©m khÃ´ng cÃ²n hoáº¡t Ä‘á»™ng");
+            throw new BadRequestException("Sản phẩm không còn hoạt động");
         }
 
         EffectiveProductPricing pricing = effectivePricingService.resolve(product);
@@ -77,7 +77,7 @@ public class CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("CartItem", "id", itemId));
 
         if (!item.getCart().getId().equals(cart.getId())) {
-            throw new BadRequestException("Sáº£n pháº©m khÃ´ng thuá»™c giá» hÃ ng cá»§a báº¡n");
+            throw new BadRequestException("Sản phẩm không thuộc giỏ hàng của bạn");
         }
 
         if (quantity <= 0) {
@@ -102,7 +102,7 @@ public class CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("CartItem", "id", itemId));
 
         if (!item.getCart().getId().equals(cart.getId())) {
-            throw new BadRequestException("Sáº£n pháº©m khÃ´ng thuá»™c giá» hÃ ng cá»§a báº¡n");
+            throw new BadRequestException("Sản phẩm không thuộc giỏ hàng của bạn");
         }
 
         cart.removeItem(item);
@@ -162,22 +162,25 @@ public class CartService {
 
     private void validateRequestedQuantity(Product product, EffectiveProductPricing pricing, int quantity) {
         if (quantity <= 0) {
-            throw new BadRequestException("Sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡");
+            throw new BadRequestException("Số lượng không hợp lệ");
         }
 
         if (pricing.hasActiveFlashSale()) {
             if (quantity > pricing.maxPerUser()) {
-                throw new BadRequestException("Flash sale cho sáº£n pháº©m '" + product.getName() + "' chá»‰ cho phÃ©p mua tá»‘i Ä‘a " + pricing.maxPerUser() + " cuá»‘n");
+                throw new BadRequestException(
+                        "Flash sale cho sản phẩm '" + product.getName() + "' chỉ cho phép mua tối đa "
+                                + pricing.maxPerUser() + " cuốn"
+                );
             }
 
             if (quantity > pricing.stockQuantity()) {
-                throw new BadRequestException("Sá»‘ lÆ°á»£ng flash sale cÃ²n láº¡i khÃ´ng Ä‘á»§");
+                throw new BadRequestException("Số lượng flash sale còn lại không đủ");
             }
             return;
         }
 
         if (quantity > pricing.stockQuantity()) {
-            throw new BadRequestException("Sá»‘ lÆ°á»£ng trong kho khÃ´ng Ä‘á»§");
+            throw new BadRequestException("Số lượng trong kho không đủ");
         }
     }
 
