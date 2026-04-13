@@ -406,10 +406,25 @@ public class ProductService {
                 .reviewCount(product.getReviewCount())
                 .soldCount(product.getSoldCount())
                 .viewCount(product.getViewCount())
+                .activeFlashSale(mapToActiveFlashSale(pricing))
                 .isFeatured(product.getIsFeatured())
                 .isBestseller(product.getIsBestseller())
                 .isNew(product.getIsNew())
                 .sortOrder(product.getSortOrder())
+                .build();
+    }
+
+    private ProductResponse.ActiveFlashSaleSummary mapToActiveFlashSale(EffectiveProductPricing pricing) {
+        if (pricing == null || !pricing.hasActiveFlashSale()) {
+            return null;
+        }
+
+        var flashSale = pricing.activeFlashSale();
+        return ProductResponse.ActiveFlashSaleSummary.builder()
+                .id(flashSale.getId())
+                .endTime(flashSale.getEndTime())
+                .remainingStock(flashSale.getRemainingStock())
+                .maxPerUser(flashSale.getMaxPerUser())
                 .build();
     }
 

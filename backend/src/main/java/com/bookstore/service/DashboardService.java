@@ -44,7 +44,7 @@ public class DashboardService {
 
         long newOrdersThisMonth = orderRepository.countOrdersBetweenDates(startOfMonth, endOfMonth);
 
-        var lowStockProducts = productRepository.findLowStockProducts(10).size();
+        var lowStockProducts = productRepository.countLowStockProducts(10);
 
         return DashboardStats.builder()
                 .totalUsers(totalUsers)

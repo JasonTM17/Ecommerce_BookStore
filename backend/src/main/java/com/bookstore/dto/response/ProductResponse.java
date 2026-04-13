@@ -1,11 +1,13 @@
 package com.bookstore.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -41,8 +43,21 @@ public class ProductResponse {
     private Integer reviewCount;
     private Integer soldCount;
     private Integer viewCount;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private ActiveFlashSaleSummary activeFlashSale;
     private Boolean isFeatured;
     private Boolean isBestseller;
     private Boolean isNew;
     private Integer sortOrder;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ActiveFlashSaleSummary {
+        private Long id;
+        private LocalDateTime endTime;
+        private Integer remainingStock;
+        private Integer maxPerUser;
+    }
 }

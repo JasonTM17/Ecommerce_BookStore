@@ -53,6 +53,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND p.stockQuantity <= :threshold")
     List<Product> findLowStockProducts(int threshold);
 
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true AND p.stockQuantity <= :threshold")
+    long countLowStockProducts(int threshold);
+
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.brand WHERE p.isActive = true AND (p.name LIKE %:keyword% OR p.author LIKE %:keyword% OR p.description LIKE %:keyword%)")
     Page<Product> searchProducts(String keyword, Pageable pageable);
 
