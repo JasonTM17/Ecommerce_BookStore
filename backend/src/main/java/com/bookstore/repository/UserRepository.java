@@ -26,5 +26,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
     long countActiveUsers();
 
+    @Query("SELECT u FROM User u WHERE MONTH(u.dateOfBirth) = :month AND DAY(u.dateOfBirth) = :day AND u.isActive = true")
+    List<User> findByBirthday(@org.springframework.data.repository.query.Param("month") int month, @org.springframework.data.repository.query.Param("day") int day);
+
     List<User> findByRolesContaining(com.bookstore.entity.Role role);
 }

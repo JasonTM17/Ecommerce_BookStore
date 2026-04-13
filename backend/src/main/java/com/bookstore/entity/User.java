@@ -10,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -43,6 +44,9 @@ public class User implements UserDetails {
 
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
     @Column(name = "is_active")
     @Builder.Default
