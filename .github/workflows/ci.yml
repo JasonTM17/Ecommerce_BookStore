@@ -48,8 +48,8 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Install netcat
-        run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
+      - name: Install readiness clients
+        run: sudo apt-get update && sudo apt-get install -y netcat-openbsd default-mysql-client
 
       - name: Make scripts executable
         run: chmod +x scripts/wait-for-services.sh
@@ -57,11 +57,29 @@ jobs:
       - name: Wait for MySQL TCP port
         run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 127.0.0.1:3306
 
+      - name: Wait for MySQL query readiness
+        run: |
+          for attempt in $(seq 1 60); do
+            if mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot --silent >/dev/null 2>&1 && \
+               mysql -h 127.0.0.1 -P 3306 -u root -proot -D bookstore_test -e "SELECT 1" >/dev/null 2>&1; then
+              echo "MySQL is accepting authenticated queries."
+              exit 0
+            fi
+
+            echo "Waiting for MySQL authenticated query readiness (${attempt}/60)..."
+            sleep 3
+          done
+
+          echo "MySQL did not become query-ready within the expected time window."
+          exit 1
+
       - name: Debug MySQL runner state on failure
         if: failure()
         run: |
           docker ps -a
           sudo ss -ltnp || true
+          mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot || true
+          mysql -h 127.0.0.1 -P 3306 -u root -proot -e "SHOW DATABASES;" || true
 
       - name: Run backend tests
         run: |
@@ -70,6 +88,8 @@ jobs:
             -Dspring.datasource.url=jdbc:mysql://127.0.0.1:3306/bookstore_test \
             -Dspring.datasource.username=root \
             -Dspring.datasource.password=root \
+            -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+            -Dspring.jpa.database-platform=org.hibernate.dialect.MySQLDialect \
             -DskipFrontendBuild=true
 
       - name: Upload backend test results
