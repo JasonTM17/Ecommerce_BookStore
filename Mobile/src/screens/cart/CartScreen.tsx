@@ -1,26 +1,31 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../store/AuthContext";
 
 export function CartScreen() {
+  const navigation = useNavigation<any>();
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyIcon}>🛒</Text>
         <Text style={styles.emptyTitle}>Vui lòng đăng nhập</Text>
-        <Text style={styles.emptyText}>Đăng nhập để xem giỏ hàng của bạn</Text>
+        <Text style={styles.emptyText}>Đăng nhập để xem giỏ hàng của bạn trên mobile.</Text>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.buttonText}>Đi tới đăng nhập</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>🛒</Text>
-      <Text style={styles.emptyTitle}>Giỏ hàng trống</Text>
-      <Text style={styles.emptyText}>Hãy thêm sản phẩm vào giỏ hàng</Text>
-      <TouchableOpacity style={styles.button}>
+      <Text style={styles.emptyTitle}>Giỏ hàng mobile đang chờ phase tiếp theo</Text>
+      <Text style={styles.emptyText}>
+        Backend và auth đã được nối đúng. Luồng giỏ hàng sẽ là phase mobile tiếp theo để giữ pass này gọn và ổn định.
+      </Text>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Products")}>
         <Text style={styles.buttonText}>Khám phá sản phẩm</Text>
       </TouchableOpacity>
     </View>
@@ -28,42 +33,36 @@ export function CartScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-  },
   emptyContainer: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f8fafc",
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
   },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 8,
+    fontWeight: "700",
+    color: "#111827",
+    textAlign: "center",
   },
   emptyText: {
-    fontSize: 14,
-    color: "#6b7280",
+    marginTop: 10,
     textAlign: "center",
-    marginBottom: 24,
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#6b7280",
   },
   button: {
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    marginTop: 24,
+    borderRadius: 14,
+    backgroundColor: "#2563eb",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
   },
   buttonText: {
     color: "#ffffff",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
   },
 });

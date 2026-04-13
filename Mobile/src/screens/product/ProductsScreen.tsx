@@ -1,68 +1,65 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from "react-native";
-import { useAuth } from "../../store/AuthContext";
-import api from "../../api/client";
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
+import api from "../../api/client";
 
 interface Product {
   id: number;
   name: string;
-  author: string;
+  author?: string;
   price: number;
   currentPrice: number;
-  imageUrl: string;
-  avgRating: number;
+  imageUrl?: string;
+  avgRating?: number;
 }
 
 export function ProductsScreen() {
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products"],
+  const navigation = useNavigation<any>();
+
+  const { data: products = [] } = useQuery<Product[]>({
+    queryKey: ["mobile-products"],
     queryFn: async () => {
       const response = await api.get("/products", { params: { size: 20 } });
-      return response.data.data.content as Product[];
+      return response.data.content ?? [];
     },
   });
-
-  const renderProduct = ({ item }: { item: Product }) => (
-    <TouchableOpacity style={styles.productCard}>
-      <View style={styles.productImage}>
-        {item.imageUrl ? (
-          <Text style={styles.emoji}>📚</Text>
-        ) : (
-          <Text style={styles.emoji}>📚</Text>
-        )}
-      </View>
-      <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-      <Text style={styles.productAuthor} numberOfLines={1}>{item.author}</Text>
-      <View style={styles.priceContainer}>
-        <Text style={styles.currentPrice}>
-          {item.currentPrice?.toLocaleString("vi-VN") || item.price.toLocaleString("vi-VN")}đ
-        </Text>
-        {item.currentPrice && item.currentPrice < item.price && (
-          <Text style={styles.originalPrice}>
-            {item.price.toLocaleString("vi-VN")}đ
-          </Text>
-        )}
-      </View>
-      <View style={styles.ratingContainer}>
-        <Text style={styles.rating}>⭐ {item.avgRating?.toFixed(1) || "0.0"}</Text>
-      </View>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Sản phẩm</Text>
+        <Text style={styles.subtitle}>Danh mục mobile đang dùng trực tiếp dữ liệu từ backend hiện tại.</Text>
       </View>
+
       <FlatList
         data={products}
-        renderItem={renderProduct}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={styles.list}
         columnWrapperStyle={styles.row}
-        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("ProductDetail", { productId: item.id })}>
+            <View style={styles.imageWrapper}>
+              {item.imageUrl ? (
+                <Image source={{ uri: item.imageUrl }} style={styles.image} />
+              ) : (
+                <View style={[styles.image, styles.placeholder]}>
+                  <Text style={styles.placeholderText}>B</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.name} numberOfLines={2}>{item.name}</Text>
+            <Text style={styles.author} numberOfLines={1}>{item.author || "Tác giả đang cập nhật"}</Text>
+            <View style={styles.priceRow}>
+              <Text style={styles.currentPrice}>{item.currentPrice.toLocaleString("vi-VN")}đ</Text>
+              {item.currentPrice < item.price ? (
+                <Text style={styles.originalPrice}>{item.price.toLocaleString("vi-VN")}đ</Text>
+              ) : null}
+            </View>
+            <Text style={styles.rating}>⭐ {(item.avgRating ?? 0).toFixed(1)}</Text>
+          </TouchableOpacity>
+        )}
       />
     </View>
   );
@@ -71,78 +68,89 @@ export function ProductsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f8fafc",
   },
   header: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 12,
     backgroundColor: "#ffffff",
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#1f2937",
+    fontWeight: "700",
+    color: "#111827",
   },
-  listContainer: {
+  subtitle: {
+    marginTop: 6,
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#6b7280",
+  },
+  list: {
     padding: 12,
   },
   row: {
     justifyContent: "space-between",
   },
-  productCard: {
+  card: {
     width: "48%",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 12,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    padding: 12,
   },
-  productImage: {
+  imageWrapper: {
     aspectRatio: 1,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 8,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 10,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  placeholder: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 8,
+    backgroundColor: "#e5e7eb",
   },
-  emoji: {
-    fontSize: 48,
+  placeholderText: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#9ca3af",
   },
-  productName: {
+  name: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 4,
+    color: "#111827",
   },
-  productAuthor: {
+  author: {
+    marginTop: 4,
     fontSize: 12,
     color: "#6b7280",
-    marginBottom: 8,
   },
-  priceContainer: {
+  priceRow: {
+    marginTop: 8,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
   currentPrice: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
-    color: "#ef4444",
+    color: "#dc2626",
   },
   originalPrice: {
     fontSize: 12,
     color: "#9ca3af",
     textDecorationLine: "line-through",
   },
-  ratingContainer: {
-    marginTop: 4,
-  },
   rating: {
+    marginTop: 6,
     fontSize: 12,
     color: "#6b7280",
   },

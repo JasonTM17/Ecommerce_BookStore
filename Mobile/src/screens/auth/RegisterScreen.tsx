@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../store/AuthContext";
 
 export function RegisterScreen() {
+  const navigation = useNavigation<any>();
   const { register } = useAuth();
   const [form, setForm] = useState({
     email: "",
@@ -16,7 +18,7 @@ export function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!form.email || !form.password || !form.firstName || !form.lastName) {
-      setError("Vui lòng điền đầy đủ thông tin bắt buộc");
+      setError("Vui lòng điền đầy đủ các trường bắt buộc.");
       return;
     }
 
@@ -26,7 +28,7 @@ export function RegisterScreen() {
     try {
       await register(form);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Đăng ký thất bại");
+      setError(err?.response?.data?.message || "Đăng ký thất bại.");
     } finally {
       setLoading(false);
     }
@@ -35,9 +37,9 @@ export function RegisterScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.logo}>📚 BookStore</Text>
+        <Text style={styles.logo}>BookStore</Text>
         <Text style={styles.title}>Tạo tài khoản</Text>
-        <Text style={styles.subtitle}>Đăng ký để bắt đầu mua sắm!</Text>
+        <Text style={styles.subtitle}>Đăng ký để bắt đầu mua sắm trên mobile.</Text>
       </View>
 
       <View style={styles.form}>
@@ -50,7 +52,7 @@ export function RegisterScreen() {
               style={styles.input}
               placeholder="Nhập họ"
               value={form.firstName}
-              onChangeText={(v) => setForm({ ...form, firstName: v })}
+              onChangeText={(value) => setForm({ ...form, firstName: value })}
             />
           </View>
           <View style={styles.halfInput}>
@@ -59,7 +61,7 @@ export function RegisterScreen() {
               style={styles.input}
               placeholder="Nhập tên"
               value={form.lastName}
-              onChangeText={(v) => setForm({ ...form, lastName: v })}
+              onChangeText={(value) => setForm({ ...form, lastName: value })}
             />
           </View>
         </View>
@@ -70,7 +72,7 @@ export function RegisterScreen() {
             style={styles.input}
             placeholder="Nhập email"
             value={form.email}
-            onChangeText={(v) => setForm({ ...form, email: v })}
+            onChangeText={(value) => setForm({ ...form, email: value })}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -82,7 +84,7 @@ export function RegisterScreen() {
             style={styles.input}
             placeholder="Nhập mật khẩu"
             value={form.password}
-            onChangeText={(v) => setForm({ ...form, password: v })}
+            onChangeText={(value) => setForm({ ...form, password: value })}
             secureTextEntry
           />
         </View>
@@ -93,17 +95,17 @@ export function RegisterScreen() {
             style={styles.input}
             placeholder="Nhập số điện thoại"
             value={form.phoneNumber}
-            onChangeText={(v) => setForm({ ...form, phoneNumber: v })}
+            onChangeText={(value) => setForm({ ...form, phoneNumber: value })}
             keyboardType="phone-pad"
           />
         </View>
 
         <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.buttonText}>Đăng ký</Text>
-          )}
+          {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Đăng ký</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.secondaryText}>Đã có tài khoản? Quay lại đăng nhập</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -123,31 +125,34 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logo: {
-    fontSize: 32,
     textAlign: "center",
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#2563eb",
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1f2937",
     marginTop: 24,
     textAlign: "center",
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#111827",
   },
   subtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-    marginTop: 8,
+    marginTop: 10,
     textAlign: "center",
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#6b7280",
   },
   form: {
     flex: 1,
   },
   error: {
-    backgroundColor: "#fef2f2",
-    color: "#dc2626",
-    padding: 12,
-    borderRadius: 8,
     marginBottom: 16,
+    borderRadius: 12,
+    backgroundColor: "#fef2f2",
+    padding: 12,
+    color: "#dc2626",
     fontSize: 14,
   },
   row: {
@@ -161,29 +166,40 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
+    marginBottom: 8,
     fontSize: 14,
     fontWeight: "500",
     color: "#374151",
-    marginBottom: 8,
   },
   input: {
-    backgroundColor: "#f9fafb",
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 14,
+    backgroundColor: "#f9fafb",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
   },
   button: {
-    backgroundColor: "#3b82f6",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
     marginTop: 8,
+    alignItems: "center",
+    borderRadius: 14,
+    backgroundColor: "#2563eb",
+    padding: 16,
   },
   buttonText: {
     color: "#ffffff",
     fontSize: 16,
+    fontWeight: "600",
+  },
+  secondaryButton: {
+    marginTop: 16,
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  secondaryText: {
+    color: "#2563eb",
+    fontSize: 14,
     fontWeight: "600",
   },
 });

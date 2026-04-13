@@ -1,53 +1,43 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../store/AuthContext";
 
 export function ProfileScreen() {
+  const navigation = useNavigation<any>();
   const { user, logout } = useAuth();
 
   const menuItems = [
-    { title: "Hồ sơ cá nhân", icon: "👤", screen: "Profile" },
-    { title: "Đơn hàng của tôi", icon: "📦", screen: "Orders" },
-    { title: "Sách yêu thích", icon: "❤️", screen: "Wishlist" },
-    { title: "Reading Tracker", icon: "📖", screen: "Reading" },
-    { title: "Cài đặt thông báo", icon: "🔔", screen: "Notifications" },
-    { title: "Hỗ trợ", icon: "💬", screen: "Support" },
+    { title: "Đơn hàng của tôi", description: "Mở lịch sử mua hàng", action: () => navigation.navigate("Orders") },
+    { title: "Khám phá sản phẩm", description: "Trở lại catalog mobile", action: () => navigation.navigate("Products") },
+    { title: "Chatbot hỗ trợ", description: "Mở màn chat Grok", action: () => navigation.navigate("Chatbot") },
   ];
 
   return (
     <ScrollView style={styles.container}>
-      {/* Profile Header */}
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user?.firstName?.charAt(0)?.toUpperCase() || "U"}
-            </Text>
-          </View>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{user?.firstName?.charAt(0)?.toUpperCase() || "U"}</Text>
         </View>
         <Text style={styles.name}>{user?.fullName || "Người dùng"}</Text>
         <Text style={styles.email}>{user?.email || "email@example.com"}</Text>
       </View>
 
-      {/* Menu Items */}
-      <View style={styles.menuContainer}>
-        {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem}>
-            <View style={styles.menuLeft}>
-              <Text style={styles.menuIcon}>{item.icon}</Text>
+      <View style={styles.menu}>
+        {menuItems.map((item) => (
+          <TouchableOpacity key={item.title} style={styles.menuItem} onPress={item.action}>
+            <View>
               <Text style={styles.menuTitle}>{item.title}</Text>
+              <Text style={styles.menuDescription}>{item.description}</Text>
             </View>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Đăng xuất</Text>
       </TouchableOpacity>
-
-      <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
@@ -55,81 +45,74 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f8fafc",
   },
   header: {
+    alignItems: "center",
     backgroundColor: "#ffffff",
     padding: 24,
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-  },
-  avatarContainer: {
-    marginBottom: 16,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#3b82f6",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#2563eb",
   },
   avatarText: {
-    fontSize: 32,
-    fontWeight: "bold",
+    fontSize: 30,
+    fontWeight: "700",
     color: "#ffffff",
   },
   name: {
+    marginTop: 16,
     fontSize: 20,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 4,
+    fontWeight: "700",
+    color: "#111827",
   },
   email: {
+    marginTop: 6,
     fontSize: 14,
     color: "#6b7280",
   },
-  menuContainer: {
-    backgroundColor: "#ffffff",
+  menu: {
     marginTop: 16,
-    paddingHorizontal: 16,
+    backgroundColor: "#ffffff",
   },
   menuItem: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 16,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 18,
     borderBottomWidth: 1,
     borderBottomColor: "#f3f4f6",
   },
-  menuLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  menuIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
   menuTitle: {
     fontSize: 16,
-    color: "#1f2937",
+    fontWeight: "600",
+    color: "#111827",
+  },
+  menuDescription: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#6b7280",
   },
   menuArrow: {
-    fontSize: 20,
+    fontSize: 24,
     color: "#9ca3af",
   },
   logoutButton: {
-    marginHorizontal: 16,
-    marginTop: 24,
-    backgroundColor: "#fef2f2",
-    borderRadius: 12,
-    padding: 16,
+    margin: 16,
     alignItems: "center",
+    borderRadius: 14,
+    backgroundColor: "#fef2f2",
+    padding: 16,
   },
   logoutText: {
+    color: "#dc2626",
     fontSize: 16,
     fontWeight: "600",
-    color: "#ef4444",
   },
 });

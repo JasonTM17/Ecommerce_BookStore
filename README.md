@@ -33,12 +33,6 @@ Portfolio full-stack bookstore built with Spring Boot, Next.js, MySQL, Docker Co
    - Swagger UI: [http://localhost:8080/api/swagger-ui.html](http://localhost:8080/api/swagger-ui.html)
    - Health check: [http://localhost:8080/api/actuator/health/liveness](http://localhost:8080/api/actuator/health/liveness)
 
-## Demo accounts
-
-- Admin: `admin@bookstore.com` / `Admin123!`
-- Manager: `manager@bookstore.com` / `Manager123!`
-- Customer: `customer@example.com` / `Customer123!`
-
 ## Local development
 
 ### Backend

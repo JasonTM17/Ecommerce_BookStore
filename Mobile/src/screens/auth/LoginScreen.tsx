@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../store/AuthContext";
 
 export function LoginScreen() {
+  const navigation = useNavigation<any>();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,7 +13,7 @@ export function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("Vui lòng nhập email và mật khẩu");
+      setError("Vui lòng nhập email và mật khẩu.");
       return;
     }
 
@@ -21,7 +23,7 @@ export function LoginScreen() {
     try {
       await login(email, password);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Đăng nhập thất bại");
+      setError(err?.response?.data?.message || "Đăng nhập thất bại.");
     } finally {
       setLoading(false);
     }
@@ -30,9 +32,9 @@ export function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logo}>📚 BookStore</Text>
+        <Text style={styles.logo}>BookStore</Text>
         <Text style={styles.title}>Đăng nhập</Text>
-        <Text style={styles.subtitle}>Chào mừng bạn quay trở lại!</Text>
+        <Text style={styles.subtitle}>Chào mừng bạn quay trở lại với ứng dụng BookStore.</Text>
       </View>
 
       <View style={styles.form}>
@@ -62,17 +64,13 @@ export function LoginScreen() {
         </View>
 
         <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.buttonText}>Đăng nhập</Text>
-          )}
+          {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Đăng nhập</Text>}
         </TouchableOpacity>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Chưa có tài khoản? </Text>
-          <TouchableOpacity>
-            <Text style={styles.link}>Đăng ký ngay</Text>
+          <Text style={styles.footerText}>Chưa có tài khoản?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+            <Text style={styles.link}> Đăng ký ngay</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -87,60 +85,64 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   header: {
-    marginTop: 60,
+    marginTop: 72,
     marginBottom: 40,
   },
   logo: {
-    fontSize: 32,
     textAlign: "center",
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#2563eb",
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1f2937",
     marginTop: 24,
     textAlign: "center",
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#111827",
   },
   subtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-    marginTop: 8,
+    marginTop: 10,
     textAlign: "center",
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#6b7280",
   },
   form: {
     flex: 1,
   },
   error: {
-    backgroundColor: "#fef2f2",
-    color: "#dc2626",
-    padding: 12,
-    borderRadius: 8,
     marginBottom: 16,
+    borderRadius: 12,
+    backgroundColor: "#fef2f2",
+    padding: 12,
+    color: "#dc2626",
     fontSize: 14,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   label: {
+    marginBottom: 8,
     fontSize: 14,
     fontWeight: "500",
     color: "#374151",
-    marginBottom: 8,
   },
   input: {
-    backgroundColor: "#f9fafb",
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 14,
+    backgroundColor: "#f9fafb",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
   },
   button: {
-    backgroundColor: "#3b82f6",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
     marginTop: 8,
+    alignItems: "center",
+    borderRadius: 14,
+    backgroundColor: "#2563eb",
+    padding: 16,
   },
   buttonText: {
     color: "#ffffff",
@@ -148,16 +150,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   footer: {
+    marginTop: 24,
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 24,
   },
   footerText: {
     color: "#6b7280",
     fontSize: 14,
   },
   link: {
-    color: "#3b82f6",
+    color: "#2563eb",
     fontSize: 14,
     fontWeight: "600",
   },
