@@ -1,22 +1,22 @@
 name: CI/CD Pipeline
 
 on:
+  workflow_dispatch:
   push:
     branches: [master, develop]
   pull_request:
     branches: [master, develop]
 
+permissions:
+  contents: read
+
 env:
   JAVA_VERSION: "17"
   NODE_VERSION: "20"
-  MYSQL_VERSION: "8.0"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # ===========================================
-  # Backend Tests
-  # ===========================================
   backend-test:
     name: Backend Test (MySQL 8.0)
     runs-on: ubuntu-latest
@@ -45,22 +45,25 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: "temurin"
-          cache: "maven"
+          distribution: temurin
+          cache: maven
 
-      # --- SỬ DỤNG wait-for-services.sh ---
-      - name: Install Netcat
+      - name: Install netcat
         run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
 
       - name: Make scripts executable
         run: chmod +x scripts/wait-for-services.sh
 
-      - name: Wait for MySQL to be ready
-        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 mysql:127.0.0.1:3306
-        env:
-          MYSQL_ROOT_PASSWORD: root
+      - name: Wait for MySQL TCP port
+        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 127.0.0.1:3306
 
-      - name: Run Backend Tests
+      - name: Debug MySQL runner state on failure
+        if: failure()
+        run: |
+          docker ps -a
+          sudo ss -ltnp || true
+
+      - name: Run backend tests
         run: |
           cd backend
           mvn clean test \
@@ -68,10 +71,8 @@ jobs:
             -Dspring.datasource.username=root \
             -Dspring.datasource.password=root \
             -DskipFrontendBuild=true
-        env:
-          MYSQL_ROOT_PASSWORD: root
 
-      - name: Upload Backend Test Results
+      - name: Upload backend test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -79,31 +80,31 @@ jobs:
           path: backend/target/surefire-reports/
           retention-days: 30
 
-      - name: Generate Backend Coverage Report
+      - name: Generate backend coverage report
         run: |
           cd backend
           mvn jacoco:report -DskipTests=true
 
-      - name: Check Coverage Thresholds
+      - name: Check backend coverage thresholds
         run: |
           cd backend
           LINE_COVERAGE=$(awk -F, 'NR > 1 { missed += $8; covered += $9 } END { total = missed + covered; if (total == 0) print 0; else printf "%.0f", (covered / total) * 100 }' target/site/jacoco/jacoco.csv)
-          echo "Backend line coverage: ${LINE_COVERAGE}"
-          
-          # Fail if coverage below honest repo baseline
+          echo "Backend line coverage: ${LINE_COVERAGE}%"
+
           if [ "${LINE_COVERAGE}" -lt 50 ]; then
             echo "ERROR: Backend coverage (${LINE_COVERAGE}%) is below threshold (50%)"
             exit 1
           fi
+
           echo "Backend coverage check passed: ${LINE_COVERAGE}%"
 
-      - name: Upload Backend Coverage
+      - name: Upload backend coverage
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
           path: backend/target/site/jacoco/
 
-      - name: Publish Coverage to Codecov
+      - name: Publish backend coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: backend/target/site/jacoco/jacoco.xml
@@ -111,9 +112,6 @@ jobs:
           name: backend
           fail_ci_if_error: false
 
-  # ===========================================
-  # Frontend Tests
-  # ===========================================
   frontend-test:
     name: Frontend Test (Vitest)
     runs-on: ubuntu-latest
@@ -126,20 +124,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Frontend Dependencies
+      - name: Install frontend dependencies
         run: |
           cd frontend
           npm ci
 
-      - name: Run Frontend Unit Tests
+      - name: Run frontend unit tests
         run: |
           cd frontend
           npm run test:run -- --reporter=verbose
 
-      - name: Upload Frontend Test Results
+      - name: Upload frontend test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -149,25 +147,25 @@ jobs:
             frontend/src/test-results/
           retention-days: 30
 
-      - name: Run Frontend Coverage
+      - name: Run frontend coverage
         run: |
           cd frontend
           npm run test:coverage -- --reporter=verbose
 
-      - name: Check Frontend Coverage Thresholds
+      - name: Check frontend coverage thresholds
         run: |
           cd frontend
           LINE_COVERAGE=$(node -e "const fs=require('fs'); const file='coverage/coverage-summary.json'; if (!fs.existsSync(file)) { process.stdout.write('0'); process.exit(0); } const summary=JSON.parse(fs.readFileSync(file, 'utf8')); process.stdout.write(String(Math.floor(summary.total.lines.pct || 0)));")
           echo "Frontend line coverage: ${LINE_COVERAGE}%"
-          
-          # Fail if coverage below honest repo baseline
+
           if [ "${LINE_COVERAGE}" -lt 15 ]; then
             echo "ERROR: Frontend coverage (${LINE_COVERAGE}%) is below threshold (15%)"
             exit 1
           fi
+
           echo "Frontend coverage check passed: ${LINE_COVERAGE}%"
 
-      - name: Publish Coverage to Codecov
+      - name: Publish frontend coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           files: frontend/coverage/coverage-final.json
@@ -175,9 +173,6 @@ jobs:
           name: frontend
           fail_ci_if_error: false
 
-  # ===========================================
-  # Docker Build & Push to GHCR
-  # ===========================================
   docker-build:
     name: Docker Build & Push (GHCR)
     runs-on: ubuntu-latest
@@ -211,7 +206,7 @@ jobs:
             type=semver,pattern={{version}}
             type=sha,prefix=
 
-      - name: Build and Push Backend Docker Image
+      - name: Build and push backend Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -233,7 +228,7 @@ jobs:
             type=semver,pattern={{version}}
             type=sha,prefix=
 
-      - name: Build and Push Frontend Docker Image
+      - name: Build and push frontend Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -245,9 +240,6 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
 
-  # ===========================================
-  # Frontend Build
-  # ===========================================
   frontend-build:
     name: Frontend Build
     runs-on: ubuntu-latest
@@ -261,29 +253,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           cd frontend
           npm ci
 
-      - name: Build Frontend
+      - name: Build frontend
         run: |
           cd frontend
           npm run build
 
-      - name: Upload Build Artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
           path: frontend/.next/
           retention-days: 7
 
-  # ===========================================
-  # E2E Tests (Docker Compose E2E Stack)
-  # ===========================================
   e2e-test:
     name: E2E Test (Playwright)
     runs-on: ubuntu-latest
@@ -297,51 +286,50 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
 
       - name: Make scripts executable
         run: chmod +x scripts/wait-for-services.sh scripts/run-e2e.sh
 
-      - name: Install Netcat
+      - name: Install netcat
         run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
 
-      # --- SỬ DỤNG docker-compose.e2e.yml ---
-      - name: Start E2E Stack with Docker Compose
+      - name: Start E2E stack with Docker Compose
         run: |
           docker compose -f docker-compose.e2e.yml \
             --profile e2e \
             up --build -d
 
       - name: Wait for MySQL
-        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 mysql:127.0.0.1:3307
-        env:
-          MYSQL_ROOT_PASSWORD: rootpass123
+        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 127.0.0.1:3307
 
-      - name: Wait for Backend
+      - name: Wait for backend
         run: ./scripts/wait-for-services.sh --timeout 180 --interval 10 http://127.0.0.1:8081/api/actuator/health/liveness
 
-      - name: Wait for Frontend
+      - name: Wait for frontend
         run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 http://127.0.0.1:3001/
 
-      - name: Install Playwright Browsers
+      - name: Install Playwright browsers
         run: |
           cd frontend
           npx playwright install --with-deps chromium
 
-      - name: Run Playwright Tests
+      - name: Run Playwright portfolio smoke
         run: |
           cd frontend
-          npx playwright test \
-            --reporter=html,line \
-            --retries=3 \
-            --project=chromium
+          npm run test:e2e:portfolio -- --reporter=html,line --retries=3
         env:
           BASE_URL: http://localhost:3001
           API_URL: http://localhost:3001/api
           PLAYWRIGHT_BASE_URL: http://localhost:3001
 
-      - name: Upload Playwright Test Results
+      - name: Upload Playwright test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -351,7 +339,7 @@ jobs:
             frontend/test-results/
           retention-days: 30
 
-      - name: Upload Playwright Test Screenshots
+      - name: Upload Playwright screenshots
         if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -359,7 +347,7 @@ jobs:
           path: frontend/test-results/
           retention-days: 30
 
-      - name: Upload Playwright HTML Report
+      - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -367,14 +355,11 @@ jobs:
           path: frontend/playwright-report/
           retention-days: 30
 
-      - name: Stop E2E Stack
+      - name: Stop E2E stack
         if: always()
         run: |
           docker compose -f docker-compose.e2e.yml --profile e2e down -v --remove-orphans
 
-  # ===========================================
-  # Code Quality Checks
-  # ===========================================
   code-quality:
     name: Code Quality
     runs-on: ubuntu-latest
@@ -387,10 +372,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: "temurin"
-          cache: "maven"
+          distribution: temurin
+          cache: maven
 
-      - name: Run Backend Linter (Checkstyle)
+      - name: Run backend linter (Checkstyle)
         run: |
           cd backend
           mvn checkstyle:check -q
@@ -400,27 +385,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Run Frontend Linter
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run frontend linter
         run: |
           cd frontend
           npm run lint
         continue-on-error: true
 
-      - name: Run Prettier Check
+      - name: Run Prettier check
         run: |
           cd frontend
           npx prettier --check "src/**/*.{ts,tsx,js,jsx}"
         continue-on-error: true
 
-  # ===========================================
-  # Security Scan
-  # ===========================================
   security:
     name: Security Scan
     permissions:
+      contents: read
       security-events: write
     runs-on: ubuntu-latest
 
@@ -428,22 +416,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Trivy Vulnerability Scanner
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: "fs"
-          scan-ref: "."
-          format: "sarif"
-          output: "trivy-results.sarif"
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
 
-      - name: Upload Trivy Scan Results
+      - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: "trivy-results.sarif"
+          sarif_file: trivy-results.sarif
 
-  # ===========================================
-  # Deploy to Staging (on push to develop)
-  # ===========================================
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
@@ -454,14 +439,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- HEALTH CHECK TRƯỚC KHI DEPLOY ---
-      - name: Health Check Staging Server
+      - name: Health check staging server
         run: |
           echo "Checking staging server health..."
-          # Thay thế bằng endpoint staging thực tế
           # curl -f https://staging.bookstore.com/api/health || exit 1
 
-      - name: Deploy to Staging Server
+      - name: Deploy to staging server
         run: |
           echo "Deploy staging workflow triggered"
           # ./deploy.sh staging
@@ -469,9 +452,6 @@ jobs:
           STAGING_URL: ${{ secrets.STAGING_URL }}
           STAGING_TOKEN: ${{ secrets.STAGING_TOKEN }}
 
-  # ===========================================
-  # Deploy to Production (on push to master)
-  # ===========================================
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
@@ -482,12 +462,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Health Check Production Server
+      - name: Health check production server
         run: |
           echo "Checking production server health..."
           # curl -f https://bookstore.com/api/health || exit 1
 
-      - name: Deploy to Production Server
+      - name: Deploy to production server
         run: |
           echo "Deploy production workflow triggered"
           # ./deploy.sh production
