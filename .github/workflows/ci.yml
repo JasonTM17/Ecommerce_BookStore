@@ -53,7 +53,7 @@ jobs:
         run: chmod +x scripts/wait-for-services.sh
 
       - name: Wait for MySQL to be ready
-        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 -- localhost:3306
+        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 localhost:3306
         env:
           MYSQL_ROOT_PASSWORD: root
 
@@ -308,7 +308,7 @@ jobs:
             up --build -d
 
       - name: Wait for MySQL
-        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 -- localhost:3307
+        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 localhost:3307
         env:
           MYSQL_ROOT_PASSWORD: rootpass123
 
@@ -316,7 +316,7 @@ jobs:
         run: ./scripts/wait-for-services.sh --timeout 180 --interval 10 -- http://localhost:8081/api/actuator/health/liveness
 
       - name: Wait for Frontend
-        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 -- http://localhost:3001/
+        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 http://localhost:3001/
 
       - name: Install Playwright Browsers
         run: |
@@ -414,6 +414,8 @@ jobs:
   # ===========================================
   security:
     name: Security Scan
+    permissions:
+      security-events: write
     runs-on: ubuntu-latest
 
     steps:
