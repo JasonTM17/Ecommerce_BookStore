@@ -55,9 +55,9 @@ public class SecurityConfig {
                                 .policyDirectives("default-src 'self'; " +
                                         "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
                                         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
-                                        "img-src 'self' data: https: blob:; " +
+                                        "img-src 'self' data: https: http: blob:; " + // Allow http: for local dev images
                                         "font-src 'self' https://fonts.gstatic.com; " +
-                                        "connect-src 'self'; " +
+                                        "connect-src 'self' http://localhost:8080 http://localhost:8081; " + // Allow internal connections
                                         "frame-ancestors 'none';"))
                         .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                         .permissionsPolicy(permissions -> permissions
