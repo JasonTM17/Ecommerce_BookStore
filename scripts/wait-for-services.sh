@@ -94,43 +94,34 @@ check_mysql() {
     local port="${1##*:}"
     port="${port:-3306}"
     
-    log_step "Chờ MySQL tại $host:$port ..."
+    log_step "Chờ MySQL tại $host:$port (Port Probing)..."
     
-    if command -v mysql &> /dev/null; then
-        while [ $RETRIES -lt $max_retries ]; do
-            # Use rootpass123 as fallback, but prefer environment variables if set
+    while [ $RETRIES -lt $max_retries ]; do
+        # Ưu tiên dùng nc (netcat) hoặc /dev/tcp để chỉ kiểm tra port đã mở chưa
+        # Cách này không cần mật khẩu và ổn định nhất cho CI
+        if command -v nc &> /dev/null; then
+            if nc -z -w 2 "$host" "$port" 2>/dev/null; then
+                log_success "MySQL ($host:$port) port đã mở!"
+                return 0
+            fi
+        elif command -v timeout &> /dev/null; then
+            if timeout 2 bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then
+                log_success "MySQL ($host:$port) port đã mở!"
+                return 0
+            fi
+        elif command -v mysqladmin &> /dev/null; then
+            # Chỉ dùng mysqladmin nếu không có nc/timeout
             local pass="${MYSQL_ROOT_PASSWORD:-rootpass123}"
             if mysqladmin ping -h "$host" -P "$port" -u root -p"$pass" --silent &> /dev/null 2>&1; then
                 log_success "MySQL ($host:$port) đã sẵn sàng!"
                 return 0
             fi
-            RETRIES=$((RETRIES + 1))
-            log_warn "Chờ MySQL... ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
-            sleep $INTERVAL
-        done
-    else
-        # Fallback: dùng nc (netcat) hoặc timeout
-        while [ $RETRIES -lt $max_retries ]; do
-            if command -v nc &> /dev/null; then
-                if nc -z -w 2 "$host" "$port" 2>/dev/null; then
-                    log_success "MySQL ($host:$port) port đã mở!"
-                    return 0
-                fi
-            elif command -v timeout &> /dev/null; then
-                if timeout 2 bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then
-                    log_success "MySQL ($host:$port) port đã mở!"
-                    return 0
-                fi
-            else
-                # Cuối cùng: dùng curl đến backend health endpoint thay thế
-                log_warn "Không tìm thấy mysqladmin/nc, thử qua HTTP..."
-                return 2
-            fi
-            RETRIES=$((RETRIES + 1))
-            log_warn "Chờ MySQL... ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
-            sleep $INTERVAL
-        done
-    fi
+        fi
+        
+        RETRIES=$((RETRIES + 1))
+        log_warn "Chờ MySQL... ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
+        sleep $INTERVAL
+    done
     
     log_error "MySQL ($host:$port) không phản hồi sau ${TIMEOUT}s"
     return 1
