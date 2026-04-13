@@ -36,6 +36,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final ReviewRepository reviewRepository;
+    private final EffectivePricingService effectivePricingService;
 
     @Transactional
     @Caching(evict = {
@@ -80,7 +81,7 @@ public class ProductService {
 
         updateProductRating(product.getId());
 
-        return mapToProductResponse(product);
+        return resolveProductResponse(product);
     }
 
     @Transactional
@@ -130,7 +131,7 @@ public class ProductService {
 
         updateProductRating(id);
 
-        return mapToProductResponse(product);
+        return resolveProductResponse(product);
     }
 
     /**
@@ -140,7 +141,7 @@ public class ProductService {
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findDetailById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
-        ProductResponse response = mapToProductResponse(product);
+        ProductResponse response = resolveProductResponse(product);
         productRepository.incrementViewCount(id);
         return response;
     }
@@ -151,9 +152,7 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Product> products = productRepository.findAllActiveProducts(pageable);
-        List<ProductResponse> content = products.getContent().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        List<ProductResponse> content = mapToProductResponses(products.getContent());
 
         return PageResponse.<ProductResponse>builder()
                 .content(content)
@@ -171,32 +170,24 @@ public class ProductService {
     @Transactional(readOnly = true)
     @Cacheable(value = "products", key = "'featured'")
     public List<ProductResponse> getFeaturedProducts() {
-        return productRepository.findFeaturedProducts().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        return mapToProductResponses(productRepository.findFeaturedProducts());
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getBestsellerProducts() {
-        return productRepository.findBestsellerProducts().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        return mapToProductResponses(productRepository.findBestsellerProducts());
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getNewProducts() {
-        return productRepository.findNewProducts().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        return mapToProductResponses(productRepository.findNewProducts());
     }
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> getProductsByCategory(Long categoryId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productRepository.findByCategoryIdIn(resolveCategoryIds(categoryId), pageable);
-        List<ProductResponse> content = products.getContent().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        List<ProductResponse> content = mapToProductResponses(products.getContent());
 
         return PageResponse.<ProductResponse>builder()
                 .content(content)
@@ -260,9 +251,7 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Product> products = productRepository.findAll(spec, pageable);
-        List<ProductResponse> content = products.getContent().stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        List<ProductResponse> content = mapToProductResponses(products.getContent());
 
         return PageResponse.<ProductResponse>builder()
                 .content(content)
@@ -292,16 +281,12 @@ public class ProductService {
     @Transactional(readOnly = true)
     public List<ProductResponse> getRelatedProducts(Long productId, Long categoryId) {
         Pageable pageable = PageRequest.of(0, 8);
-        return productRepository.findRelatedProducts(productId, categoryId, pageable).stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        return mapToProductResponses(productRepository.findRelatedProducts(productId, categoryId, pageable));
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getLowStockProducts(int threshold) {
-        return productRepository.findLowStockProducts(threshold).stream()
-                .map(this::mapToProductResponse)
-                .toList();
+        return mapToProductResponses(productRepository.findLowStockProducts(threshold));
     }
 
     @Transactional(readOnly = true)
@@ -381,7 +366,18 @@ public class ProductService {
         return images == null ? new ArrayList<>() : new ArrayList<>(images);
     }
 
-    private ProductResponse mapToProductResponse(Product product) {
+    private ProductResponse resolveProductResponse(Product product) {
+        return mapToProductResponse(product, effectivePricingService.resolve(product));
+    }
+
+    private List<ProductResponse> mapToProductResponses(List<Product> products) {
+        var pricingByProductId = effectivePricingService.resolveAll(products);
+        return products.stream()
+                .map(product -> mapToProductResponse(product, pricingByProductId.get(product.getId())))
+                .toList();
+    }
+
+    private ProductResponse mapToProductResponse(Product product, EffectiveProductPricing pricing) {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -390,12 +386,12 @@ public class ProductService {
                 .author(product.getAuthor())
                 .publisher(product.getPublisher())
                 .isbn(product.getIsbn())
-                .price(product.getPrice())
-                .discountPrice(product.getDiscountPrice())
-                .discountPercent(product.getDiscountPercent())
-                .currentPrice(product.getCurrentPrice())
-                .stockQuantity(product.getStockQuantity())
-                .inStock(product.isInStock())
+                .price(pricing.originalPrice())
+                .discountPrice(pricing.discountPrice())
+                .discountPercent(pricing.discountPercent())
+                .currentPrice(pricing.currentPrice())
+                .stockQuantity(pricing.stockQuantity())
+                .inStock(pricing.inStock())
                 .imageUrl(product.getImageUrl())
                 .images(copyImages(product.getImages()))
                 .category(product.getCategory() != null ? mapToCategoryResponse(product.getCategory()) : null)

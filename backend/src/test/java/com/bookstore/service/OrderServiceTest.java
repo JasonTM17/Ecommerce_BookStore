@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -43,7 +44,10 @@ class OrderServiceTest {
     private CartItemRepository cartItemRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private FlashSaleRepository flashSaleRepository;
+
+    @Mock
+    private EffectivePricingService effectivePricingService;
 
     @InjectMocks
     private OrderService orderService;
@@ -119,6 +123,9 @@ class OrderServiceTest {
                 .shippingReceiverName("Test User")
                 .paymentMethod("COD")
                 .build();
+
+        lenient().when(effectivePricingService.resolve(testProduct)).thenReturn(pricingFor(testProduct));
+        lenient().when(effectivePricingService.resolveAll(any())).thenReturn(Map.of(testProduct.getId(), pricingFor(testProduct)));
     }
 
     @Test
@@ -141,6 +148,77 @@ class OrderServiceTest {
     }
 
     @Test
+    void createOrder_UsesActiveFlashSalePriceAndUpdatesSoldCount() {
+        FlashSale flashSale = FlashSale.builder()
+                .id(99L)
+                .product(testProduct)
+                .originalPrice(testProduct.getPrice())
+                .salePrice(new BigDecimal("39000"))
+                .stockLimit(20)
+                .soldCount(5)
+                .maxPerUser(2)
+                .isActive(true)
+                .build();
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(productRepository.save(any(Product.class))).thenReturn(testProduct);
+        when(cartRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
+        when(flashSaleRepository.save(any(FlashSale.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(effectivePricingService.resolveAll(any())).thenReturn(Map.of(testProduct.getId(), new EffectiveProductPricing(
+                testProduct.getPrice(),
+                flashSale.getSalePrice(),
+                flashSale.getSalePrice(),
+                34,
+                15,
+                true,
+                flashSale
+        )));
+        when(effectivePricingService.resolve(testProduct)).thenReturn(new EffectiveProductPricing(
+                testProduct.getPrice(),
+                flashSale.getSalePrice(),
+                flashSale.getSalePrice(),
+                34,
+                15,
+                true,
+                flashSale
+        ));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        OrderResponse response = orderService.createOrder(testUser, orderRequest);
+
+        assertEquals(0, response.getOrderItems().get(0).getPrice().compareTo(new BigDecimal("39000")));
+        assertEquals(7, flashSale.getSoldCount());
+        verify(flashSaleRepository).save(flashSale);
+    }
+
+    @Test
+    void createOrder_RejectsFlashSaleQuantityAboveMaxPerUser() {
+        FlashSale flashSale = FlashSale.builder()
+                .id(99L)
+                .product(testProduct)
+                .originalPrice(testProduct.getPrice())
+                .salePrice(new BigDecimal("39000"))
+                .stockLimit(20)
+                .soldCount(0)
+                .maxPerUser(1)
+                .isActive(true)
+                .build();
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(effectivePricingService.resolveAll(any())).thenReturn(Map.of(testProduct.getId(), new EffectiveProductPricing(
+                testProduct.getPrice(),
+                flashSale.getSalePrice(),
+                flashSale.getSalePrice(),
+                34,
+                20,
+                true,
+                flashSale
+        )));
+
+        assertThrows(BadRequestException.class, () -> orderService.createOrder(testUser, orderRequest));
+    }
+
+    @Test
     void createOrder_EmptyItems_ThrowsException() {
         orderRequest.setItems(List.of());
 
@@ -154,6 +232,7 @@ class OrderServiceTest {
     void createOrder_ProductOutOfStock_ThrowsException() {
         testProduct.setStockQuantity(0);
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(effectivePricingService.resolveAll(any())).thenReturn(Map.of(testProduct.getId(), pricingFor(testProduct)));
 
         assertThrows(BadRequestException.class, () -> 
             orderService.createOrder(testUser, orderRequest));
@@ -223,5 +302,21 @@ class OrderServiceTest {
         assertNotNull(response);
         assertEquals(OrderStatus.CANCELLED, response.getOrderStatus());
         verify(productRepository).save(any(Product.class));
+    }
+
+    private EffectiveProductPricing pricingFor(Product product) {
+        BigDecimal currentPrice = product.getDiscountPrice() != null && product.getDiscountPrice().compareTo(BigDecimal.ZERO) > 0
+                ? product.getDiscountPrice()
+                : product.getPrice();
+
+        return new EffectiveProductPricing(
+                product.getPrice(),
+                product.getDiscountPrice(),
+                currentPrice,
+                product.getDiscountPercent(),
+                product.getStockQuantity(),
+                product.getStockQuantity() != null && product.getStockQuantity() > 0,
+                null
+        );
     }
 }

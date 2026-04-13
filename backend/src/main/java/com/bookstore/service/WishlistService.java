@@ -30,6 +30,7 @@ public class WishlistService {
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final EffectivePricingService effectivePricingService;
 
     @Transactional
     public WishlistResponse addToWishlist(User user, Long productId) {
@@ -132,18 +133,19 @@ public class WishlistService {
 
     private WishlistResponse mapToWishlistResponse(Wishlist wishlist) {
         Product product = wishlist.getProduct();
+        EffectiveProductPricing pricing = effectivePricingService.resolve(product);
 
         ProductInfo productInfo = ProductInfo.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .author(product.getAuthor())
                 .imageUrl(product.getImageUrl())
-                .price(product.getPrice())
-                .currentPrice(product.getCurrentPrice())
+                .price(pricing.originalPrice())
+                .currentPrice(pricing.currentPrice())
                 .avgRating(product.getAvgRating())
                 .reviewCount(product.getReviewCount())
-                .stockQuantity(product.getStockQuantity())
-                .discountPercent(product.getDiscountPercent())
+                .stockQuantity(pricing.stockQuantity())
+                .discountPercent(pricing.discountPercent())
                 .isNew(product.getIsNew())
                 .isBestseller(product.getIsBestseller())
                 .build();
@@ -154,7 +156,7 @@ public class WishlistService {
                 .notes(wishlist.getNotes())
                 .priority(wishlist.getPriority())
                 .sortOrder(wishlist.getSortOrder())
-                .isInStock(product.isInStock())
+                .isInStock(pricing.inStock())
                 .createdAt(wishlist.getCreatedAt())
                 .build();
     }

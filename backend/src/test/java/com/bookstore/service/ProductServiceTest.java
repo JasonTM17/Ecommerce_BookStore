@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,6 +43,9 @@ class ProductServiceTest {
 
     @Mock
     private ReviewRepository reviewRepository;
+
+    @Mock
+    private EffectivePricingService effectivePricingService;
 
     @InjectMocks
     private ProductService productService;
@@ -95,12 +99,16 @@ class ProductServiceTest {
                 .isFeatured(true)
                 .isBestseller(true)
                 .build();
+
+        lenient().when(effectivePricingService.resolve(testProduct)).thenReturn(pricingFor(testProduct));
+        lenient().when(effectivePricingService.resolveAll(any())).thenReturn(Map.of(testProduct.getId(), pricingFor(testProduct)));
     }
 
     @Test
     void createProduct_Success() {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(productRepository.save(any(Product.class))).thenReturn(testProduct);
+        when(effectivePricingService.resolve(any(Product.class))).thenAnswer(invocation -> pricingFor(invocation.getArgument(0)));
         when(reviewRepository.calculateAverageRatingByProductId(anyLong())).thenReturn(4.5);
         when(reviewRepository.countApprovedReviewsByProductId(anyLong())).thenReturn(100L);
 
@@ -235,6 +243,7 @@ class ProductServiceTest {
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(effectivePricingService.resolve(any(Product.class))).thenAnswer(invocation -> pricingFor(invocation.getArgument(0)));
         when(reviewRepository.calculateAverageRatingByProductId(anyLong())).thenReturn(4.5);
         when(reviewRepository.countApprovedReviewsByProductId(anyLong())).thenReturn(100L);
 
@@ -246,5 +255,21 @@ class ProductServiceTest {
 
         verify(productRepository, times(2)).findById(1L);
         verify(productRepository, atLeastOnce()).save(any(Product.class));
+    }
+
+    private EffectiveProductPricing pricingFor(Product product) {
+        BigDecimal currentPrice = product.getDiscountPrice() != null && product.getDiscountPrice().compareTo(BigDecimal.ZERO) > 0
+                ? product.getDiscountPrice()
+                : product.getPrice();
+
+        return new EffectiveProductPricing(
+                product.getPrice(),
+                product.getDiscountPrice(),
+                currentPrice,
+                product.getDiscountPercent(),
+                product.getStockQuantity(),
+                product.getStockQuantity() != null && product.getStockQuantity() > 0,
+                null
+        );
     }
 }

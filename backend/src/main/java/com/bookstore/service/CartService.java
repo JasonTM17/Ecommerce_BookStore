@@ -5,7 +5,10 @@ import com.bookstore.dto.response.CartItemResponse;
 import com.bookstore.dto.response.CartResponse;
 import com.bookstore.dto.response.ProductResponse;
 import com.bookstore.dto.response.UserResponse;
-import com.bookstore.entity.*;
+import com.bookstore.entity.Cart;
+import com.bookstore.entity.CartItem;
+import com.bookstore.entity.Product;
+import com.bookstore.entity.User;
 import com.bookstore.exception.BadRequestException;
 import com.bookstore.exception.ResourceNotFoundException;
 import com.bookstore.repository.CartItemRepository;
@@ -17,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +29,7 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final EffectivePricingService effectivePricingService;
 
     @Transactional
     public CartResponse addToCart(User user, CartItemRequest request) {
@@ -34,30 +37,24 @@ public class CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getProductId()));
 
         if (!product.getIsActive()) {
-            throw new BadRequestException("Sản phẩm không còn hoạt động");
+            throw new BadRequestException("Sáº£n pháº©m khÃ´ng cÃ²n hoáº¡t Ä‘á»™ng");
         }
 
-        if (product.getStockQuantity() < request.getQuantity()) {
-            throw new BadRequestException("Số lượng trong kho không đủ");
-        }
+        EffectiveProductPricing pricing = effectivePricingService.resolve(product);
 
         Cart cart = cartRepository.findByUserId(user.getId())
-                .orElseGet(() -> {
-                    Cart newCart = Cart.builder().user(user).build();
-                    return cartRepository.save(newCart);
-                });
+                .orElseGet(() -> cartRepository.save(Cart.builder().user(user).build()));
 
         CartItem existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId())
                 .orElse(null);
 
         if (existingItem != null) {
             int newQuantity = existingItem.getQuantity() + request.getQuantity();
-            if (product.getStockQuantity() < newQuantity) {
-                throw new BadRequestException("Số lượng trong kho không đủ");
-            }
+            validateRequestedQuantity(product, pricing, newQuantity);
             existingItem.setQuantity(newQuantity);
             cartItemRepository.save(existingItem);
         } else {
+            validateRequestedQuantity(product, pricing, request.getQuantity());
             CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .product(product)
@@ -80,16 +77,15 @@ public class CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("CartItem", "id", itemId));
 
         if (!item.getCart().getId().equals(cart.getId())) {
-            throw new BadRequestException("Sản phẩm không thuộc giỏ hàng của bạn");
+            throw new BadRequestException("Sáº£n pháº©m khÃ´ng thuá»™c giá» hÃ ng cá»§a báº¡n");
         }
 
         if (quantity <= 0) {
             cart.removeItem(item);
             cartItemRepository.delete(item);
         } else {
-            if (item.getProduct().getStockQuantity() < quantity) {
-                throw new BadRequestException("Số lượng trong kho không đủ");
-            }
+            EffectiveProductPricing pricing = effectivePricingService.resolve(item.getProduct());
+            validateRequestedQuantity(item.getProduct(), pricing, quantity);
             item.setQuantity(quantity);
             cartItemRepository.save(item);
         }
@@ -106,7 +102,7 @@ public class CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("CartItem", "id", itemId));
 
         if (!item.getCart().getId().equals(cart.getId())) {
-            throw new BadRequestException("Sản phẩm không thuộc giỏ hàng của bạn");
+            throw new BadRequestException("Sáº£n pháº©m khÃ´ng thuá»™c giá» hÃ ng cá»§a báº¡n");
         }
 
         cart.removeItem(item);
@@ -136,8 +132,14 @@ public class CartService {
                     .build();
         }
 
+        var pricingByProductId = effectivePricingService.resolveAll(
+                cart.getCartItems().stream()
+                        .map(CartItem::getProduct)
+                        .toList()
+        );
+
         List<CartItemResponse> items = cart.getCartItems().stream()
-                .map(this::mapToCartItemResponse)
+                .map(item -> mapToCartItemResponse(item, pricingByProductId.get(item.getProduct().getId())))
                 .collect(Collectors.toList());
 
         BigDecimal subtotal = items.stream()
@@ -158,27 +160,51 @@ public class CartService {
                 .build();
     }
 
-    private CartItemResponse mapToCartItemResponse(CartItem item) {
+    private void validateRequestedQuantity(Product product, EffectiveProductPricing pricing, int quantity) {
+        if (quantity <= 0) {
+            throw new BadRequestException("Sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡");
+        }
+
+        if (pricing.hasActiveFlashSale()) {
+            if (quantity > pricing.maxPerUser()) {
+                throw new BadRequestException("Flash sale cho sáº£n pháº©m '" + product.getName() + "' chá»‰ cho phÃ©p mua tá»‘i Ä‘a " + pricing.maxPerUser() + " cuá»‘n");
+            }
+
+            if (quantity > pricing.stockQuantity()) {
+                throw new BadRequestException("Sá»‘ lÆ°á»£ng flash sale cÃ²n láº¡i khÃ´ng Ä‘á»§");
+            }
+            return;
+        }
+
+        if (quantity > pricing.stockQuantity()) {
+            throw new BadRequestException("Sá»‘ lÆ°á»£ng trong kho khÃ´ng Ä‘á»§");
+        }
+    }
+
+    private CartItemResponse mapToCartItemResponse(CartItem item, EffectiveProductPricing pricing) {
+        BigDecimal subtotal = pricing.currentPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+
         return CartItemResponse.builder()
                 .id(item.getId())
-                .product(mapToProductResponse(item.getProduct()))
+                .product(mapToProductResponse(item.getProduct(), pricing))
                 .quantity(item.getQuantity())
-                .subtotal(item.getSubtotal())
+                .subtotal(subtotal)
                 .sortOrder(item.getSortOrder())
                 .build();
     }
 
-    private ProductResponse mapToProductResponse(Product product) {
+    private ProductResponse mapToProductResponse(Product product, EffectiveProductPricing pricing) {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .imageUrl(product.getImageUrl())
-                .price(product.getPrice())
-                .discountPrice(product.getDiscountPrice())
-                .currentPrice(product.getCurrentPrice())
-                .stockQuantity(product.getStockQuantity())
-                .inStock(product.isInStock())
+                .price(pricing.originalPrice())
+                .discountPrice(pricing.discountPrice())
+                .currentPrice(pricing.currentPrice())
+                .stockQuantity(pricing.stockQuantity())
+                .inStock(pricing.inStock())
                 .author(product.getAuthor())
+                .discountPercent(pricing.discountPercent())
                 .build();
     }
 

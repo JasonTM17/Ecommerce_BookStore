@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,6 +36,9 @@ class CartServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private EffectivePricingService effectivePricingService;
 
     @InjectMocks
     private CartService cartService;
@@ -102,6 +106,20 @@ class CartServiceTest {
                 .addedAt(LocalDateTime.now())
                 .build();
         testCart.getCartItems().add(testCartItem);
+
+        lenient().when(effectivePricingService.resolve(testProduct1)).thenReturn(pricingFor(testProduct1));
+        lenient().when(effectivePricingService.resolve(testProduct2)).thenReturn(pricingFor(testProduct2));
+        lenient().when(effectivePricingService.resolveAll(any())).thenReturn(Map.of(
+                testProduct1.getId(), pricingFor(testProduct1),
+                testProduct2.getId(), pricingFor(testProduct2)
+        ));
+        lenient().when(cartRepository.save(any(Cart.class))).thenAnswer(invocation -> {
+            Cart cart = invocation.getArgument(0);
+            if (cart.getId() == null) {
+                cart.setId(testCart.getId());
+            }
+            return cart;
+        });
     }
 
     @Test
@@ -187,6 +205,7 @@ class CartServiceTest {
                 .build();
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct1));
+        when(effectivePricingService.resolve(testProduct1)).thenReturn(pricingFor(testProduct1));
 
         assertThrows(BadRequestException.class, () ->
                 cartService.addToCart(testUser, request));
@@ -238,5 +257,53 @@ class CartServiceTest {
 
         assertTrue(testCart.getCartItems().isEmpty());
         verify(cartItemRepository, never()).deleteAllByCartId(any(Long.class));
+    }
+
+    @Test
+    void addToCart_ActiveFlashSale_RejectsQuantityAboveMaxPerUser() {
+        FlashSale flashSale = FlashSale.builder()
+                .id(50L)
+                .product(testProduct1)
+                .originalPrice(testProduct1.getPrice())
+                .salePrice(new BigDecimal("39000"))
+                .stockLimit(20)
+                .soldCount(2)
+                .maxPerUser(2)
+                .isActive(true)
+                .build();
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct1));
+        when(effectivePricingService.resolve(testProduct1)).thenReturn(new EffectiveProductPricing(
+                testProduct1.getPrice(),
+                flashSale.getSalePrice(),
+                flashSale.getSalePrice(),
+                34,
+                18,
+                true,
+                flashSale
+        ));
+
+        CartItemRequest request = CartItemRequest.builder()
+                .productId(1L)
+                .quantity(3)
+                .build();
+
+        assertThrows(BadRequestException.class, () -> cartService.addToCart(testUser, request));
+    }
+
+    private EffectiveProductPricing pricingFor(Product product) {
+        BigDecimal currentPrice = product.getDiscountPrice() != null && product.getDiscountPrice().compareTo(BigDecimal.ZERO) > 0
+                ? product.getDiscountPrice()
+                : product.getPrice();
+
+        return new EffectiveProductPricing(
+                product.getPrice(),
+                product.getDiscountPrice(),
+                currentPrice,
+                product.getDiscountPercent(),
+                product.getStockQuantity(),
+                product.getStockQuantity() != null && product.getStockQuantity() > 0,
+                null
+        );
     }
 }
