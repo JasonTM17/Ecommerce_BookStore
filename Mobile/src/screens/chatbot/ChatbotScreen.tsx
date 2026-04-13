@@ -1,5 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import React, { useRef, useState } from "react";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../store/AuthContext";
 import api from "../../api/client";
 
@@ -11,6 +21,7 @@ interface Message {
 }
 
 export function ChatbotScreen() {
+  const navigation = useNavigation<any>();
   const { isAuthenticated } = useAuth();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -18,7 +29,9 @@ export function ChatbotScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   const sendMessage = async () => {
-    if (!message.trim() || !isAuthenticated) return;
+    if (!message.trim() || !isAuthenticated) {
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -27,51 +40,43 @@ export function ChatbotScreen() {
       createdAt: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((current) => [...current, userMessage]);
     setMessage("");
     setLoading(true);
 
     try {
-      const response = await api.post("/chatbot/message", {
-        message: userMessage.content,
-      });
-
+      const response = await api.post("/chatbot/message", { message: userMessage.content });
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `${Date.now()}-assistant`,
         role: "assistant",
         content: response.data.data.reply,
         createdAt: new Date().toISOString(),
       };
-
-      setMessages((prev) => [...prev, aiMessage]);
+      setMessages((current) => [...current, aiMessage]);
+      flatListRef.current?.scrollToEnd({ animated: true });
     } catch {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Xin lỗi, mình đang gặp chút trục trặc. Bạn thử lại sau nhé!",
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((current) => [
+        ...current,
+        {
+          id: `${Date.now()}-error`,
+          role: "assistant",
+          content: "Xin lỗi, chatbot đang tạm thời bận. Bạn vui lòng thử lại sau nhé.",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const quickQuestions = [
-    "Tìm sách về Python",
-    "Sách self-help hay",
-    "Đơn hàng của tôi",
-    "Mã giảm giá",
-  ];
-
   if (!isAuthenticated) {
     return (
-      <View style={styles.unauthenticatedContainer}>
-        <Text style={styles.unauthenticatedIcon}>💬</Text>
-        <Text style={styles.unauthenticatedTitle}>Đăng nhập để chat</Text>
-        <Text style={styles.unauthenticatedText}>
-          Vui lòng đăng nhập để sử dụng trợ lý AI
-        </Text>
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyTitle}>Đăng nhập để dùng chatbot</Text>
+        <Text style={styles.emptyText}>Màn mobile đã nối đúng endpoint chatbot, nhưng cần phiên người dùng để trò chuyện.</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.primaryButtonText}>Đi tới đăng nhập</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -86,73 +91,37 @@ export function ChatbotScreen() {
         ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messagesList}
-        ListHeaderComponent={
-          messages.length === 0 ? (
-            <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeIcon}>👋</Text>
-              <Text style={styles.welcomeTitle}>Xin chào!</Text>
-              <Text style={styles.welcomeText}>
-                Mình là trợ lý bán sách của BookStore. Bạn cần tìm sách gì hôm nay?
-              </Text>
-              <View style={styles.quickQuestions}>
-                {quickQuestions.map((q, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.quickButton}
-                    onPress={() => {
-                      setMessage(q);
-                    }}
-                  >
-                    <Text style={styles.quickButtonText}>{q}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          ) : null
-        }
+        contentContainerStyle={styles.list}
         renderItem={({ item }) => (
-          <View
-            style={[
-              styles.messageContainer,
-              item.role === "user" ? styles.userMessage : styles.aiMessage,
-            ]}
-          >
-            <View
-              style={[
-                styles.messageBubble,
-                item.role === "user" ? styles.userBubble : styles.aiBubble,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.messageText,
-                  item.role === "user" ? styles.userText : styles.aiText,
-                ]}
-              >
+          <View style={[styles.messageRow, item.role === "user" ? styles.userRow : styles.assistantRow]}>
+            <View style={[styles.messageBubble, item.role === "user" ? styles.userBubble : styles.assistantBubble]}>
+              <Text style={[styles.messageText, item.role === "user" ? styles.userText : styles.assistantText]}>
                 {item.content}
               </Text>
             </View>
           </View>
         )}
-        ListEmptyComponent={null}
+        ListHeaderComponent={
+          messages.length === 0 ? (
+            <View style={styles.welcome}>
+              <Text style={styles.welcomeTitle}>Chatbot đã sẵn sàng</Text>
+              <Text style={styles.welcomeText}>Bạn có thể hỏi về sách, đơn hàng, flash sale hoặc khuyến mãi.</Text>
+            </View>
+          ) : null
+        }
       />
 
-      <View style={styles.inputContainer}>
+      <View style={styles.inputBar}>
         <TextInput
           style={styles.input}
-          placeholder="Nhập tin nhắn..."
           value={message}
           onChangeText={setMessage}
+          placeholder="Nhập tin nhắn..."
           multiline
           maxLength={500}
         />
-        <TouchableOpacity
-          style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]}
-          onPress={sendMessage}
-          disabled={!message.trim() || loading}
-        >
-          <Text style={styles.sendButtonText}>Gửi</Text>
+        <TouchableOpacity style={[styles.primaryButton, !message.trim() && styles.disabledButton]} onPress={sendMessage} disabled={!message.trim() || loading}>
+          <Text style={styles.primaryButtonText}>{loading ? "Đang gửi..." : "Gửi"}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -162,71 +131,48 @@ export function ChatbotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f8fafc",
   },
-  messagesList: {
-    padding: 16,
+  list: {
     flexGrow: 1,
+    padding: 16,
   },
-  welcomeContainer: {
+  welcome: {
+    paddingVertical: 24,
     alignItems: "center",
-    paddingVertical: 40,
-  },
-  welcomeIcon: {
-    fontSize: 48,
-    marginBottom: 16,
   },
   welcomeTitle: {
     fontSize: 20,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 8,
+    fontWeight: "700",
+    color: "#111827",
   },
   welcomeText: {
-    fontSize: 14,
-    color: "#6b7280",
+    marginTop: 8,
     textAlign: "center",
-    marginBottom: 20,
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#6b7280",
   },
-  quickQuestions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: 8,
-  },
-  quickButton: {
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  quickButtonText: {
-    fontSize: 12,
-    color: "#3b82f6",
-  },
-  messageContainer: {
+  messageRow: {
     marginBottom: 12,
   },
-  userMessage: {
+  userRow: {
     alignItems: "flex-end",
   },
-  aiMessage: {
+  assistantRow: {
     alignItems: "flex-start",
   },
   messageBubble: {
-    maxWidth: "80%",
-    padding: 12,
-    borderRadius: 16,
+    maxWidth: "82%",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   userBubble: {
-    backgroundColor: "#3b82f6",
-    borderBottomRightRadius: 4,
+    backgroundColor: "#2563eb",
   },
-  aiBubble: {
+  assistantBubble: {
     backgroundColor: "#ffffff",
-    borderBottomLeftRadius: 4,
   },
   messageText: {
     fontSize: 14,
@@ -235,59 +181,58 @@ const styles = StyleSheet.create({
   userText: {
     color: "#ffffff",
   },
-  aiText: {
-    color: "#1f2937",
+  assistantText: {
+    color: "#111827",
   },
-  inputContainer: {
+  inputBar: {
     flexDirection: "row",
-    padding: 12,
-    backgroundColor: "#ffffff",
+    gap: 10,
     borderTopWidth: 1,
     borderTopColor: "#e5e7eb",
-    alignItems: "flex-end",
+    backgroundColor: "#ffffff",
+    padding: 12,
   },
   input: {
     flex: 1,
-    backgroundColor: "#f9fafb",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: "#f3f4f6",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontSize: 14,
     maxHeight: 100,
-    marginRight: 8,
   },
-  sendButton: {
-    backgroundColor: "#3b82f6",
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+  primaryButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    backgroundColor: "#2563eb",
+    paddingHorizontal: 16,
   },
-  sendButtonDisabled: {
-    backgroundColor: "#9ca3af",
-  },
-  sendButtonText: {
+  primaryButtonText: {
     color: "#ffffff",
+    fontSize: 14,
     fontWeight: "600",
   },
-  unauthenticatedContainer: {
+  disabledButton: {
+    opacity: 0.6,
+  },
+  emptyState: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
+    backgroundColor: "#f8fafc",
   },
-  unauthenticatedIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  unauthenticatedTitle: {
+  emptyTitle: {
     fontSize: 20,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginBottom: 8,
+    fontWeight: "700",
+    color: "#111827",
   },
-  unauthenticatedText: {
-    fontSize: 14,
-    color: "#6b7280",
+  emptyText: {
+    marginTop: 10,
     textAlign: "center",
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#6b7280",
   },
 });

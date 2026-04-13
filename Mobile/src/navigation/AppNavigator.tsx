@@ -1,14 +1,10 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Activity, BookOpen, MessageCircle, ShoppingCart, User } from "lucide-react-native";
 import { useAuth } from "../store/AuthContext";
-import { Activity, BookOpen, ShoppingCart, MessageCircle, User } from "lucide-react-native";
-
-// Auth Screens
 import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
-
-// Main Screens
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { ProductsScreen } from "../screens/product/ProductsScreen";
 import { ProductDetailScreen } from "../screens/product/ProductDetailScreen";
@@ -24,12 +20,13 @@ function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: "#3b82f6",
+        tabBarActiveTintColor: "#2563eb",
         tabBarInactiveTintColor: "#9ca3af",
+        headerShown: false,
         tabBarStyle: {
           paddingBottom: 8,
           paddingTop: 8,
-          height: 64,
+          height: 68,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -65,7 +62,7 @@ function TabNavigator() {
         name="Chatbot"
         component={ChatbotScreen}
         options={{
-          tabBarLabel: "Chat",
+          tabBarLabel: "Chatbot",
           tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} />,
         }}
       />
@@ -85,7 +82,7 @@ export function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return null; // Or a loading screen
+    return null;
   }
 
   return (
@@ -94,7 +91,7 @@ export function AppNavigator() {
         headerStyle: {
           backgroundColor: "#ffffff",
         },
-        headerTintColor: "#1f2937",
+        headerTintColor: "#111827",
         headerTitleStyle: {
           fontWeight: "600",
         },
@@ -102,34 +99,14 @@ export function AppNavigator() {
     >
       {isAuthenticated ? (
         <>
-          <Stack.Screen
-            name="Main"
-            component={TabNavigator}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="ProductDetail"
-            component={ProductDetailScreen}
-            options={{ title: "Chi tiết sản phẩm" }}
-          />
-          <Stack.Screen
-            name="Orders"
-            component={OrdersScreen}
-            options={{ title: "Đơn hàng của tôi" }}
-          />
+          <Stack.Screen name="Main" component={TabNavigator} options={{ headerShown: false }} />
+          <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={{ title: "Chi tiết sản phẩm" }} />
+          <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: "Đơn hàng của tôi" }} />
         </>
       ) : (
         <>
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Register"
-            component={RegisterScreen}
-            options={{ title: "Đăng ký" }}
-          />
+          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{ title: "Đăng ký" }} />
         </>
       )}
     </Stack.Navigator>

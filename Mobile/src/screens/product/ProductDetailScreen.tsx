@@ -1,76 +1,73 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
+import api from "../../api/client";
 
 type RootStackParamList = {
   ProductDetail: { productId: number };
 };
 
+interface Product {
+  id: number;
+  name: string;
+  author?: string;
+  publisher?: string;
+  description?: string;
+  price: number;
+  currentPrice: number;
+  imageUrl?: string;
+  category?: { name: string };
+  stockQuantity?: number;
+}
+
 export function ProductDetailScreen() {
   const route = useRoute<RouteProp<RootStackParamList, "ProductDetail">>();
   const { productId } = route.params;
 
+  const { data: product } = useQuery<Product>({
+    queryKey: ["mobile-product-detail", productId],
+    queryFn: async () => {
+      const response = await api.get(`/products/${productId}`);
+      return response.data;
+    },
+  });
+
   return (
     <ScrollView style={styles.container}>
-      {/* Product Image */}
       <View style={styles.imageContainer}>
-        <View style={styles.imagePlaceholder}>
-          <Text style={styles.emoji}>📚</Text>
-        </View>
+        {product?.imageUrl ? (
+          <Image source={{ uri: product.imageUrl }} style={styles.image} />
+        ) : (
+          <View style={[styles.image, styles.placeholder]}>
+            <Text style={styles.placeholderText}>B</Text>
+          </View>
+        )}
       </View>
 
-      {/* Product Info */}
       <View style={styles.content}>
-        <Text style={styles.category}>Tiểu thuyết</Text>
-        <Text style={styles.title}>Tên sách</Text>
-        <Text style={styles.author}>Tác giả</Text>
+        <Text style={styles.category}>{product?.category?.name || "Danh mục đang cập nhật"}</Text>
+        <Text style={styles.title}>{product?.name || "Đang tải chi tiết sách..."}</Text>
+        <Text style={styles.author}>Tác giả: {product?.author || "Đang cập nhật"}</Text>
 
-        <View style={styles.ratingRow}>
-          <Text style={styles.rating}>⭐ 4.8</Text>
-          <Text style={styles.reviewCount}>(128 đánh giá)</Text>
+        <View style={styles.priceCard}>
+          <Text style={styles.currentPrice}>{(product?.currentPrice || 0).toLocaleString("vi-VN")}đ</Text>
+          {product && product.currentPrice < product.price ? (
+            <Text style={styles.originalPrice}>{product.price.toLocaleString("vi-VN")}đ</Text>
+          ) : null}
+          <Text style={styles.stock}>Còn hàng ({product?.stockQuantity ?? 0} sản phẩm)</Text>
         </View>
 
-        <View style={styles.priceRow}>
-          <Text style={styles.price}>199.000đ</Text>
-          <Text style={styles.originalPrice}>250.000đ</Text>
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>-20%</Text>
-          </View>
-        </View>
-
-        {/* Description */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mô tả</Text>
-          <Text style={styles.description}>
-            Mô tả sách sẽ hiển thị ở đây...
+          <Text style={styles.bodyText}>
+            {product?.description || "Màn chi tiết mobile đã nối dữ liệu thật. Luồng thêm vào giỏ sẽ là bước hoàn thiện tiếp theo của app native."}
           </Text>
         </View>
 
-        {/* Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông tin chi tiết</Text>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Tác giả</Text>
-            <Text style={styles.detailValue}>Tên tác giả</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Nhà xuất bản</Text>
-            <Text style={styles.detailValue}>NXB Trẻ</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Số trang</Text>
-            <Text style={styles.detailValue}>320</Text>
-          </View>
-        </View>
-
-        {/* Actions */}
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.wishlistButton}>
-            <Text style={styles.wishlistButtonText}>❤️</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.addToCartButton}>
-            <Text style={styles.addToCartText}>Thêm vào giỏ hàng</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Thông tin thêm</Text>
+          <Text style={styles.bodyText}>Nhà xuất bản: {product?.publisher || "Đang cập nhật"}</Text>
         </View>
       </View>
     </ScrollView>
@@ -86,135 +83,73 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     backgroundColor: "#f3f4f6",
   },
-  imagePlaceholder: {
-    flex: 1,
+  image: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  placeholder: {
     alignItems: "center",
     justifyContent: "center",
   },
-  emoji: {
-    fontSize: 100,
+  placeholderText: {
+    fontSize: 48,
+    fontWeight: "700",
+    color: "#9ca3af",
   },
   content: {
     padding: 16,
   },
   category: {
     fontSize: 12,
-    color: "#6b7280",
     textTransform: "uppercase",
-    marginBottom: 4,
+    color: "#6b7280",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 4,
+    marginTop: 6,
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#111827",
   },
   author: {
-    fontSize: 16,
-    color: "#6b7280",
-    marginBottom: 12,
+    marginTop: 8,
+    fontSize: 15,
+    color: "#4b5563",
   },
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
+  priceCard: {
+    marginTop: 20,
+    borderRadius: 16,
+    backgroundColor: "#eff6ff",
+    padding: 16,
   },
-  rating: {
-    fontSize: 16,
-    color: "#f59e0b",
-    marginRight: 8,
-  },
-  reviewCount: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  price: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#ef4444",
+  currentPrice: {
+    fontSize: 30,
+    fontWeight: "700",
+    color: "#2563eb",
   },
   originalPrice: {
+    marginTop: 6,
     fontSize: 16,
-    color: "#9ca3af",
     textDecorationLine: "line-through",
-    marginLeft: 12,
+    color: "#9ca3af",
   },
-  discountBadge: {
-    backgroundColor: "#ef4444",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  discountText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "600",
+  stock: {
+    marginTop: 8,
+    fontSize: 14,
+    color: "#16a34a",
   },
   section: {
-    marginBottom: 20,
+    marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
-    color: "#1f2937",
+    color: "#111827",
     marginBottom: 8,
   },
-  description: {
+  bodyText: {
     fontSize: 14,
-    color: "#6b7280",
     lineHeight: 22,
-  },
-  detailRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
-  },
-  detailLabel: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  detailValue: {
-    fontSize: 14,
-    color: "#1f2937",
-    fontWeight: "500",
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  wishlistButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: "#e5e7eb",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  wishlistButtonText: {
-    fontSize: 24,
-  },
-  addToCartButton: {
-    flex: 1,
-    height: 56,
-    backgroundColor: "#3b82f6",
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addToCartText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: "#4b5563",
   },
 });

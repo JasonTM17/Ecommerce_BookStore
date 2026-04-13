@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import * as SecureStore from "expo-secure-store";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL || "http://localhost:8080/api").replace(/\/+$/, "");
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -31,9 +31,15 @@ api.interceptors.response.use(
       const refreshToken = await SecureStore.getItemAsync("refresh_token");
       if (refreshToken) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
+          const response = await axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            { refreshToken },
+            {
+              headers: {
+                Authorization: `Bearer ${refreshToken}`,
+              },
+            }
+          );
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
           await SecureStore.setItemAsync("access_token", accessToken);

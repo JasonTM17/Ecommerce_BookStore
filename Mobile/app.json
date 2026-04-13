@@ -27,6 +27,23 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-local-authentication",
+      "expo-location",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Cho phép BookStore truy cập camera để quét mã vạch ISBN."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bookstore-mobile-portfolio"
+      }
     }
   }
 }
