@@ -77,6 +77,28 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("Portfolio CTA smoke", () => {
+  test("product cards navigate to detail pages from lower rows without preserving mid-page scroll", async ({ page }) => {
+    await page.goto("/products", { waitUntil: "networkidle" });
+
+    const targetCard = page.getByTestId("product-card").nth(5);
+    await targetCard.scrollIntoViewIfNeeded();
+
+    const productLink = targetCard.locator('a[href^="/products/"]').first();
+    const productPath = await productLink.getAttribute("href");
+
+    if (!productPath) {
+      throw new Error("Unable to resolve a product detail path from the selected product card.");
+    }
+
+    await Promise.all([
+      page.waitForURL(new RegExp(`${escapeRegExp(productPath)}$`)),
+      productLink.click(),
+    ]);
+
+    await expect(page.locator("h1")).toBeVisible();
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
   test("guest add-to-cart on product cards redirects back through login", async ({ page }) => {
     const { firstCard } = await getFirstProductPath(page);
 

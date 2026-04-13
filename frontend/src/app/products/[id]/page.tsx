@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -116,6 +116,10 @@ export default function ProductDetailPage() {
   const productId = normalizeRouteParam(params.id as string | string[] | undefined);
   const numericId = productId !== undefined ? Number(productId) : NaN;
   const idValid = Boolean(productId && !Number.isNaN(numericId) && numericId > 0);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [productId]);
 
   const {
     data: product,

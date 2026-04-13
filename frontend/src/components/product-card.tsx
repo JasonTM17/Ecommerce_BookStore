@@ -30,6 +30,7 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
   const addToCartDisabled = !product.inStock || !onAddToCart || isAddingToCart;
   const isWishlistPending = isAdding || isRemoving;
   const isWishlisted = isAuthenticated && isInWishlist(product.id);
+  const productHref = `/products/${product.id}`;
 
   const handleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,8 +60,8 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/products/${product.id}`} className="block">
-        <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50 overflow-hidden">
+      <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50 overflow-hidden">
+        <Link href={productHref} scroll className="block h-full">
           {!imageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
 
           {product.imageUrl ? (
@@ -105,97 +106,97 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
               </span>
             )}
           </div>
+        </Link>
 
+        <button
+          onClick={handleWishlist}
+          disabled={isWishlistPending}
+          data-testid="product-card-wishlist"
+          aria-label={isWishlisted ? t("common.removeFromWishlist") : t("common.addToWishlist")}
+          className={cn(
+            "absolute top-3 right-3 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-all duration-300",
+            isWishlisted ? "text-red-500 scale-110" : "text-gray-400 hover:text-red-500",
+            isHovered ? "pointer-events-auto opacity-100 translate-y-0" : "pointer-events-none opacity-0 -translate-y-2",
+            isWishlistPending && "cursor-not-allowed opacity-80"
+          )}
+        >
+          <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
+        </button>
+
+        <div
+          className={cn(
+            "absolute bottom-3 left-3 right-3 z-10 flex gap-2 transition-all duration-300",
+            isHovered ? "pointer-events-auto opacity-100 translate-y-0" : "pointer-events-none opacity-0 translate-y-4"
+          )}
+        >
           <button
-            onClick={handleWishlist}
-            disabled={isWishlistPending}
-            data-testid="product-card-wishlist"
-            aria-label={isWishlisted ? t("common.removeFromWishlist") : t("common.addToWishlist")}
-            className={cn(
-              "absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-all duration-300",
-              isWishlisted ? "text-red-500 scale-110" : "text-gray-400 hover:text-red-500",
-              isHovered ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2",
-              isWishlistPending && "cursor-not-allowed opacity-80"
-            )}
+            onClick={handleAddToCart}
+            disabled={addToCartDisabled}
+            data-testid="product-card-add-to-cart"
+            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
           >
-            <Heart className={cn("h-5 w-5", isWishlisted && "fill-current")} />
+            <ShoppingCart className="h-4 w-4" />
+            <span>
+              {!product.inStock
+                ? t("common.outOfStock")
+                : isAddingToCart
+                  ? t("common.addingToCart")
+                  : t("common.addToCart")}
+            </span>
           </button>
+        </div>
+      </div>
 
-          <div
-            className={cn(
-              "absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300",
-              isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            )}
-          >
-            <button
-              onClick={handleAddToCart}
-              disabled={addToCartDisabled}
-              data-testid="product-card-add-to-cart"
-              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              <span>
-                {!product.inStock
-                  ? t("common.outOfStock")
-                  : isAddingToCart
-                    ? t("common.addingToCart")
-                    : t("common.addToCart")}
-              </span>
-            </button>
+      <Link href={productHref} scroll className="block p-4">
+        {product.category && (
+          <p className="text-xs text-blue-600 font-medium mb-2 uppercase tracking-wide">{product.category.name}</p>
+        )}
+
+        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors duration-300 min-h-[2.5rem]">
+          {product.name}
+        </h3>
+
+        {product.author && <p className="text-sm text-gray-500 mb-3 truncate">{product.author}</p>}
+
+        {product.avgRating && product.avgRating > 0 && (
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={14}
+                  className={cn(
+                    "transition-colors duration-200",
+                    i < Math.round(product.avgRating!) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                  )}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-gray-500">
+              ({product.reviewCount} {t("common.reviews")})
+            </span>
           </div>
+        )}
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+            {formatCurrency(product.currentPrice)}
+          </span>
+          {hasDiscount && <span className="text-sm text-gray-400 line-through">{formatCurrency(product.price)}</span>}
         </div>
 
-        <div className="p-4">
-          {product.category && (
-            <p className="text-xs text-blue-600 font-medium mb-2 uppercase tracking-wide">{product.category.name}</p>
-          )}
-
-          <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors duration-300 min-h-[2.5rem]">
-            {product.name}
-          </h3>
-
-          {product.author && <p className="text-sm text-gray-500 mb-3 truncate">{product.author}</p>}
-
-          {product.avgRating && product.avgRating > 0 && (
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={14}
-                    className={cn(
-                      "transition-colors duration-200",
-                      i < Math.round(product.avgRating!) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-                    )}
-                  />
-                ))}
-              </div>
-              <span className="text-xs text-gray-500">
-                ({product.reviewCount} {t("common.reviews")})
-              </span>
-            </div>
-          )}
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-              {formatCurrency(product.currentPrice)}
+        <div className="mt-3 flex items-center gap-2">
+          {product.inStock ? (
+            <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              {t("common.inStock")}
             </span>
-            {hasDiscount && <span className="text-sm text-gray-400 line-through">{formatCurrency(product.price)}</span>}
-          </div>
-
-          <div className="mt-3 flex items-center gap-2">
-            {product.inStock ? (
-              <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                {t("common.inStock")}
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-xs text-red-600 font-medium">
-                <span className="w-2 h-2 bg-red-500 rounded-full" />
-                {t("common.outOfStock")}
-              </span>
-            )}
-          </div>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-xs text-red-600 font-medium">
+              <span className="w-2 h-2 bg-red-500 rounded-full" />
+              {t("common.outOfStock")}
+            </span>
+          )}
         </div>
       </Link>
     </div>
