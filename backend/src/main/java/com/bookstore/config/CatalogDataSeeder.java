@@ -257,7 +257,7 @@ public final class CatalogDataSeeder {
 
         String[][] publishers = {
                 {"NXB Trẻ", "NXB Trẻ", "Vintage Books", "Penguin Random House", "Scribner", "J.B. Lippincott", "Signet Classic", "Warner Books", "Vintage Classics", "NXB Văn Học"},
-                {"First News", "Alpha Books", "First News", "Alpha Books", "John Maxwell", "Farrar Straus", "富爸爸出版社", "Black Dog Books", "HarperCollins", "New York Institute"},
+                {"First News", "Alpha Books", "First News", "Alpha Books", "John Maxwell", "Farrar Straus", "Rich Dad Publishing", "Black Dog Books", "HarperCollins", "New York Institute"},
                 {"Penguin Random House", "Bantam", "HarperCollins", "DK Publishing", "NXB Trẻ", "HarperCollins", "W.W. Norton", "Oxford Press", "Pearson", "Cambridge"},
                 {"Simon & Schuster", "Random House", "First News", "Wiley", "HarperCollins", "Penguin Random House", "Random House", "Hay House", "Bantam", "HarperCollins"},
                 {"Kim Đồng", "Penguin Random House", "Bloomsbury", "Fujiko F. Fujio", "Kim Đồng", "NXB Trẻ", "NorthSouth Books", "Random House", "Kim Đồng", "Kim Đồng"},

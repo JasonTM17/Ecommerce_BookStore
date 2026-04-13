@@ -7,18 +7,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Search, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { useAuthStore } from "@/lib/store";
+import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/components/providers/language-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/toaster";
 import { formatCurrency } from "@/lib/utils";
 import { Product } from "@/lib/types";
-import { toast } from "@/components/ui/toaster";
 
 interface PageResponse<T> {
   content: T[];
@@ -30,65 +31,67 @@ interface PageResponse<T> {
 
 const COPY = {
   vi: {
+    breadcrumb: "Admin",
     title: "Quản lý sản phẩm",
-    subtitle: "Tổng cộng {count} sản phẩm",
-    addProduct: "Thêm sản phẩm",
+    subtitle: "Tổng cộng {count} sản phẩm đang hiển thị trong catalog.",
     searchPlaceholder: "Tìm kiếm sản phẩm...",
-    filter: "Bộ lọc",
+    catalogNotice: "Portfolio hiện giữ màn này cho việc rà soát catalog, không mở CRUD tạo/sửa trong pass này.",
     product: "Sản phẩm",
     category: "Danh mục",
     price: "Giá",
     stock: "Tồn kho",
     sold: "Đã bán",
     action: "Hành động",
-    empty: "Không có sản phẩm nào",
-    tableLoading: "Đang tải...",
+    empty: "Chưa có sản phẩm nào khớp bộ lọc hiện tại.",
+    page: "Trang {current} / {total}",
     prev: "Trước",
     next: "Sau",
-    page: "Trang {current} / {total}",
-    deleteConfirm: 'Bạn có chắc muốn xóa sản phẩm này?',
-    deleteSuccess: "Xóa sản phẩm thành công",
-    deleteError: "Xóa sản phẩm thất bại",
+    view: "Xem chi tiết sản phẩm",
+    delete: "Xóa sản phẩm",
+    deleteConfirm: 'Bạn có chắc muốn xóa sản phẩm "{name}" không?',
+    deleteSuccess: "Đã xóa sản phẩm thành công.",
+    deleteError: "Không thể xóa sản phẩm này.",
   },
   en: {
+    breadcrumb: "Admin",
     title: "Product management",
-    subtitle: "{count} products in total",
-    addProduct: "Add product",
+    subtitle: "{count} products are currently visible in the catalog.",
     searchPlaceholder: "Search products...",
-    filter: "Filter",
+    catalogNotice: "This portfolio lane keeps the screen focused on catalog review instead of create/edit CRUD.",
     product: "Product",
     category: "Category",
     price: "Price",
     stock: "Stock",
     sold: "Sold",
     action: "Action",
-    empty: "No products found",
-    tableLoading: "Loading...",
+    empty: "No products match the current filter.",
+    page: "Page {current} / {total}",
     prev: "Previous",
     next: "Next",
-    page: "Page {current} / {total}",
-    deleteConfirm: "Are you sure you want to delete this product?",
-    deleteSuccess: "Product deleted successfully",
-    deleteError: "Failed to delete product",
+    view: "View product detail",
+    delete: "Delete product",
+    deleteConfirm: 'Are you sure you want to delete "{name}"?',
+    deleteSuccess: "Product deleted successfully.",
+    deleteError: "Unable to delete this product.",
   },
 } as const;
 
 export default function AdminProductsPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, isAdmin } = useAuth();
   const { locale } = useLanguage();
   const copy = COPY[locale];
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState("");
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
+    if (!isAuthenticated || !isAdmin) {
+      router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAdmin, router]);
 
-  const { data: productsData, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["admin-products", page, searchKeyword],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -97,20 +100,23 @@ export default function AdminProductsPage() {
         sortBy: "createdAt",
         direction: "DESC",
       });
+
       if (searchKeyword) {
         params.set("keyword", searchKeyword);
       }
+
       const response = await api.get(`/products?${params.toString()}`);
       return response.data as PageResponse<Product>;
     },
+    retry: false,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await api.delete(`/admin/products/${id}`);
+    mutationFn: async (productId: number) => {
+      await api.delete(`/admin/products/${productId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       toast.success(copy.deleteSuccess);
     },
     onError: () => {
@@ -118,158 +124,163 @@ export default function AdminProductsPage() {
     },
   });
 
-  const products = productsData?.content || [];
-  const totalPages = productsData?.totalPages || 0;
-  const totalElements = productsData?.totalElements || 0;
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
+
+  const products = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const totalElements = data?.totalElements ?? 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{copy.title}</h1>
-            <p className="text-gray-600 mt-1">{copy.subtitle.replace("{count}", String(totalElements))}</p>
+        <div className="mb-8">
+          <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
+            <Link href="/admin" className="hover:text-blue-600 transition-colors">
+              {copy.breadcrumb}
+            </Link>
+            <span>/</span>
+            <span className="font-medium text-gray-900">{copy.title}</span>
           </div>
-          <Button className="bg-primary">
-            <Plus className="h-4 w-4 mr-2" />
-            {copy.addProduct}
-          </Button>
+          <h1 className="text-3xl font-bold text-gray-900">{copy.title}</h1>
+          <p className="mt-2 text-gray-600">{copy.subtitle.replace("{count}", String(totalElements))}</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <Card className="mb-6 rounded-2xl border-0 shadow-sm">
+          <CardContent className="space-y-4 p-5">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
-                placeholder={copy.searchPlaceholder}
                 value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
+                onChange={(event) => {
+                  setSearchKeyword(event.target.value);
+                  setPage(0);
+                }}
+                placeholder={copy.searchPlaceholder}
                 className="pl-10"
               />
             </div>
-            <Button variant="outline">{copy.filter}</Button>
-          </div>
-        </div>
+            <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">{copy.catalogNotice}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{copy.product}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{copy.category}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{copy.price}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{copy.stock}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{copy.sold}</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{copy.action}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{copy.product}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{copy.category}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{copy.price}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{copy.stock}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{copy.sold}</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">{copy.action}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
-                {isLoading ? (
-                  [...Array(5)].map((_, i) => (
-                    <tr key={i}>
-                      {[...Array(6)].map((_, j) => (
-                        <td key={j} className="px-6 py-4">
-                          <Skeleton className="h-4 w-full" />
-                        </td>
+              <tbody className="divide-y divide-gray-100">
+                {isLoading
+                  ? Array.from({ length: 6 }).map((_, index) => (
+                      <tr key={index}>
+                        {Array.from({ length: 6 }).map((__, cellIndex) => (
+                          <td key={cellIndex} className="px-6 py-4">
+                            <Skeleton className="h-5 w-full" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  : products.length === 0
+                    ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-16 text-center text-gray-500">
+                            {copy.empty}
+                          </td>
+                        </tr>
+                      )
+                    : products.map((product) => (
+                        <tr key={product.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded bg-gray-100">
+                                {product.imageUrl ? (
+                                  <Image
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    width={48}
+                                    height={64}
+                                    unoptimized
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <span className="text-xl text-gray-400">B</span>
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">{product.name}</p>
+                                <p className="text-sm text-gray-500">{product.author}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{product.category?.name || "-"}</td>
+                          <td className="px-6 py-4">
+                            <p className="font-medium text-blue-600">{formatCurrency(product.currentPrice)}</p>
+                            {product.discountPercent && product.discountPercent > 0 ? (
+                              <p className="text-xs text-gray-400 line-through">{formatCurrency(product.price)}</p>
+                            ) : null}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{product.stockQuantity}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{product.soldCount ?? 0}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link href={`/products/${product.id}`}>
+                                <Button variant="ghost" size="icon" aria-label={copy.view} className="h-9 w-9">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={copy.delete}
+                                className="h-9 w-9 text-red-500 hover:text-red-600"
+                                onClick={() => {
+                                  if (window.confirm(copy.deleteConfirm.replace("{name}", product.name))) {
+                                    deleteMutation.mutate(product.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
                       ))}
-                    </tr>
-                  ))
-                ) : products.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                      {copy.empty}
-                    </td>
-                  </tr>
-                ) : (
-                  products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                            {product.imageUrl && (
-                              <Image
-                                src={product.imageUrl}
-                                alt={product.name}
-                                width={48}
-                                height={64}
-                                unoptimized
-                                className="w-full h-full object-cover"
-                              />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900 line-clamp-1">{product.name}</p>
-                            <p className="text-sm text-gray-500">{product.author}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{product.category?.name || "-"}</td>
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="font-medium text-primary">{formatCurrency(product.currentPrice)}</p>
-                          {product.discountPercent && product.discountPercent > 0 && (
-                            <p className="text-xs text-gray-400 line-through">{formatCurrency(product.price)}</p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-sm ${product.stockQuantity < 10 ? "text-red-600 font-medium" : "text-gray-600"}`}>
-                          {product.stockQuantity}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{product.soldCount || 0}</td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link href={`/products/${product.id}`}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={product.name}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={copy.action}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700"
-                            onClick={() => {
-                              if (window.confirm(copy.deleteConfirm)) {
-                                deleteMutation.mutate(product.id);
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
               </tbody>
             </table>
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t">
+          {totalPages > 1 ? (
+            <div className="flex items-center justify-between border-t px-6 py-4">
               <p className="text-sm text-gray-500">
-                {copy.page
-                  .replace("{current}", String(page + 1))
-                  .replace("{total}", String(totalPages))}
+                {copy.page.replace("{current}", String(page + 1)).replace("{total}", String(totalPages))}
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
-                  <ChevronLeft className="h-4 w-4 mr-1" />
+                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>
+                  <ChevronLeft className="mr-1 h-4 w-4" />
                   {copy.prev}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages - 1}
+                  onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))}
+                >
                   {copy.next}
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </main>
       <Footer />

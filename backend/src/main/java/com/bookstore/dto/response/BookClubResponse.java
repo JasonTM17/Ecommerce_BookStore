@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * BookClub响应DTO
+ * BookClub Response DTO
  */
 @Data
 @Builder
@@ -31,7 +31,7 @@ public class BookClubResponse {
     private LocalDateTime createdAt;
 
     /**
-     * BookClub成员响应DTO
+     * BookClub Member Response DTO
      */
     @Data
     @Builder

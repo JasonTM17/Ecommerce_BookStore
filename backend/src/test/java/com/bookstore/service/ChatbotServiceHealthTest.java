@@ -95,7 +95,9 @@ class ChatbotServiceHealthTest {
 
         Map<String, String> health = service.getHealthStatus();
 
-        assertThat(reply).contains("Xin loi");
+        assertThat(reply)
+                .contains("support@bookstore.com")
+                .contains("1900-xxxx");
         assertThat(health)
                 .containsEntry("status", "DEGRADED")
                 .containsEntry("providerEnabled", "true");

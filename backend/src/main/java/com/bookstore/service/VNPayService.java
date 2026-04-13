@@ -96,7 +96,7 @@ public class VNPayService {
         params.put("vnp_CurrCode", "VND");
         params.put("vnp_BankCode", "");
         params.put("vnp_Locale", "vn");
-        params.put("vnp_OrderInfo", "Thanh toan don hang " + order.getOrderNumber());
+        params.put("vnp_OrderInfo", "Thanh toán đơn hàng " + order.getOrderNumber());
         params.put("vnp_OrderType", "bookstore");
         params.put("vnp_ReturnUrl", returnUrl);
         params.put("vnp_IpAddr", ipAddress);

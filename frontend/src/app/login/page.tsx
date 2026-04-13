@@ -38,9 +38,6 @@ const copy: Record<
     submitting: string;
     noAccount: string;
     signUp: string;
-    demoAccountsLabel: string;
-    adminLabel: string;
-    customerLabel: string;
     bannerTitle: string;
     bannerSubtitle: string;
     genericError: string;
@@ -51,20 +48,17 @@ const copy: Record<
 > = {
   vi: {
     loading: "Đang tải...",
-    title: "Đăng Nhập",
+    title: "Đăng nhập",
     subtitle: "Chào mừng bạn quay trở lại!",
     emailLabel: "Email",
     passwordLabel: "Mật khẩu",
     passwordPlaceholder: "Nhập mật khẩu",
     forgotPassword: "Quên mật khẩu?",
-    submit: "Đăng Nhập",
+    submit: "Đăng nhập",
     submitting: "Đang đăng nhập...",
     noAccount: "Chưa có tài khoản?",
     signUp: "Đăng ký ngay",
-    demoAccountsLabel: "Tài khoản demo:",
-    adminLabel: "Quản trị",
-    customerLabel: "Khách hàng",
-    bannerTitle: "Khám Phá Thế Giới Sách",
+    bannerTitle: "Khám phá thế giới sách",
     bannerSubtitle: "Hàng ngàn đầu sách hay đang chờ bạn khám phá.",
     genericError: "Email hoặc mật khẩu không chính xác",
     emailPlaceholder: "your.email@example.com",
@@ -83,9 +77,6 @@ const copy: Record<
     submitting: "Signing in...",
     noAccount: "No account yet?",
     signUp: "Sign up now",
-    demoAccountsLabel: "Demo accounts:",
-    adminLabel: "Admin",
-    customerLabel: "Customer",
     bannerTitle: "Discover the World of Books",
     bannerSubtitle: "Thousands of great books are waiting for you.",
     genericError: "Email or password is incorrect",
@@ -305,14 +296,6 @@ function LoginContent() {
                 {pageCopy.signUp}
               </Link>
             </p>
-          </div>
-
-          <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-            <p className="text-sm font-medium text-gray-700 mb-2">{pageCopy.demoAccountsLabel}</p>
-            <div className="space-y-1 text-sm text-gray-600">
-              <p>{pageCopy.adminLabel}: admin@bookstore.com / Admin123!</p>
-              <p>{pageCopy.customerLabel}: customer@example.com / Customer123!</p>
-            </div>
           </div>
         </div>
       </div>
