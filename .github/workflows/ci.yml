@@ -49,11 +49,14 @@ jobs:
           cache: "maven"
 
       # --- SỬ DỤNG wait-for-services.sh ---
+      - name: Install Netcat
+        run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
+
       - name: Make scripts executable
         run: chmod +x scripts/wait-for-services.sh
 
       - name: Wait for MySQL to be ready
-        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 localhost:3306
+        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 localhost:3306
         env:
           MYSQL_ROOT_PASSWORD: root
 
@@ -300,6 +303,9 @@ jobs:
       - name: Make scripts executable
         run: chmod +x scripts/wait-for-services.sh scripts/run-e2e.sh
 
+      - name: Install Netcat
+        run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
+
       # --- SỬ DỤNG docker-compose.e2e.yml ---
       - name: Start E2E Stack with Docker Compose
         run: |
@@ -308,7 +314,7 @@ jobs:
             up --build -d
 
       - name: Wait for MySQL
-        run: ./scripts/wait-for-services.sh --timeout 120 --interval 5 localhost:3307
+        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 localhost:3307
         env:
           MYSQL_ROOT_PASSWORD: rootpass123
 
