@@ -1,238 +1,191 @@
 #!/bin/bash
-# ==============================================================================
-# wait-for-services.sh - Reusable health-check script for Docker Compose & CI
-# Hỗ trợ: MySQL (port 3306), PostgreSQL (port 5432), HTTP endpoint health check
-# ==============================================================================
 
-set -e
-
-# ---------- Cấu hình mặc định ----------
-TIMEOUT=120        # Tổng timeout tính bằng giây
-INTERVAL=5         # Khoảng thời gian giữa các lần thử (giây)
-RETRIES=0          # Số lần thử hiện tại
-QUIET=0            # Chế độ yên lặng (0 = hiển thị output)
+# ==============================================================================
+# Script: wait-for-services.sh
+# Mô tả: Chờ các dịch vụ (MySQL, PostgreSQL, HTTP) sẵn sàng trước khi chạy test.
+# Sử dụng: ./wait-for-services.sh --timeout 180 --interval 5 mysql:127.0.0.1:3306 http://127.0.0.1:8080/health
+# ==============================================================================
 
 # Màu sắc cho output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
 BOLD='\033[1m'
+NC='\033[0m' # No Color
 
-# ---------- Hàm helper ----------
-log_info()    { echo -e "${BLUE}[INFO]${NC}  $1"; }
-log_success() { echo -e "${GREEN}[OK]${NC}    $1"; }
-log_warn()    { echo -e "${YELLOW}[WARN]${NC}  $1"; }
-log_error()   { echo -e "${RED}[ERR]${NC}    $1"; }
-log_step()    { echo -e "${CYAN}[STEP]${NC}   $1"; }
+# Biến mặc định
+TIMEOUT=120
+INTERVAL=5
+SERVICES=()
+FAILED=0
+RETRIES=0
 
-# Tính số lần thử tối đa
-max_retries=$((TIMEOUT / INTERVAL))
+# Log helpers
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_step() { echo -e "${BOLD}${YELLOW}==>${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-# ---------- Parse arguments ----------
+# Hướng dẫn sử dụng
+show_help() {
+    echo "Sử dụng: $0 [OPTIONS] [SERVICES...]"
+    echo ""
+    echo "Options:"
+    echo "  --timeout T  Thời gian chờ tối đa (giây). Mặc định: 120"
+    echo "  --interval I Tần suất kiểm tra (giây). Mặc định: 5"
+    echo "  --help       Hiển thị hướng dẫn này"
+    echo ""
+    echo "Services format:"
+    echo "  mysql:host:port      Kiểm tra port MySQL (mặc định port 3306)"
+    echo "  postgres:host:port   Kiểm tra port PostgreSQL (mặc định port 5432)"
+    echo "  http://url           Kiểm tra HTTP status 200/201/302"
+    echo "  host:port            Tự động nhận diện (3306/3307=MySQL, 5432=Postgres, còn lại=HTTP)"
+}
+
+# --- Parsing Arguments ---
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --timeout)
-            TIMEOUT="$2"
-            max_retries=$((TIMEOUT / INTERVAL))
-            shift 2
-            ;;
-        --interval)
-            INTERVAL="$2"
-            max_retries=$((TIMEOUT / INTERVAL))
-            shift 2
-            ;;
-        --quiet|-q)
-            QUIET=1
-            shift
-            ;;
-        --help|-h)
-            echo "Usage: $0 [OPTIONS] <service> [<service> ...]"
-            echo ""
-            echo "Services:"
-            echo "  mysql      - Chờ MySQL trên port 3306 (tcp)"
-            echo "  postgres   - Chờ PostgreSQL trên port 5432 (tcp)"
-            echo "  http://... - Chờ HTTP endpoint trả về 200"
-            echo ""
-            echo "Options:"
-            echo "  --timeout <sec>   Tổng timeout (mặc định: 120)"
-            echo "  --interval <sec>  Khoảng thời gian giữa các lần thử (mặc định: 5)"
-            echo "  --quiet, -q        Chế độ yên lặng, chỉ hiển thị lỗi"
-            echo "  --help, -h         Hiển thị trợ giúp"
-            echo ""
-            echo "Ví dụ:"
-            echo "  $0 mysql postgres"
-            echo "  $0 --timeout 60 mysql"
-            echo "  $0 http://localhost:8080/api/health/live"
-            echo "  $0 --timeout 30 --interval 2 http://backend:8080/api/health/live"
-            exit 0
-            ;;
-        -*)
-            log_error "Tùy chọn không hợp lệ: $1"
-            echo "Dùng '$0 --help' để xem hướng dẫn."
-            exit 1
-            ;;
-        *)
-            SERVICES+=("$1")
-            shift
-            ;;
+    case "$1" in
+        --timeout) TIMEOUT="$2"; shift 2 ;;
+        --interval) INTERVAL="$2"; shift 2 ;;
+        --help) show_help; exit 0 ;;
+        -*) log_error "Tùy chọn không hợp lệ: $1"; exit 1 ;;
+        *) SERVICES+=("$1"); shift ;;
     esac
 done
 
-# Kiểm tra đầu vào
 if [ ${#SERVICES[@]} -eq 0 ]; then
-    log_error "Chưa chỉ định service nào để chờ."
-    echo "Dùng '$0 --help' để xem hướng dẫn."
+    log_error "Không có service nào được chỉ định để chờ!"
+    show_help
     exit 1
 fi
 
-# ---------- Hàm kiểm tra từng loại service ----------
-check_mysql() {
-    local host="${1%:3306}"
-    local port="${1##*:}"
-    port="${port:-3306}"
+max_retries=$((TIMEOUT / INTERVAL))
+
+# --- Hàm bóc tách địa chỉ (Robut Parsing) ---
+# Trả về chuỗi: "protocol host port"
+parse_addr() {
+    local input="$1"
+    local proto="http"
+    local host=""
+    local port=""
+
+    # 1. Nhận diện protocol nếu có
+    if [[ "$input" =~ ^(mysql|postgres|http|https):(.*) ]]; then
+        proto="${BASH_REMATCH[1]}"
+        input="${BASH_REMATCH[2]}"
+    fi
+
+    # Xử lý trường hợp input bắt đầu bằng // (như http://...)
+    input="${input#//}"
+
+    # 2. Bóc tách Host và Port
+    if [[ "$input" =~ ([^:/]+):([0-9]+) ]]; then
+        host="${BASH_REMATCH[1]}"
+        port="${BASH_REMATCH[2]}"
+    else
+        host="$input"
+        # Port mặc định theo protocol
+        case "$proto" in
+            mysql) port=3306 ;;
+            postgres) port=5432 ;;
+            *) port=8080 ;;
+        esac
+    fi
+
+    echo "$proto|$host|$port"
+}
+
+# ---------- Hàm kiểm tra Port (MySQL/Postgres) ----------
+check_port() {
+    local proto="$1"
+    local host="$2"
+    local port="$3"
     
-    log_step "Chờ MySQL tại $host:$port (Port Probing)..."
+    log_step "Chờ $proto tại $host:$port (Port Probing)..."
     
-    while [ $RETRIES -lt $max_retries ]; do
-        # Ưu tiên dùng nc (netcat) hoặc /dev/tcp để chỉ kiểm tra port đã mở chưa
-        # Cách này không cần mật khẩu và ổn định nhất cho CI
+    local r=0
+    while [ $r -lt $max_retries ]; do
         if command -v nc &> /dev/null; then
-            if nc -z -w 2 "$host" "$port" 2>/dev/null; then
-                log_success "MySQL ($host:$port) port đã mở!"
+            if nc -z -w 2 "$host" "$port" &>/dev/null; then
+                log_success "$proto ($host:$port) đã sẵn sàng!"
                 return 0
             fi
         elif command -v timeout &> /dev/null; then
-            if timeout 2 bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then
-                log_success "MySQL ($host:$port) port đã mở!"
+            if timeout 2 bash -c "echo > /dev/tcp/$host/$port" &>/dev/null; then
+                log_success "$proto ($host:$port) đã sẵn sàng!"
                 return 0
             fi
-        elif command -v mysqladmin &> /dev/null; then
-            # Chỉ dùng mysqladmin nếu không có nc/timeout
-            local pass="${MYSQL_ROOT_PASSWORD:-rootpass123}"
-            if mysqladmin ping -h "$host" -P "$port" -u root -p"$pass" --silent &> /dev/null 2>&1; then
-                log_success "MySQL ($host:$port) đã sẵn sàng!"
-                return 0
-            fi
+        else
+            log_error "Thiếu công cụ thăm dò (nc hoặc bash /dev/tcp). Vui lòng cài đặt netcat."
+            return 1
         fi
         
-        RETRIES=$((RETRIES + 1))
-        log_warn "Chờ MySQL... ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
+        r=$((r + 1))
+        log_warn "Chờ $proto ($host:$port)... ($((r * INTERVAL))s/${TIMEOUT}s)"
         sleep $INTERVAL
     done
-    
-    log_error "MySQL ($host:$port) không phản hồi sau ${TIMEOUT}s"
     return 1
 }
 
-check_postgres() {
-    local host="${1%:5432}"
-    local port="${1##*:}"
-    port="${port:-5432}"
-    
-    log_step "Chờ PostgreSQL tại $host:$port ..."
-    
-    if command -v pg_isready &> /dev/null; then
-        while [ $RETRIES -lt $max_retries ]; do
-            if pg_isready -h "$host" -p "$port" -U postgres -q 2>/dev/null; then
-                log_success "PostgreSQL ($host:$port) đã sẵn sàng!"
-                return 0
-            fi
-            RETRIES=$((RETRIES + 1))
-            log_warn "Chờ PostgreSQL... ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
-            sleep $INTERVAL
-        done
-    else
-        while [ $RETRIES -lt $max_retries ]; do
-            if command -v nc &> /dev/null; then
-                if nc -z -w 2 "$host" "$port" 2>/dev/null; then
-                    log_success "PostgreSQL ($host:$port) port đã mở!"
-                    return 0
-                fi
-            elif command -v timeout &> /dev/null; then
-                if timeout 2 bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then
-                    log_success "PostgreSQL ($host:$port) port đã mở!"
-                    return 0
-                fi
-            fi
-            RETRIES=$((RETRIES + 1))
-            log_warn "Chờ PostgreSQL... ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
-            sleep $INTERVAL
-        done
-    fi
-    
-    log_error "PostgreSQL ($host:$port) không phản hồi sau ${TIMEOUT}s"
-    return 1
-}
-
+# ---------- Hàm kiểm tra HTTP ----------
 check_http() {
     local url="$1"
     
-    log_step "Chờ HTTP endpoint: $url ..."
+    # Đảm bảo url có http:// nếu chưa có
+    [[ "$url" != http* ]] && url="http://$url"
     
-    while [ $RETRIES -lt $max_retries ]; do
-        # Lấy HTTP status code
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$url" 2>/dev/null || echo "000")
-        
-        if [ "$HTTP_CODE" = "200" ]; then
-            log_success "HTTP endpoint ($url) trả về 200 OK!"
-            return 0
-        elif [ "$HTTP_CODE" = "000" ]; then
-            log_warn "Không thể kết nối đến $url ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
+    log_step "Chờ HTTP service tại $url ..."
+    
+    local r=0
+    while [ $r -lt $max_retries ]; do
+        local status
+        if command -v curl &> /dev/null; then
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
+        elif command -v wget &> /dev/null; then
+            status=$(wget --spider -S "$url" 2>&1 | grep "HTTP/" | awk '{print $2}' | tail -1 || echo "000")
         else
-            log_warn "HTTP endpoint trả về HTTP $HTTP_CODE, chờ 200... ($((RETRIES * INTERVAL))s/${TIMEOUT}s)"
+            log_error "Thiếu công cụ HTTP (curl hoặc wget)!"
+            return 1
+        fi
+
+        if [[ "$status" =~ ^(200|201|202|204|301|302|307|308)$ ]]; then
+            log_success "HTTP Service ($url) đã sẵn sàng! (Status: $status)"
+            return 0
         fi
         
-        RETRIES=$((RETRIES + 1))
+        r=$((r + 1))
+        log_warn "Chờ HTTP ($url)... ($((r * INTERVAL))s/${TIMEOUT}s) - Status: $status"
         sleep $INTERVAL
     done
-    
-    log_error "HTTP endpoint ($url) không phản hồi 200 sau ${TIMEOUT}s (HTTP code: $HTTP_CODE)"
     return 1
 }
 
-# ---------- Main: chạy kiểm tra tất cả services ----------
-echo ""
-echo -e "${BOLD}========================================${NC}"
-echo -e "${BOLD}  wait-for-services.sh${NC}"
-echo -e "${BOLD}  Timeout: ${TIMEOUT}s | Interval: ${INTERVAL}s${NC}"
-echo -e "${BOLD}========================================${NC}"
-echo ""
-echo -e "${BOLD}Services cần chờ:${NC}"
-for svc in "${SERVICES[@]}"; do
-    echo "  - $svc"
-done
-echo ""
-
-FAILED=0
-
-for service in "${SERVICES[@]}"; do
-    # Reset bộ đếm cho mỗi service
-    RETRIES=0
+# ---------- Main Loop ----------
+for item in "${SERVICES[@]}"; do
+    IFS='|' read -r proto host port <<< "$(parse_addr "$item")"
     
-    # Loại bỏ tiền tố (mysql:, postgres:, http:, https:) nếu có để lấy địa chỉ thuần
-    local clean_addr=$(echo "$service" | sed -E 's/^(mysql:|postgres:|http:|https:)//')
-    
-    case "$service" in
-        mysql:*)
-            check_mysql "$clean_addr" || FAILED=$((FAILED + 1))
+    case "$proto" in
+        mysql|postgres)
+            check_port "$proto" "$host" "$port" || FAILED=$((FAILED + 1))
             ;;
-        postgres:*)
-            check_postgres "$clean_addr" || FAILED=$((FAILED + 1))
-            ;;
-        http:* | https:*)
-            check_http "$service" || FAILED=$((FAILED + 1)) # HTTP vẫn cần nguyên URL
+        http|https)
+            # Nếu chỉ là domain:port, reconstruct URL, nếu đã là URL thì dùng nguyên
+            if [[ "$item" == *"://"* ]]; then
+                check_http "$item" || FAILED=$((FAILED + 1))
+            else
+                check_http "$proto://$host:$port/api/health/live" || FAILED=$((FAILED + 1))
+            fi
             ;;
         *)
-            # Mặc định: Nếu là port 3306/3307 thì coi là MySQL, 5432 là Postgres, còn lại là HTTP
-            if [[ "$service" == *:3306 ]] || [[ "$service" == *:3307 ]]; then
-                check_mysql "$service" || FAILED=$((FAILED + 1))
-            elif [[ "$service" == *:5432 ]]; then
-                check_postgres "$service" || FAILED=$((FAILED + 1))
+            # Fallback nhận diện theo port
+            if [[ "$port" == "3306" ]] || [[ "$port" == "3307" ]]; then
+                check_port "mysql" "$host" "$port" || FAILED=$((FAILED + 1))
+            elif [[ "$port" == "5432" ]]; then
+                check_port "postgres" "$host" "$port" || FAILED=$((FAILED + 1))
             else
-                check_http "http://$service/api/health/live" || FAILED=$((FAILED + 1))
+                check_http "http://$host:$port/api/health/live" || FAILED=$((FAILED + 1))
             fi
             ;;
     esac
@@ -244,11 +197,9 @@ echo -e "${BOLD}========================================${NC}"
 if [ $FAILED -eq 0 ]; then
     echo -e "${GREEN}${BOLD}  Tất cả services đã sẵn sàng!${NC}"
     echo -e "${BOLD}========================================${NC}"
-    echo ""
     exit 0
 else
     echo -e "${RED}${BOLD}  $FAILED service(s) không khả dụng!${NC}"
     echo -e "${BOLD}========================================${NC}"
-    echo ""
     exit 1
 fi
