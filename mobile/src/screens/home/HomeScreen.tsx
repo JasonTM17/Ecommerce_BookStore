@@ -1,5 +1,6 @@
 import React from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BookOpen } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../store/AuthContext";
@@ -67,7 +68,7 @@ export function HomeScreen() {
                   <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
                 ) : (
                   <View style={[styles.productImage, styles.placeholderImage]}>
-                    <Text style={styles.placeholderText}>B</Text>
+                    <BookOpen color="#9ca3af" size={32} />
                   </View>
                 )}
               </View>

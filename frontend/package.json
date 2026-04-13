@@ -1,6 +1,8 @@
 {
   "name": "bookstore-frontend",
   "version": "1.0.0",
+  "description": "Premium E-commerce Bookstore Frontend built with Next.js 14",
+  "author": "JasonTM17",
   "private": true,
   "scripts": {
     "dev": "next dev",

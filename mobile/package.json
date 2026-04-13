@@ -1,6 +1,8 @@
 {
   "name": "bookstore-mobile",
   "version": "1.0.0",
+  "description": "Cross-platform Mobile Bookstore App built with Expo and React Native",
+  "author": "JasonTM17",
   "private": true,
   "main": "expo/AppEntry",
   "scripts": {

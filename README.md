@@ -82,6 +82,13 @@ Supported environment variables:
 - `FLASHSALE_AUTO_STOCK_MAX`
 - `FLASHSALE_AUTO_MAX_PER_USER`
 
+## Automated Marketing Services
+
+The backend includes scheduled services to drive customer engagement:
+- **Abandoned Cart Reminders**: Automatically identifies carts inactive for > 24 hours and sends a promotional email with a 10% discount code.
+- **Birthday Greetings**: Daily checks for user birthdays and sends a 20% discount coupon as a gift.
+- **Service Monitoring**: Health checks available at `/api/actuator/health`.
+
 ## Testing
 
 ```bash
