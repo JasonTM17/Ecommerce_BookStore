@@ -56,11 +56,11 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
   return (
     <div
       data-testid="product-card"
-      className="group relative bg-white/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-sm border border-white/50 hover:shadow-xl transition-all duration-500"
+      className="group relative bg-white/70 backdrop-blur-xl rounded-2xl overflow-hidden shadow border border-white/60 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 ring-1 ring-black/5 hover:ring-blue-500/20"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-50 overflow-hidden">
+      <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-50 to-gray-200 overflow-hidden">
         <Link href={productHref} scroll className="block h-full">
           {!imageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
 
@@ -84,7 +84,7 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
 
           <div
             className={cn(
-              "absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300",
+              "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-all duration-500",
               isHovered ? "opacity-100" : "opacity-0"
             )}
           />
@@ -114,9 +114,9 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
           data-testid="product-card-wishlist"
           aria-label={isWishlisted ? t("common.removeFromWishlist") : t("common.addToWishlist")}
           className={cn(
-            "absolute top-3 right-3 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transition-all duration-300",
-            isWishlisted ? "text-red-500 scale-110" : "text-gray-400 hover:text-red-500",
-            isHovered ? "pointer-events-auto opacity-100 translate-y-0" : "pointer-events-none opacity-0 -translate-y-2",
+            "absolute top-3 right-3 z-10 w-10 h-10 bg-white/90 backdrop-blur-md hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all duration-500",
+            isWishlisted ? "text-red-500 shadow-red-500/20 scale-110" : "text-gray-400 hover:text-red-500 hover:scale-110 hover:shadow-xl",
+            isHovered ? "pointer-events-auto opacity-100 translate-y-0" : "pointer-events-none opacity-0 -translate-y-4",
             isWishlistPending && "cursor-not-allowed opacity-80"
           )}
         >
@@ -133,7 +133,7 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
             onClick={handleAddToCart}
             disabled={addToCartDisabled}
             data-testid="product-card-add-to-cart"
-            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
+            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 transition-all duration-500 hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
           >
             <ShoppingCart className="h-4 w-4" />
             <span>
@@ -147,12 +147,12 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
         </div>
       </div>
 
-      <Link href={productHref} scroll className="block p-4">
+      <Link href={productHref} scroll className="block p-5 bg-gradient-to-b from-white/50 to-white/90">
         {product.category && (
           <p className="text-xs text-blue-600 font-medium mb-2 uppercase tracking-wide">{product.category.name}</p>
         )}
 
-        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors duration-300 min-h-[2.5rem]">
+        <h3 className="font-bold text-gray-900 line-clamp-2 mb-1 group-hover:text-blue-600 group-hover:underline decoration-blue-200 underline-offset-4 transition-all duration-300 min-h-[2.5rem]">
           {product.name}
         </h3>
 
@@ -178,11 +178,11 @@ export function ProductCard({ product, onAddToCart, isAddingToCart = false }: Pr
           </div>
         )}
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <span className="text-xl font-extrabold bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent">
             {formatCurrency(product.currentPrice)}
           </span>
-          {hasDiscount && <span className="text-sm text-gray-400 line-through">{formatCurrency(product.price)}</span>}
+          {hasDiscount && <span className="text-sm font-medium text-red-500 line-through decoration-red-500/30">{formatCurrency(product.price)}</span>}
         </div>
 
         <div className="mt-3 flex items-center gap-2">

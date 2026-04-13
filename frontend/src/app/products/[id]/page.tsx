@@ -12,6 +12,7 @@ import { buildLoginRedirect, cn, formatCurrency } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductCard } from "@/components/product-card";
+import { FlashSaleCountdownCard } from "@/components/flashsale/FlashSaleCountdownCard";
 import { Button } from "@/components/ui/button";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -127,6 +128,7 @@ export default function ProductDetailPage() {
     isError,
     error,
     isFetched,
+    refetch: refetchProduct,
   } = useQuery({
     queryKey: ["product", productId],
     enabled: idValid,
@@ -220,6 +222,10 @@ export default function ProductDetailPage() {
   }
 
   const hasDiscount = product.discountPercent && product.discountPercent > 0;
+  const hasActiveFlashSaleCountdown =
+    Boolean(product.activeFlashSale) &&
+    product.currentPrice < product.price &&
+    new Date(product.activeFlashSale!.endTime).getTime() > Date.now();
   const isWishlistPending = isAdding || isRemoving;
   const isWishlisted = isAuthenticated && isInWishlist(product.id);
 
@@ -353,6 +359,18 @@ export default function ProductDetailPage() {
                   )}
                 </p>
               </div>
+
+              {hasActiveFlashSaleCountdown && product.activeFlashSale ? (
+                <FlashSaleCountdownCard
+                  locale={locale}
+                  endTime={product.activeFlashSale.endTime}
+                  remainingStock={product.activeFlashSale.remainingStock}
+                  maxPerUser={product.activeFlashSale.maxPerUser}
+                  onExpire={() => {
+                    void refetchProduct();
+                  }}
+                />
+              ) : null}
 
               {product.shortDescription && <p className="text-gray-600">{product.shortDescription}</p>}
 
