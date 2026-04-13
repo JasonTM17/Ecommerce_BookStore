@@ -23,6 +23,7 @@ public class UserResponse {
     private String avatarUrl;
     private Boolean isActive;
     private Boolean isEmailVerified;
-    private Set<String> roles;
-    private LocalDateTime createdAt;
+    private java.util.Set<String> roles;
+    private java.time.LocalDate dateOfBirth;
+    private java.time.LocalDateTime createdAt;
 }

@@ -139,6 +139,9 @@ public class AuthService {
         if (request.getAvatarUrl() != null) {
             user.setAvatarUrl(request.getAvatarUrl());
         }
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
 
         user = userRepository.save(user);
         log.info("User profile updated: {}", user.getEmail());
@@ -217,6 +220,7 @@ public class AuthService {
                 .roles(user.getRoles().stream()
                         .map(Role::name)
                         .collect(Collectors.toSet()))
+                .dateOfBirth(user.getDateOfBirth())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

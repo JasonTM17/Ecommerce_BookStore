@@ -27,4 +27,6 @@ public class UserUpdateRequest {
     private String phoneNumber;
 
     private String avatarUrl;
+
+    private java.time.LocalDate dateOfBirth;
 }

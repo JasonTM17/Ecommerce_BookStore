@@ -19,6 +19,9 @@ public class DashboardService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
 
+    private static final java.time.format.DateTimeFormatter MONTH_FORMATTER = 
+            java.time.format.DateTimeFormatter.ofPattern("MMM yyyy");
+
     @Transactional(readOnly = true)
     public DashboardStats getDashboardStats() {
         LocalDateTime startOfMonth = LocalDateTime.now().with(TemporalAdjusters.firstDayOfMonth())
@@ -46,6 +49,16 @@ public class DashboardService {
 
         var lowStockProducts = productRepository.countLowStockProducts(10);
 
+        java.util.Map<String, java.math.BigDecimal> trend = new java.util.LinkedHashMap<>();
+        for (int i = 5; i >= 0; i--) {
+            LocalDateTime start = LocalDateTime.now().minusMonths(i).with(TemporalAdjusters.firstDayOfMonth())
+                    .withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime end = LocalDateTime.now().minusMonths(i).with(TemporalAdjusters.lastDayOfMonth())
+                    .withHour(23).withMinute(59).withSecond(59);
+            BigDecimal monthly = orderRepository.calculateRevenueBetweenDates(start, end);
+            trend.put(start.format(MONTH_FORMATTER), monthly != null ? monthly : java.math.BigDecimal.ZERO);
+        }
+
         return DashboardStats.builder()
                 .totalUsers(totalUsers)
                 .totalProducts(totalProducts)
@@ -56,6 +69,7 @@ public class DashboardService {
                 .lowStockProducts(lowStockProducts)
                 .newOrdersThisMonth(newOrdersThisMonth)
                 .revenueThisMonth(revenueThisMonth)
+                .monthlyRevenueTrend(trend)
                 .build();
     }
 }

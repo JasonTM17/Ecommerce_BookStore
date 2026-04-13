@@ -10,6 +10,7 @@ interface User {
   fullName: string;
   phoneNumber?: string;
   avatarUrl?: string;
+  dateOfBirth?: string;
   roles: string[];
 }
 
@@ -29,6 +30,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -98,8 +100,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateProfile = async (data: Partial<User>) => {
+    const response = await api.put("/users/me", data);
+    setUser(response.data);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, isLoading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, isAdmin, isLoading, login, register, logout, updateProfile, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

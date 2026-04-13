@@ -5,6 +5,7 @@ import { apiPublic } from "@/lib/api";
 import { Product, Category } from "@/lib/types";
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
+import { ProductCardSkeleton } from "@/components/product-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -45,12 +46,7 @@ export function FeaturedProducts() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-72 w-full rounded-2xl" />
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-6 w-1/3" />
-              </div>
+              <ProductCardSkeleton key={i} />
             ))}
           </div>
         </div>
@@ -114,12 +110,7 @@ export function NewProducts() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-72 w-full rounded-2xl" />
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-6 w-1/3" />
-              </div>
+              <ProductCardSkeleton key={i} />
             ))}
           </div>
         </div>

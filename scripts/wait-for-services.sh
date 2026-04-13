@@ -98,7 +98,9 @@ check_mysql() {
     
     if command -v mysql &> /dev/null; then
         while [ $RETRIES -lt $max_retries ]; do
-            if mysqladmin ping -h "$host" -P "$port" -u root -prootpass123 --silent &> /dev/null 2>&1; then
+            # Use rootpass123 as fallback, but prefer environment variables if set
+            local pass="${MYSQL_ROOT_PASSWORD:-rootpass123}"
+            if mysqladmin ping -h "$host" -P "$port" -u root -p"$pass" --silent &> /dev/null 2>&1; then
                 log_success "MySQL ($host:$port) đã sẵn sàng!"
                 return 0
             fi

@@ -22,4 +22,5 @@ public class DashboardStats {
     private long lowStockProducts;
     private long newOrdersThisMonth;
     private BigDecimal revenueThisMonth;
+    private java.util.Map<String, java.math.BigDecimal> monthlyRevenueTrend;
 }
