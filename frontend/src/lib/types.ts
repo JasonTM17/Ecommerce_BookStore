@@ -1,5 +1,12 @@
 import { create } from "zustand";
 
+export interface ActiveFlashSaleSummary {
+  id: number;
+  endTime: string;
+  remainingStock?: number;
+  maxPerUser?: number;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -29,6 +36,7 @@ export interface Product {
   isBestseller?: boolean;
   isNew?: boolean;
   updatedAt?: string;
+  activeFlashSale?: ActiveFlashSaleSummary;
 }
 
 export interface Category {
