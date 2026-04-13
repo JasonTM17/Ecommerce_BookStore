@@ -1,9 +1,12 @@
 package com.bookstore.service;
 
+import com.bookstore.entity.Cart;
 import com.bookstore.entity.Product;
 import com.bookstore.entity.User;
+import com.bookstore.repository.CartRepository;
 import com.bookstore.repository.ProductRepository;
 import com.bookstore.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +28,7 @@ public class ScheduledEmailService {
     private final EmailService emailService;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CartRepository cartRepository;
 
     private static final int BATCH_SIZE = 100;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -126,31 +130,81 @@ public class ScheduledEmailService {
     }
 
     /**
-     * Gửi email reminder cho giỏ hàng bị bỏ quên
+     * Gửi email reminder cho giỏ hàng bị bỏ quên lúc 18:00 hàng ngày
      */
     @Scheduled(cron = "${app.cart-reminder.cron:0 0 18 * * ?}")
+    @Transactional
     public void sendAbandonedCartReminders() {
         log.info("Starting abandoned cart reminder job");
 
-        // TODO: Implement abandoned cart detection
-        // 1. Tìm giỏ hàng có items nhưng chưa checkout trong 24h
-        // 2. Gửi email reminder với ưu đãi đặc biệt
+        // Giỏ hàng không có hoạt động trong 24h qua
+        LocalDateTime threshold = LocalDateTime.now().minusHours(24);
+        List<Cart> abandonedCarts = cartRepository.findAbandonedCarts(threshold);
 
-        log.info("Abandoned cart reminder job completed");
+        for (Cart cart : abandonedCarts) {
+            try {
+                User user = cart.getUser();
+                if (user.getEmail() == null || !Boolean.TRUE.equals(user.getIsEmailVerified())) {
+                    continue;
+                }
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("subscriberName", user.getFullName());
+                data.put("subject", "🛒 Hình như bạn quên gì đó trong giỏ hàng?");
+                data.put("featuredBookTitle", "Đừng bỏ lỡ các ưu đãi hời!");
+                data.put("featuredBookAuthor", "BookStore");
+                data.put("featuredBookDescription", "Chúng tôi thấy bạn vẫn còn sản phẩm trong giỏ hàng. Hãy hoàn tất đơn hàng ngay để nhận ưu đãi.");
+                data.put("promoCode", "COMEBACK10");
+                data.put("promoTitle", "🎁 Tặng bạn mã giảm giá 10%!");
+                data.put("promoDescription", "Sử dụng mã COMEBACK10 để giảm 10% cho đơn hàng của bạn.");
+                data.put("shopUrl", appBaseUrl + "/cart");
+
+                emailService.sendNewsletterEmail(user.getEmail(), data);
+
+                cart.setReminderSentAt(LocalDateTime.now());
+                cartRepository.save(cart);
+
+            } catch (Exception e) {
+                log.error("Failed to send cart reminder to user {}: {}", cart.getUser().getId(), e.getMessage());
+            }
+        }
+
+        log.info("Abandoned cart reminder job completed: {} reminders processed", abandonedCarts.size());
     }
 
     /**
-     * Gửi email chúc mừng sinh nhật (chạy hàng ngày)
+     * Gửi email chúc mừng sinh nhật lúc 8:00 sáng hàng ngày
      */
     @Scheduled(cron = "${app.birthday-email.cron:0 0 8 * * ?}")
+    @Transactional
     public void sendBirthdayEmails() {
         log.info("Starting birthday email job");
 
-        // TODO: Implement birthday email
-        // 1. Tìm người dùng có sinh nhật hôm nay
-        // 2. Gửi email chúc mừng với mã giảm giá đặc biệt
+        LocalDateTime now = LocalDateTime.now();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
 
-        log.info("Birthday email job completed");
+        List<User> birthdayUsers = userRepository.findByBirthday(month, day);
+
+        for (User user : birthdayUsers) {
+            try {
+                Map<String, Object> data = new HashMap<>();
+                data.put("subscriberName", user.getFullName());
+                data.put("subject", "🎂 Chúc mừng sinh nhật " + (user.getFirstName() != null ? user.getFirstName() : "") + "!");
+                data.put("featuredBookTitle", "Chúc mừng sinh nhật bạn!");
+                data.put("featuredBookAuthor", "BookStore Team");
+                data.put("featuredBookDescription", "Chúc bạn tuổi mới thật nhiều niềm vui, sức khỏe và có thêm nhiều trải nghiệm thú vị cùng những cuốn sách hay.");
+                data.put("promoCode", "HPBD20");
+                data.put("promoTitle", "🎁 Quà tặng sinh nhật dành riêng cho bạn!");
+                data.put("promoDescription", "Gửi tặng bạn mã giảm giá 20% cho tất cả đơn hàng trong ngày hôm nay.");
+
+                emailService.sendNewsletterEmail(user.getEmail(), data);
+            } catch (Exception e) {
+                log.error("Failed to send birthday email to {}: {}", user.getEmail(), e.getMessage());
+            }
+        }
+
+        log.info("Birthday email job completed: {} emails sent", birthdayUsers.size());
     }
 
     private int sendNewsletterToUsers(Map<String, Object> newsletterData) {
