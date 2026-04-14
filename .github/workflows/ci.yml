@@ -311,7 +311,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     needs: [backend-test, frontend-test, frontend-build, e2e-test, code-quality, security]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
     concurrency:
       group: ci-dockerhub-publish-backend-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
@@ -322,25 +322,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Resolve Docker Hub target
+        id: dockerhub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+        run: |
+          if [ -z "${DOCKERHUB_USERNAME}" ] || [ -z "${DOCKERHUB_TOKEN}" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "namespace=" >> "$GITHUB_OUTPUT"
+            echo "Docker Hub secrets are not configured. Skipping backend publish."
+            exit 0
+          fi
+
+          namespace="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_USERNAME}"
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "namespace=${namespace}" >> "$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
+        if: steps.dockerhub.outputs.enabled == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
+        if: steps.dockerhub.outputs.enabled == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata (backend Docker Hub)
+        if: steps.dockerhub.outputs.enabled == 'true'
         id: meta-dockerhub-backend
         uses: docker/metadata-action@v5
         with:
-          images: docker.io/${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME }}/ecommerce-bookstore-backend
+          images: docker.io/${{ steps.dockerhub.outputs.namespace }}/ecommerce-bookstore-backend
           tags: |
             type=ref,event=branch
             type=sha,prefix=
 
       - name: Build and push backend Docker Hub image
+        if: steps.dockerhub.outputs.enabled == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -357,7 +379,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     needs: [backend-test, frontend-test, frontend-build, e2e-test, code-quality, security]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
     concurrency:
       group: ci-dockerhub-publish-frontend-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
@@ -368,25 +390,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Resolve Docker Hub target
+        id: dockerhub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+        run: |
+          if [ -z "${DOCKERHUB_USERNAME}" ] || [ -z "${DOCKERHUB_TOKEN}" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "namespace=" >> "$GITHUB_OUTPUT"
+            echo "Docker Hub secrets are not configured. Skipping frontend publish."
+            exit 0
+          fi
+
+          namespace="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_USERNAME}"
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "namespace=${namespace}" >> "$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
+        if: steps.dockerhub.outputs.enabled == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
+        if: steps.dockerhub.outputs.enabled == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata (frontend Docker Hub)
+        if: steps.dockerhub.outputs.enabled == 'true'
         id: meta-dockerhub-frontend
         uses: docker/metadata-action@v5
         with:
-          images: docker.io/${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME }}/ecommerce-bookstore-frontend
+          images: docker.io/${{ steps.dockerhub.outputs.namespace }}/ecommerce-bookstore-frontend
           tags: |
             type=ref,event=branch
             type=sha,prefix=
 
       - name: Build and push frontend Docker Hub image
+        if: steps.dockerhub.outputs.enabled == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
