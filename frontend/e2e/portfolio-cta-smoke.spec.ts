@@ -100,9 +100,9 @@ async function login(page: Page) {
       expect(loginResponse.ok()).toBeTruthy();
     }
 
-    const payload = (await loginResponse.json().catch(() => null)) as
-      | { retryAfter?: number }
-      | null;
+    const payload = (await loginResponse.json().catch(() => null)) as {
+      retryAfter?: number;
+    } | null;
     const retryAfterSeconds = Math.max(payload?.retryAfter ?? 3, 1);
     await page.waitForTimeout((retryAfterSeconds + 1) * 1000);
   }
@@ -144,7 +144,9 @@ test.describe("Portfolio CTA smoke", () => {
     const productLink = targetCard.locator('a[href^="/products/"]').first();
     const productPath = await productLink.getAttribute("href");
     if (!productPath) {
-      throw new Error("Unable to resolve a product path from the product grid.");
+      throw new Error(
+        "Unable to resolve a product path from the product grid.",
+      );
     }
 
     await Promise.all([
@@ -162,7 +164,9 @@ test.describe("Portfolio CTA smoke", () => {
     const firstCard = await getFirstProductCard(page);
 
     await firstCard.hover();
-    await expect(firstCard.getByTestId("product-card-add-to-cart")).toBeVisible();
+    await expect(
+      firstCard.getByTestId("product-card-add-to-cart"),
+    ).toBeVisible();
 
     await Promise.all([
       page.waitForURL(/\/login\?redirect=%2Fproducts$/),
@@ -224,13 +228,20 @@ test.describe("Portfolio CTA smoke", () => {
     await expectImageLoaded(page.locator("main img").first());
 
     await page.getByTestId("product-detail-add-to-cart").click();
-    await expect(page.getByText(/đã thêm|added/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/đã thêm|added/i)).toBeVisible({
+      timeout: 15000,
+    });
 
     await page.goto("/cart", { waitUntil: "networkidle" });
     await expect(
-      page.locator("main").getByRole("link", { name: productName, exact: true }).first(),
+      page
+        .locator("main")
+        .getByRole("link", { name: productName, exact: true })
+        .first(),
     ).toBeVisible();
-    await expect(page.locator("main").getByText(salePriceText, { exact: false }).first()).toBeVisible();
+    await expect(
+      page.locator("main").getByText(salePriceText, { exact: false }).first(),
+    ).toBeVisible();
     await expectImageLoaded(page.locator("main img").first());
 
     await page.getByRole("button", { name: /thanh toán|checkout/i }).click();
@@ -267,24 +278,46 @@ test.describe("Portfolio CTA smoke", () => {
     const successSummary = await page.locator("#main-content").innerText();
     const orderNumber = successSummary.match(/ORD\d+/)?.[0];
     if (!orderNumber) {
-      throw new Error("Unable to extract the created order number from checkout success.");
+      throw new Error(
+        "Unable to extract the created order number from checkout success.",
+      );
     }
 
-    await page.getByRole("button", { name: /xem đơn hàng|view orders/i }).click();
+    await page
+      .getByRole("button", { name: /xem đơn hàng|view orders/i })
+      .click();
     await expect(page).toHaveURL(/\/orders$/);
-    await expect(page.locator("#main-content").getByText(orderNumber, { exact: false })).toBeVisible();
-    await page.getByRole("link", { name: /chi tiết|details/i }).first().click();
+    await expect(
+      page.locator("#main-content").getByText(orderNumber, { exact: false }),
+    ).toBeVisible();
+    await page
+      .getByRole("link", { name: /chi tiết|details/i })
+      .first()
+      .click();
 
     await expect(page).toHaveURL(/\/orders\/\d+$/);
-    await expect(page.locator("#main-content").getByText(orderNumber, { exact: false })).toBeVisible();
     await expect(
-      page.locator("#main-content").getByText(productName, { exact: false }).first(),
+      page.locator("#main-content").getByText(orderNumber, { exact: false }),
     ).toBeVisible();
-    await expect(page.locator("#main-content").getByText(salePriceText, { exact: false }).first()).toBeVisible();
+    await expect(
+      page
+        .locator("#main-content")
+        .getByText(productName, { exact: false })
+        .first(),
+    ).toBeVisible();
+    await expect(
+      page
+        .locator("#main-content")
+        .getByText(salePriceText, { exact: false })
+        .first(),
+    ).toBeVisible();
     await expectImageLoaded(page.locator("#main-content img").first());
   });
 
-  test("share, newsletter, and chatbot interactions are real", async ({ page }) => {
+  test("share, newsletter, and chatbot interactions are real", async ({
+    page,
+  }) => {
+    test.slow();
     await installBrowserActionSpies(page);
 
     const firstCard = await getFirstProductCard(page);
@@ -325,6 +358,8 @@ test.describe("Portfolio CTA smoke", () => {
     await expect(page).toHaveURL(/\/$/);
 
     await page.getByTestId("chatbot-launcher").click();
-    await expect(page.getByTestId("chatbot-status-badge")).toContainText(/grok/i);
+    await expect(page.getByTestId("chatbot-status-badge")).toContainText(
+      /grok/i,
+    );
   });
 });
