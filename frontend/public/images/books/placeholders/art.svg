@@ -11,6 +11,6 @@
   <circle cx="260" cy="320" r="18" fill="#fde68a"/>
   <circle cx="338" cy="284" r="18" fill="#bfdbfe"/>
   <circle cx="358" cy="360" r="18" fill="#bbf7d0"/>
-  <text x="300" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#fdf2f8">Art & Design</text>
+  <text x="300" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#fdf2f8">Art &amp; Design</text>
   <text x="300" y="636" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="rgba(253,242,248,0.9)">Creative Shelf</text>
 </svg>

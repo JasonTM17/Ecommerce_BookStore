@@ -15,6 +15,7 @@ export function ProductImage({
   ...props
 }: ProductImageProps) {
   const [currentSrc, setCurrentSrc] = useState(src || fallbackSrc);
+  const isSvgSource = currentSrc?.toLowerCase().endsWith(".svg");
 
   useEffect(() => {
     setCurrentSrc(src || fallbackSrc);
@@ -25,6 +26,7 @@ export function ProductImage({
       {...props}
       src={currentSrc}
       alt={alt}
+      unoptimized={isSvgSource || undefined}
       onError={() => {
         if (currentSrc !== fallbackSrc) {
           setCurrentSrc(fallbackSrc);
