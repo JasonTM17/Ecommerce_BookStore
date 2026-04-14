@@ -1,63 +1,101 @@
 # Hướng dẫn Deploy lên Render.com
 
-Tài liệu này hướng dẫn cách triển khai hệ thống Ecommerce BookStore (từ Frontend đến Backend và Database) lên **Render.com** thông qua file Infrastructure as Code (IaC) Blueprint và GitHub Actions.
+Tài liệu này hướng dẫn cách triển khai Ecommerce BookStore lên **Render.com** bằng Blueprint `render.yaml` và pipeline GitHub Actions hiện tại.
 
-## Yêu cầu chuẩn bị
+## Điều kiện cần
 
-1. Một tài khoản [GitHub](https://github.com) chứa mã nguồn (repository) này.
-2. Một tài khoản tại [Render.com](https://render.com).
+1. Một repository GitHub chứa mã nguồn này.
+2. Một tài khoản [Render](https://render.com/).
+3. Quyền cấu hình secrets trong GitHub Actions nếu bạn muốn dùng deploy hooks.
 
-## Kiến trúc trên Render
+## Kiến trúc triển khai trên Render
 
-Vì Render hỗ trợ PostgreSQL bản địa (native), quá trình triển khai sẽ sử dụng profile Spring Boot chuyên biệt tên là `render` để tự động chuyển Backend từ MySQL sang PostgreSQL.
+Blueprint hiện tại tạo 3 resource:
 
-Hạ tầng bao gồm 3 dịch vụ:
-1. **Cơ sở dữ liệu PostgreSQL** (Render native, Free Tier)
-2. **Backend API** (Dockerized Spring Boot, Free Tier web service)
-3. **Frontend Web** (Dockerized Next.js, Free Tier web service)
+1. **PostgreSQL database**: `bookstore-db`
+2. **Backend API**: `bookstore-api`
+3. **Frontend Web**: `bookstore-web`
 
----
+Backend production trên Render chạy với profile `render` và dùng **PostgreSQL** qua bộ biến tách riêng:
 
-## Bước 1: Khởi tạo Hạ tầng bằng Blueprint
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USERNAME`
+- `DB_PASSWORD`
 
-Bạn không cần phải tạo từng dịch vụ thủ công. Chúng ta sử dụng file Blueprint `render.yaml` ở thư mục gốc của repo để tự động khởi tạo mọi thứ.
+> Lưu ý quan trọng: line hiện tại **không** dùng `DATABASE_URL` để tự dựng `SPRING_DATASOURCE_URL`. Đây là thay đổi chủ đích để tránh lỗi JDBC URL không hợp lệ trên Render.
 
-1. Đăng nhập vào [Render Dashboard](https://dashboard.render.com/).
-2. Bấm nút **New +** ở góc trên cùng bên phải và chọn **Blueprint**.
-3. Kết nối với tài khoản GitHub của bạn và chọn repository `Ecommerce_BookStore`.
-4. Render sẽ tự động nhận diện file `render.yaml`.
+## Bước 1: Khởi tạo hạ tầng bằng Blueprint
+
+1. Đăng nhập [Render Dashboard](https://dashboard.render.com/).
+2. Chọn **New +** -> **Blueprint**.
+3. Kết nối repository `Ecommerce_BookStore`.
+4. Xác nhận Render nhận diện file `render.yaml`.
 5. Bấm **Apply Blueprint**.
 
-Lúc này, Render sẽ thiết lập database PostgreSQL, sau đó bắt đầu build và deploy cả hai container Docker cho backend và frontend.
+Sau bước này, Render sẽ tự tạo database, backend và frontend theo đúng file hạ tầng trong repo.
 
----
+## Bước 2: Thiết lập deploy hooks cho GitHub Actions
 
-## Bước 2: Thiết lập Deploy Tự động (Deploy Hooks)
+Nếu muốn GitHub Actions tự kích hoạt redeploy sau khi push lên `master`, cấu hình như sau:
 
-Để GitHub Actions tự động kích hoạt tiến trình deploy trên Render mỗi khi có code mới được đẩy (push) lên nhánh `master`, chúng ta cần cấu hình Deploy Hooks của Render vào GitHub Secrets.
+1. Mở service `bookstore-api` trên Render.
+2. Copy URL trong phần **Deploy Hook**.
+3. Vào GitHub repository -> **Settings** -> **Secrets and variables** -> **Actions**.
+4. Tạo secret:
+   - `RENDER_DEPLOY_HOOK_BACKEND`
+5. Lặp lại với service `bookstore-web`:
+   - `RENDER_DEPLOY_HOOK_FRONTEND`
 
-1. Trên **Render Dashboard**, mở cài đặt (settings) của dịch vụ **Backend** (`bookstore-api`).
-2. Cuộn xuống phần **Deploy Hook** và sao chép (copy) đoạn URL này.
-3. Chuyển sang **GitHub Repository** -> **Settings** -> **Secrets and variables** -> **Actions**.
-4. Tạo một secret mới:
-   - **Name:** `RENDER_DEPLOY_HOOK_BACKEND`
-   - **Secret:** *(Dán đoạn URL Deploy Hook của Backend vào đây)*
-5. Lặp lại bước 1-4 cho dịch vụ **Frontend** (`bookstore-web`):
-   - **Name:** `RENDER_DEPLOY_HOOK_FRONTEND`
-   - **Secret:** *(Dán đoạn URL Deploy Hook của Frontend vào đây)*
+Nếu có môi trường staging theo nhánh `develop`, có thể cấu hình thêm:
 
-*(Tùy chọn)* Nếu bạn có môi trường staging trên nhánh `develop`, bạn cũng có thể cấu hình `RENDER_DEPLOY_HOOK_BACKEND_STAGING` và `RENDER_DEPLOY_HOOK_FRONTEND_STAGING`.
+- `RENDER_DEPLOY_HOOK_BACKEND_STAGING`
+- `RENDER_DEPLOY_HOOK_FRONTEND_STAGING`
 
----
+> Nếu deploy hook từng bị lộ, hãy **rotate hook** trên Render và cập nhật lại GitHub secrets.
 
-## Kiểm tra (Verification)
+## Bước 3: Kiểm tra cấu hình backend Render
 
-Sau khi Blueprint hoàn tất việc deploy lần đầu và pipeline CI/CD chạy thành công trên nhánh `master`, bạn có thể xác nhận hệ thống đã hoạt động:
+Trên service `bookstore-api`, hãy xác nhận:
 
-1. **Frontend:** Truy cập `https://bookstore-web.onrender.com`. Giao diện website sẽ xuất hiện.
-2. **Backend Health Check:** Truy cập `https://bookstore-api.onrender.com/api/actuator/health/liveness`. Hệ thống cần trả về chuỗi `{"status":"UP"}`.
+- `SPRING_PROFILES_ACTIVE=render`
+- Health check path là `/api/actuator/health/liveness`
+- Service đang build từ `Dockerfile.backend`
+- Database binding đang cấp đúng `DB_*` env vars từ `bookstore-db`
 
-> **Lưu ý về gói Free (Miễn phí) của Render:**
-> - Các web service sẽ tự động "ngủ" (spin down) sau 15 phút không có tương tác. Khi bạn vào lại trang web sau thời gian này, có thể gặp tình trạng "cold start" (mất khoảng 50 giây để hệ thống thức dậy).
-> - Tính năng lưu trữ dữ liệu cho PostgreSQL bản miễn phí chỉ được 90 ngày.
-> - Nếu bạn muốn ứng dụng hoạt động 24/7 không độ trễ, hãy cân nhắc nâng cấp lên gói **Starter** ($7/tháng/dịch vụ).
+Không nên tự thêm lại `DATABASE_URL` nếu line hiện tại đang dùng Blueprint mặc định.
+
+## Publish registry chuyên nghiệp
+
+GitHub Actions hiện publish image lên **GHCR** và **Docker Hub** bằng semver tags:
+
+- `latest`
+- `v1.0.0`
+- `v1`
+
+Những tag này dành cho artifact registry. Riêng lịch sử deploy trong Render Blueprint/source deploy vẫn sẽ hiển thị theo **commit hash**, đây là hành vi bình thường của Render khi deploy từ source.
+
+## Xác minh sau deploy
+
+Sau khi deploy xong, kiểm tra:
+
+1. **Backend health**
+   - `https://bookstore-api.onrender.com/api/actuator/health/liveness`
+   - Kỳ vọng: `{"status":"UP"}`
+2. **Frontend**
+   - `https://bookstore-web.onrender.com`
+   - Kỳ vọng: giao diện Next.js BookStore hiện tại tải lên đúng
+3. **Proxy API**
+   - Frontend phải gọi backend qua `/api` ổn định
+4. **Smoke các route chính**
+   - `/products`
+   - `/products/[id]`
+   - `/flash-sale`
+   - `/checkout`
+
+## Ghi chú về free tier của Render
+
+- Service có thể sleep khi không có truy cập trong một thời gian, nên request đầu tiên có thể chậm.
+- Sau khi backend vừa boot lại, dữ liệu demo có thể được top-up nền trong vài giây tiếp theo.
+- Nếu cần trải nghiệm luôn sẵn sàng cho demo, nên cân nhắc nâng gói hoặc giữ traffic warm-up định kỳ.

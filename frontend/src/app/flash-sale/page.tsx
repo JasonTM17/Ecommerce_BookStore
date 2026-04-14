@@ -6,6 +6,7 @@ import { CalendarClock, Flame, Sparkles, Zap } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { FlashSaleCard } from "@/components/flashsale/FlashSaleCard";
+import { ApiStatusCard } from "@/components/ui/api-status-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -38,6 +39,11 @@ const COPY = {
     stockLabel: "Số lượng",
     previewProduct: "Xem trước sản phẩm",
     upcomingEmpty: "Chưa có campaign sắp tới nào được lên lịch.",
+    errorTitle: "Flash sale đang tạm thời chưa tải được",
+    errorDescription:
+      "Backend có thể đang khởi động lại hoặc kết nối tạm thời gián đoạn. Vui lòng thử lại sau ít phút.",
+    retry: "Tải lại flash sale",
+    browseCatalog: "Xem danh sách sách",
   },
   en: {
     heroBadge: "Time-limited offers synced from the live API",
@@ -65,6 +71,11 @@ const COPY = {
     stockLabel: "Stock",
     previewProduct: "Preview product",
     upcomingEmpty: "No upcoming campaign has been scheduled yet.",
+    errorTitle: "Flash sale is temporarily unavailable",
+    errorDescription:
+      "The backend may still be starting up or the connection is temporarily interrupted. Please try again in a moment.",
+    retry: "Reload flash sale",
+    browseCatalog: "Browse books",
   },
 } as const;
 
@@ -89,19 +100,31 @@ function formatMoney(value: number, locale: "vi" | "en") {
 export default function FlashSalePage() {
   const { locale } = useLanguage();
   const copy = COPY[locale];
-  const { data: activeSales = [], isLoading: activeLoading } = useQuery({
+  const {
+    data: activeSales = [],
+    isLoading: activeLoading,
+    isError: activeError,
+    refetch: refetchActiveSales,
+  } = useQuery({
     queryKey: ["flash-sale-page", "active"],
+    retry: false,
     queryFn: flashSaleApi.getActiveFlashSales,
   });
 
-  const { data: upcomingSales = [], isLoading: upcomingLoading } = useQuery({
+  const {
+    data: upcomingSales = [],
+    isLoading: upcomingLoading,
+    isError: upcomingError,
+    refetch: refetchUpcomingSales,
+  } = useQuery({
     queryKey: ["flash-sale-page", "upcoming"],
+    retry: false,
     queryFn: flashSaleApi.getUpcomingFlashSales,
   });
 
   const isLoading = activeLoading || upcomingLoading;
-  const isEmpty =
-    !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
+  const isError = activeError || upcomingError;
+  const isEmpty = !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-red-50 via-white to-white">
@@ -141,7 +164,19 @@ export default function FlashSalePage() {
         </section>
 
         <div className="container mx-auto px-4 py-10">
-          {isLoading ? (
+          {isError ? (
+            <ApiStatusCard
+              title={copy.errorTitle}
+              description={copy.errorDescription}
+              retryLabel={copy.retry}
+              onRetry={() => {
+                void refetchActiveSales();
+                void refetchUpcomingSales();
+              }}
+              primaryHref="/products"
+              primaryLabel={copy.browseCatalog}
+            />
+          ) : isLoading ? (
             <div className="space-y-10">
               <div className="space-y-4">
                 <Skeleton className="h-8 w-60" />

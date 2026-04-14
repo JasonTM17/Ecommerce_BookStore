@@ -1,63 +1,101 @@
 # Render.com Deployment Guide
 
-This guide explains how to deploy the full-stack Ecommerce BookStore application to **Render.com** using the provided Infrastructure as Code (IaC) Blueprint and GitHub Actions.
+This guide explains how to deploy Ecommerce BookStore to **Render.com** with the repository Blueprint (`render.yaml`) and the current GitHub Actions pipeline.
 
 ## Prerequisites
 
-1. A [GitHub](https://github.com) account hosting this repository.
-2. A [Render.com](https://render.com) account.
+1. A GitHub repository containing this project.
+2. A [Render](https://render.com/) account.
+3. Permission to manage GitHub Actions secrets if you want automated deploy hooks.
 
-## Architecture on Render
+## Render deployment layout
 
-Because Render natively supports PostgreSQL, the deployment utilizes a specialized Spring Boot profile (`render`) that automatically switches the backend from MySQL to PostgreSQL. 
+The current Blueprint provisions three resources:
 
-The infrastructure consists of 3 services:
-1. **PostgreSQL Database** (Render native, Free Tier)
-2. **Backend API** (Dockerized Spring Boot, Free Tier web service)
-3. **Frontend Web** (Dockerized Next.js, Free Tier web service)
+1. **PostgreSQL database**: `bookstore-db`
+2. **Backend API**: `bookstore-api`
+3. **Frontend web**: `bookstore-web`
 
----
+The backend runs with the `render` Spring profile and uses **split database variables** supplied by the Render PostgreSQL binding:
 
-## Step 1: Provisioning Infrastructure via Blueprint
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USERNAME`
+- `DB_PASSWORD`
 
-You don't need to create services manually. We use the `render.yaml` Blueprint file located at the root of the repository to provision everything automatically.
+> Important: the current production line does **not** derive `SPRING_DATASOURCE_URL` from `DATABASE_URL`. That conversion path was intentionally removed because PostgreSQL JDBC does not accept the URI format Render exposes there.
 
-1. Log in to your [Render Dashboard](https://dashboard.render.com/).
-2. Click the **New +** button in the top right corner and select **Blueprint**.
-3. Connect your GitHub account and select the `Ecommerce_BookStore` repository.
-4. Render will automatically detect the `render.yaml` file.
+## Step 1: Provision infrastructure with the Blueprint
+
+1. Open the [Render Dashboard](https://dashboard.render.com/).
+2. Click **New +** -> **Blueprint**.
+3. Connect the `Ecommerce_BookStore` repository.
+4. Confirm that Render detects `render.yaml`.
 5. Click **Apply Blueprint**.
 
-Render will now provision the PostgreSQL database and begin building and deploying both the backend and frontend Docker containers.
+Render will create the PostgreSQL database and start building both Docker services from source.
 
----
+## Step 2: Configure deploy hooks for GitHub Actions
 
-## Step 2: Setting up Continuous Deployment (Deploy Hooks)
+If you want GitHub Actions to trigger redeploys on pushes to `master`:
 
-To make GitHub Actions automatically trigger a deployment on Render whenever code is pushed to the `master` branch, we need to bind Render's Deploy Hooks to GitHub Secrets.
+1. Open the `bookstore-api` service in Render.
+2. Copy the URL from the **Deploy Hook** section.
+3. In GitHub, open **Settings** -> **Secrets and variables** -> **Actions**.
+4. Add a repository secret:
+   - `RENDER_DEPLOY_HOOK_BACKEND`
+5. Repeat the process for `bookstore-web`:
+   - `RENDER_DEPLOY_HOOK_FRONTEND`
 
-1. On the **Render Dashboard**, go to the settings of your newly created **Backend** service (`bookstore-api`).
-2. Scroll down to the **Deploy Hook** section and copy the unique URL.
-3. Go to your **GitHub Repository** -> **Settings** -> **Secrets and variables** -> **Actions**.
-4. Create a new repository secret:
-   - **Name:** `RENDER_DEPLOY_HOOK_BACKEND`
-   - **Secret:** *(Paste the Backend Deploy Hook URL)*
-5. Repeat steps 1-4 for the **Frontend** service (`bookstore-web`):
-   - **Name:** `RENDER_DEPLOY_HOOK_FRONTEND`
-   - **Secret:** *(Paste the Frontend Deploy Hook URL)*
+Optional staging secrets for `develop`:
 
-*(Optional)* If you have a staging environment on a `develop` branch, you can also set up `RENDER_DEPLOY_HOOK_BACKEND_STAGING` and `RENDER_DEPLOY_HOOK_FRONTEND_STAGING`.
+- `RENDER_DEPLOY_HOOK_BACKEND_STAGING`
+- `RENDER_DEPLOY_HOOK_FRONTEND_STAGING`
 
----
+> If a deploy hook was ever exposed, rotate it in Render and replace the corresponding GitHub secret.
 
-## Verification
+## Step 3: Validate backend configuration on Render
 
-Once the Blueprint finishes deploying, and next time the CI/CD pipeline runs on the `master` branch, you can verify your deployment:
+For `bookstore-api`, confirm the following:
 
-1. **Frontend:** Visit `https://bookstore-web.onrender.com`. The UI should load.
-2. **Backend Health Check:** Visit `https://bookstore-api.onrender.com/api/actuator/health/liveness`. It should return `{"status":"UP"}`.
+- `SPRING_PROFILES_ACTIVE=render`
+- Health check path: `/api/actuator/health/liveness`
+- Build source: `Dockerfile.backend`
+- Database binding provides the `DB_*` variables from `bookstore-db`
 
-> **Note on Render Free Tier Limits:**
-> - Web services spin down after 15 minutes of inactivity. Accessing the site after a period of inactivity may experience a "cold start" delay of up to 50 seconds.
-> - The free PostgreSQL database keeps data for 90 days.
-> - If you require an "always-on" experience and persistent data, consider upgrading the services to the **Starter** tier ($7/month per service).
+Do not manually reintroduce `DATABASE_URL` as the primary datasource input for this production line.
+
+## Professional image tags
+
+GitHub Actions now publishes images to **GHCR** and **Docker Hub** with semver-first tags:
+
+- `latest`
+- `v1.0.0`
+- `v1`
+
+These tags are intended for registry artifacts. Render Blueprint/source deploy history will still display **commit hashes**, which is expected behavior for source-based deployments.
+
+## Post-deploy verification
+
+After deployment completes, verify:
+
+1. **Backend liveness**
+   - `https://bookstore-api.onrender.com/api/actuator/health/liveness`
+   - Expected response: `{"status":"UP"}`
+2. **Frontend root**
+   - `https://bookstore-web.onrender.com`
+   - Expected result: the current Next.js BookStore portfolio UI
+3. **API proxy**
+   - Frontend requests through `/api` should resolve against the backend
+4. **Smoke key routes**
+   - `/products`
+   - `/products/[id]`
+   - `/flash-sale`
+   - `/checkout`
+
+## Notes on the Render free tier
+
+- Free web services can spin down after inactivity, so the first request may be slow.
+- Demo data may continue topping up briefly after the backend becomes healthy.
+- For a permanently warm portfolio environment, consider upgrading from the free tier or using periodic warm-up traffic.

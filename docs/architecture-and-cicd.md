@@ -1,104 +1,112 @@
 # System Architecture & CI/CD Pipeline
 
-This document provides a technical overview of the Ecommerce BookStore's architecture and automated workflows.
+This document summarizes the current technical architecture of Ecommerce BookStore and the delivery pipeline that protects the production line.
 
 ---
 
-## System Architecture
+## System architecture
 
-The application follows a **Micro-monolith** architecture pattern, explicitly separating the frontend client presentation from the backend core logic via RESTful APIs, while keeping the backend manageable as a single scalable unit.
+The application follows a **micro-monolith** model:
 
-### High-Level Components
+- **Frontend**: Next.js 14 App Router
+- **Backend**: Spring Boot 3.x REST API
+- **Database**: MySQL for local/E2E, PostgreSQL for Render production
+- **Runtime proxy**: frontend reaches backend through `/api`
+
+### High-level view
 
 ```mermaid
 graph TD
     Client[Web Browser / Mobile Client] -->|HTTP / REST| Frontend
     Client -->|HTTP / REST| Backend
-    
+
     subgraph Frontend Subsystem
         Frontend[Next.js App Router]
         Tailwind[Tailwind CSS]
         Zustand[State Management]
     end
-    
+
     subgraph Backend Subsystem
         Backend[Spring Boot REST API]
         Security[Spring Security / JWT]
         JPA[Hibernate / Spring Data JPA]
         Actuator[Spring Actuator Monitoring]
     end
-    
-    Backend -->|JDBC| DB[(Database: MySQL / PostgreSQL)]
-    
+
+    Backend -->|JDBC| DB[(MySQL / PostgreSQL)]
     Frontend -.->|API Proxying| Backend
 ```
 
-### Component Details
+### Notes
 
-1. **Frontend (Next.js 14 App Router)**
-   - Responsible for rendering UI components, SEO optimization (via SSR/SSG algorithms), and user interactions.
-   - Utilizes `next.config.js` to proxy certain `/api/...` calls directly to the Backend, bypassing CORS issues and treating the Backend as a cohesive extension of the site.
-   
-2. **Backend (Spring Boot 3.x)**
-   - Handles strict business logic including Authentication (Stateless JWT), Cart Management, Order Processing, and robust Marketing Automation features (Flash Sales, Cart reminders).
-   - Rate limiting is strictly enforced using Bucket4j to prevent brute-force and DDoS attacks.
-   
-3. **Database Layer**
-   - **Local / Development Workflow:** Defaults to **MySQL 8**. Setup effortlessly via the local `docker-compose.yml`.
-   - **Production (Render.com) Workflow:** Swaps dynamically to **PostgreSQL**. Made completely seamless by Hibernate's JPA translation layer.
+1. **Frontend**
+   - Handles presentation, navigation, SEO, and client-side state.
+   - Proxies `/api` requests to the backend so local, Docker, and production stay aligned.
+2. **Backend**
+   - Owns authentication, cart, checkout, flash sale, chatbot, and core business logic.
+   - Uses Spring Data JPA/Hibernate as the main ORM layer.
+3. **Database**
+   - MySQL is the default choice for local development and CI backend test lanes.
+   - PostgreSQL is used for the Render production profile.
 
 ---
 
-## CI/CD Pipeline
+## CI/CD pipeline
 
-The project ensures high reliability through a rigorous Continuous Integration and Continuous Deployment pipeline configured via **GitHub Actions** (`.github/workflows/ci.yml`).
+The primary workflow lives in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
-### CI/CD Workflow Diagram
+### Workflow shape
 
 ```mermaid
 stateDiagram-v2
-    [*] --> PushCode: Developer commits to develop/master branch
-    
-    state "Parallel Quality Gates" as Gates {
-        BackendTest: Unit & Integration Tests (Maven)
-        FrontendTest: Component Tests (Vitest)
-        CodeQuality: Linter & Formatters
-        SecurityScan: Trivy Vulnerability Scan
+    [*] --> PushCode: Push to master or develop
+
+    state "Quality Gates" as Gates {
+        BackendTest: Backend tests
+        FrontendTest: Frontend tests
+        FrontendBuild: Frontend build
+        CodeQuality: Lint + format ratchet
+        SecurityScan: Trivy scan
     }
-    
+
     PushCode --> Gates
-    
-    Gates --> BuildFrontend: Frontend Application Build
-    BuildFrontend --> E2ETest
-    
-    state "End-to-End Validation" as E2E {
-        E2ETest: Playwright Smoke Tests (Docker Compose Stack)
+    Gates --> E2E
+
+    state "End-to-End" as E2E {
+        Playwright: Docker-first smoke tests
     }
-    
-    E2ETest --> Release
-    
-    state "Release & Deploy (GHCR & Render)" as ReleaseStage {
-        Release: Build Docker Images & Push to GHCR
-        Deploy: Trigger Render.com Webhooks
+
+    E2E --> Publish
+
+    state "Publish & Deploy" as Publish {
+        GHCR: Publish images to GHCR
+        DockerHub: Publish images to Docker Hub
+        Render: Trigger Render deploy hooks
     }
-    
-    ReleaseStage --> [*]: Success & Live
+
+    Publish --> [*]
 ```
 
-### Pipeline Stages
+### Key lanes
 
-1. **Code Quality and Testing (`backend-test`, `frontend-test`, `code-quality`)**
-   - Java code is verified with unit and mocked integration tests.
-   - Frontend is verified with Vitest.
-   - ESLint and Prettier check the codebase for style consistency.
-2. **Security (`security`)**
-   - Utilizing **Trivy** to scan the repository for exposed vulnerabilities or compromised dependencies.
-3. **E2E Testing (`e2e-test`)**
-   - Starts the entire stack (MySQL, Backend, Frontend) via a specialized profile (`docker-compose.e2e.yml`).
-   - Runs UI-driven **Playwright** smoke tests simulating real customer checkout paths.
-4. **Publish (`docker-publish-backend`, `docker-publish-frontend`)**
-   - Only executed if the branch is `develop` or `master`.
-   - Dockerizes the frontend and backend architectures and pushes images directly to the GitHub Container Registry (GHCR).
-5. **Deploy (`deploy-staging`, `deploy-production`)**
-   - Automatically issues `curl` requests to Render's Deploy Hook endpoints securely stored in GitHub Actions secrets.
-   - Render seamlessly triggers an environment rebuild.
+1. **Backend Test**
+   - Runs Maven tests against MySQL 8 in GitHub Actions.
+   - Enforces a minimum backend line coverage threshold.
+2. **Frontend Test / Build**
+   - Runs Vitest, coverage, lint, and the Next.js production build.
+3. **E2E**
+   - Uses Playwright against the Docker stack for portfolio-critical smoke coverage.
+4. **Registry publish**
+   - Publishes images to GHCR and Docker Hub.
+   - Public tags follow semver-first naming:
+     - `latest`
+     - `v1.0.0`
+     - `v1`
+5. **Render deploy**
+   - Triggers Render deploy hooks after the required gates pass.
+
+### Operational notes
+
+- Render currently uses **Blueprint/source deploy**, so Render's deploy history naturally displays **commit hashes** rather than release tags.
+- Semver tags apply to registry artifacts, not to the Render event history UI.
+- In the `render` Spring profile, the backend datasource is built from `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, and `DB_PASSWORD`; it does not rely on a direct `DATABASE_URL` conversion path anymore.

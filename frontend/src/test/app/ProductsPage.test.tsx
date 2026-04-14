@@ -94,4 +94,13 @@ describe("ProductsPage", () => {
 
     expect(await screen.findByRole("heading", { name: "All products" })).toBeInTheDocument();
   });
+
+  it("shows a recovery state when product loading fails", async () => {
+    vi.mocked(api.get).mockRejectedValueOnce(new Error("backend unavailable"));
+
+    renderWithQueryClient(<ProductsPage />);
+
+    expect(await screen.findByText("Chưa thể tải danh sách sách")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Thử lại" })).toBeInTheDocument();
+  });
 });

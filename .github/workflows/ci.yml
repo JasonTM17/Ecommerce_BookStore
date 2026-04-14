@@ -235,15 +235,49 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Resolve backend image version
+        id: backend-version
+        run: |
+          version=$(awk '
+            /<artifactId>ecommerce-bookstore<\/artifactId>/ { capture=1; next }
+            capture && /<version>/ {
+              line = $0
+              sub(/^.*<version>/, "", line)
+              sub(/<\/version>.*$/, "", line)
+              print line
+              exit
+            }
+          ' backend/pom.xml)
+
+          if [ -z "${version}" ]; then
+            echo "Failed to resolve backend version from backend/pom.xml" >&2
+            exit 1
+          fi
+
+          major="${version%%.*}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "major=${major}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            if [ "${GITHUB_REF}" = "refs/heads/master" ]; then
+              echo "type=raw,value=latest"
+              echo "type=raw,value=v${version}"
+              echo "type=raw,value=v${major}"
+            else
+              echo "type=raw,value=develop"
+              echo "type=raw,value=develop-v${version}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Extract metadata (backend)
         id: meta-backend
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=sha,prefix=
+          tags: ${{ steps.backend-version.outputs.tags }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.backend-version.outputs.version }}
 
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v6
@@ -284,15 +318,45 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Resolve frontend image version
+        id: frontend-version
+        run: |
+          version=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          print(json.loads(Path("frontend/package.json").read_text(encoding="utf-8"))["version"])
+          PY
+          )
+
+          if [ -z "${version}" ]; then
+            echo "Failed to resolve frontend version from frontend/package.json" >&2
+            exit 1
+          fi
+
+          major="${version%%.*}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "major=${major}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            if [ "${GITHUB_REF}" = "refs/heads/master" ]; then
+              echo "type=raw,value=latest"
+              echo "type=raw,value=v${version}"
+              echo "type=raw,value=v${major}"
+            else
+              echo "type=raw,value=develop"
+              echo "type=raw,value=develop-v${version}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Extract metadata (frontend)
         id: meta-frontend
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=sha,prefix=
+          tags: ${{ steps.frontend-version.outputs.tags }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.frontend-version.outputs.version }}
 
       - name: Build and push frontend Docker image
         uses: docker/build-push-action@v6
@@ -351,15 +415,51 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Resolve backend Docker Hub version
+        if: steps.dockerhub.outputs.enabled == 'true'
+        id: dockerhub-backend-version
+        run: |
+          version=$(awk '
+            /<artifactId>ecommerce-bookstore<\/artifactId>/ { capture=1; next }
+            capture && /<version>/ {
+              line = $0
+              sub(/^.*<version>/, "", line)
+              sub(/<\/version>.*$/, "", line)
+              print line
+              exit
+            }
+          ' backend/pom.xml)
+
+          if [ -z "${version}" ]; then
+            echo "Failed to resolve backend version from backend/pom.xml" >&2
+            exit 1
+          fi
+
+          major="${version%%.*}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "major=${major}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            if [ "${GITHUB_REF}" = "refs/heads/master" ]; then
+              echo "type=raw,value=latest"
+              echo "type=raw,value=v${version}"
+              echo "type=raw,value=v${major}"
+            else
+              echo "type=raw,value=develop"
+              echo "type=raw,value=develop-v${version}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Extract metadata (backend Docker Hub)
         if: steps.dockerhub.outputs.enabled == 'true'
         id: meta-dockerhub-backend
         uses: docker/metadata-action@v5
         with:
           images: docker.io/${{ steps.dockerhub.outputs.namespace }}/ecommerce-bookstore-backend
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
+          tags: ${{ steps.dockerhub-backend-version.outputs.tags }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.dockerhub-backend-version.outputs.version }}
 
       - name: Build and push backend Docker Hub image
         if: steps.dockerhub.outputs.enabled == 'true'
@@ -419,15 +519,47 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Resolve frontend Docker Hub version
+        if: steps.dockerhub.outputs.enabled == 'true'
+        id: dockerhub-frontend-version
+        run: |
+          version=$(python - <<'PY'
+          import json
+          from pathlib import Path
+          print(json.loads(Path("frontend/package.json").read_text(encoding="utf-8"))["version"])
+          PY
+          )
+
+          if [ -z "${version}" ]; then
+            echo "Failed to resolve frontend version from frontend/package.json" >&2
+            exit 1
+          fi
+
+          major="${version%%.*}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "major=${major}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            if [ "${GITHUB_REF}" = "refs/heads/master" ]; then
+              echo "type=raw,value=latest"
+              echo "type=raw,value=v${version}"
+              echo "type=raw,value=v${major}"
+            else
+              echo "type=raw,value=develop"
+              echo "type=raw,value=develop-v${version}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Extract metadata (frontend Docker Hub)
         if: steps.dockerhub.outputs.enabled == 'true'
         id: meta-dockerhub-frontend
         uses: docker/metadata-action@v5
         with:
           images: docker.io/${{ steps.dockerhub.outputs.namespace }}/ecommerce-bookstore-frontend
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
+          tags: ${{ steps.dockerhub-frontend-version.outputs.tags }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.dockerhub-frontend-version.outputs.version }}
 
       - name: Build and push frontend Docker Hub image
         if: steps.dockerhub.outputs.enabled == 'true'

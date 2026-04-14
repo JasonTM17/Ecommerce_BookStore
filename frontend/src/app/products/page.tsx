@@ -7,6 +7,7 @@ import type { Product, Category, Brand } from "@/lib/types";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ProductCard } from "@/components/product-card";
+import { ApiStatusCard } from "@/components/ui/api-status-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +59,11 @@ const COPY = {
     noResultsTitle: "Không tìm thấy sản phẩm",
     noResultsDescription: "Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc",
     clearFilters: "Xóa bộ lọc",
+    errorTitle: "Chưa thể tải danh sách sách",
+    errorDescription:
+      "Hệ thống đang khởi động hoặc kết nối tạm thời gián đoạn. Vui lòng thử lại sau ít phút.",
+    retry: "Thử lại",
+    goHome: "Về trang chủ",
     featuredHeading: {
       title: "Sản phẩm nổi bật",
       description: "Tuyển chọn những cuốn sách đang được quan tâm nhiều nhất.",
@@ -99,6 +105,11 @@ const COPY = {
     noResultsTitle: "No products found",
     noResultsDescription: "Try changing the search keyword or filters",
     clearFilters: "Clear filters",
+    errorTitle: "Books are temporarily unavailable",
+    errorDescription:
+      "The backend is still starting up or the connection is temporarily interrupted. Please try again in a moment.",
+    retry: "Retry",
+    goHome: "Go home",
     featuredHeading: {
       title: "Featured products",
       description: "A curated selection of the books drawing the most attention.",
@@ -202,8 +213,14 @@ function ProductsContent() {
   const [gridSize, setGridSize] = useState<"2x2" | "3x3">("3x3");
   const [isFilterOpen, setIsFilterOpen] = useState(true);
 
-  const { data: productsData, isLoading: productsLoading } = useQuery<PageResponse<Product>>({
+  const {
+    data: productsData,
+    isLoading: productsLoading,
+    isError: productsError,
+    refetch: refetchProducts,
+  } = useQuery<PageResponse<Product>>({
     queryKey: ["products", collectionMode, searchKeyword, selectedCategory, selectedBrand, sortBy, currentPage, pageSize],
+    retry: false,
     queryFn: async () => {
       if (collectionMode) {
         const endpoint = collectionMode === "featured" ? "/products/featured" : "/products/new";
@@ -227,6 +244,7 @@ function ProductsContent() {
 
   const { data: categoriesList = [] } = useQuery<Category[]>({
     queryKey: ["categories"],
+    retry: false,
     queryFn: async () => {
       const response = await api.get("/categories");
       return normalizeList<Category>(response.data);
@@ -235,6 +253,7 @@ function ProductsContent() {
 
   const { data: brandsList = [] } = useQuery<Brand[]>({
     queryKey: ["brands"],
+    retry: false,
     queryFn: async () => {
       const response = await api.get("/brands");
       return normalizeList<Brand>(response.data);
@@ -282,7 +301,8 @@ function ProductsContent() {
             {collectionHeading.title}
           </h1>
           <p className="text-gray-500">
-            {collectionHeading.description} <span className="font-semibold text-blue-600">{totalElements}</span> {locale === "vi" ? "cuốn sách hay nhất" : "books"}
+            {collectionHeading.description} <span className="font-semibold text-blue-600">{totalElements}</span>{" "}
+            {locale === "vi" ? "cuốn sách chất lượng" : "books"}
           </p>
         </div>
 
@@ -401,7 +421,8 @@ function ProductsContent() {
           <div className="flex items-center gap-3">
             <div className={cn("h-3 w-3 rounded-full", !productsLoading && products.length > 0 ? "bg-green-500 animate-pulse" : "bg-gray-300")} />
             <p className="text-gray-600">
-              {copy.results} <span className="font-bold text-gray-900">{totalElements}</span> {locale === "vi" ? "sản phẩm" : "products"}
+              {copy.results} <span className="font-bold text-gray-900">{totalElements}</span>{" "}
+              {locale === "vi" ? "sản phẩm" : "products"}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -417,7 +438,16 @@ function ProductsContent() {
           </div>
         </div>
 
-        {productsLoading ? (
+        {productsError ? (
+          <ApiStatusCard
+            title={copy.errorTitle}
+            description={copy.errorDescription}
+            retryLabel={copy.retry}
+            onRetry={() => void refetchProducts()}
+            primaryHref="/"
+            primaryLabel={copy.goHome}
+          />
+        ) : productsLoading ? (
           <div className={gridSize === "3x3" ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"}>
             {Array.from({ length: pageSize }).map((_, i) => (
               <div key={i} className="overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -457,7 +487,7 @@ function ProductsContent() {
           </div>
         )}
 
-        {!productsLoading && products.length > 0 && totalPages > 1 && (
+        {!productsLoading && !productsError && products.length > 0 && totalPages > 1 && (
           <div className="mt-12 flex items-center justify-center gap-2">
             <Button variant="outline" onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0} className="h-10 rounded-xl px-4">
               {copy.previous}

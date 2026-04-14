@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Zap, Clock, ShoppingCart } from "lucide-react";
+import { Zap, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { flashSaleApi, FlashSale } from "@/lib/flashsale";
@@ -39,6 +39,7 @@ export function FlashSaleSection() {
   const copy = COPY[locale];
   const { data: activeSales = [] } = useQuery({
     queryKey: ["flash-sales-active"],
+    retry: false,
     queryFn: flashSaleApi.getActiveFlashSales,
   });
 
@@ -47,11 +48,11 @@ export function FlashSaleSection() {
   }
 
   return (
-    <section className="py-12 bg-gradient-to-b from-red-50 to-white">
+    <section className="bg-gradient-to-b from-red-50 to-white py-12">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/30">
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -71,7 +72,7 @@ export function FlashSaleSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {activeSales.slice(0, 8).map((sale) => (
             <FlashSaleCard key={sale.id} sale={sale} />
           ))}
@@ -107,33 +108,30 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
       href={buildFlashSaleHref(sale.product.id, sale.id)}
       data-testid="flash-sale-card"
       className={cn(
-        "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden",
-        "hover:shadow-xl hover:border-red-200 transition-all duration-300 group",
+        "overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm",
+        "group transition-all duration-300 hover:border-red-200 hover:shadow-xl"
       )}
     >
-      {/* Image */}
       <div className="relative aspect-[3/4] bg-gray-100">
         <ProductImage
           src={sale.product.imageUrl || undefined}
           fallbackSrc={getCategoryPlaceholderImage()}
           alt={sale.product.name}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Flash Sale Badge */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          <div className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-md flex items-center gap-1">
+        <div className="absolute left-3 top-3 flex flex-col gap-2">
+          <div className="flex items-center gap-1 rounded-md bg-red-500 px-2 py-1 text-xs font-bold text-white">
             <Zap className="h-3 w-3" />-{sale.discountPercent}%
           </div>
-          <div className="px-2 py-1 bg-white/95 text-red-600 text-[11px] font-semibold rounded-md shadow-sm">
+          <div className="rounded-md bg-white/95 px-2 py-1 text-[11px] font-semibold text-red-600 shadow-sm">
             {copy.dealBadge}
           </div>
         </div>
 
-        {/* Stock Progress */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-          <div className="flex items-center justify-between text-white text-xs mb-1">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+          <div className="mb-1 flex items-center justify-between text-xs text-white">
             <span>
               {copy.sold} {sale.soldCount}
             </span>
@@ -141,9 +139,9 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
               {copy.remaining} {sale.remainingStock}
             </span>
           </div>
-          <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
+          <div className="h-1.5 overflow-hidden rounded-full bg-white/30">
             <div
-              className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all"
               style={{
                 width: `${Math.min(100, (sale.soldCount / sale.stockLimit) * 100)}%`,
               }}
@@ -152,15 +150,13 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
         </div>
       </div>
 
-      {/* Info */}
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors mb-1">
+        <h3 className="mb-1 line-clamp-2 font-semibold text-gray-900 transition-colors group-hover:text-red-600">
           {sale.product.name}
         </h3>
-        <p className="text-sm text-gray-500 mb-2">{sale.product.author}</p>
+        <p className="mb-2 text-sm text-gray-500">{sale.product.author}</p>
 
-        {/* Price */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <span className="text-lg font-bold text-red-600">
             {formatPrice(sale.salePrice)}
           </span>
@@ -169,8 +165,7 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
           </span>
         </div>
 
-        {/* Countdown */}
-        <div className="flex items-center justify-center gap-1 p-2 bg-red-50 rounded-lg">
+        <div className="flex items-center justify-center gap-1 rounded-lg bg-red-50 p-2">
           <Clock className="h-4 w-4 text-red-500" />
           {mounted ? (
             <span className="text-sm font-semibold text-red-600">
