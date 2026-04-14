@@ -5,7 +5,7 @@
 
 Đây là một dự án thương mại điện tử hoàn chỉnh (Full-stack) được xây dựng dành cho Portfolio, tập trung vào tính chuyên nghiệp, hiệu năng cao và các tính năng tự động hóa Marketing hiện đại.
 
-## 🚀 Công nghệ Sử dụng
+## Công nghệ Sử dụng
 
 Dự án được xây dựng trên mô hình Micro-monolith hiện đại:
 
@@ -15,7 +15,7 @@ Dự án được xây dựng trên mô hình Micro-monolith hiện đại:
 - **Database & DevOps**: MySQL 8, Docker, Docker Compose, GitHub Actions (CI/CD).
 - **Security**: Bucket4j (Rate Limiting), JWT Stateless Auth, CSP Headers.
 
-## ✨ Tính năng Nổi bật
+## Tính năng Nổi bật
 
 ### 1. Tự động hóa Marketing (Marketing Automation)
 - **Email Chào mừng**: Tự động gửi email khi người dùng đăng ký mới.
@@ -33,7 +33,7 @@ Dự án được xây dựng trên mô hình Micro-monolith hiện đại:
 - Biểu đồ xu hướng doanh thu (Monthly Trend).
 - Quản lý kho hàng (Cảnh báo tồn kho thấp).
 
-## 🛠 Hướng dẫn Cài đặt
+## Hướng dẫn Cài đặt
 
 ### Yêu cầu Hệ thống
 - Docker & Docker Compose
@@ -55,15 +55,15 @@ Hệ thống sẽ khả dụng tại:
 - Backend API: `http://localhost:8080/api`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 
-## 🛡 Bảo mật & Độ tin cậy
+## Bảo mật & Độ tin cậy
 - **Rate Limiting**: Chống tấn công brute-force ở các điểm nhạy cảm (Login, Register, Chatbot).
 - **CI/CD**: Tự động chạy Unit Test, Integration Test (MySQL), E2E Test (Playwright) và Security Scan (Trivy) trên mỗi lần push.
 
-## 📚 Tài liệu chi tiết
+## Tài liệu chi tiết
 
 Vui lòng tham khảo thư mục `docs/` để biết thêm chi tiết về cấu trúc hệ thống:
-- [Kiến trúc Hệ thống & CI/CD Pipeline](./docs/architecture-and-cicd.md)
-- [Hướng dẫn Deploy lên Render.com (Production)](./docs/render-deployment-guide.md)
+- [Kiến trúc Hệ thống & CI/CD Pipeline](./docs/architecture-and-cicd-vn.md)
+- [Hướng dẫn Deploy lên Render.com (Production)](./docs/render-deployment-guide-vn.md)
 
 ---
 *Dự án được phát triển bởi **JasonTM17** cho mục đích Portfolio.*

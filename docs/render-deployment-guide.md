@@ -2,12 +2,12 @@
 
 This guide explains how to deploy the full-stack Ecommerce BookStore application to **Render.com** using the provided Infrastructure as Code (IaC) Blueprint and GitHub Actions.
 
-## 🛠 Prerequisites
+## Prerequisites
 
 1. A [GitHub](https://github.com) account hosting this repository.
 2. A [Render.com](https://render.com) account.
 
-## 🌐 Architecture on Render
+## Architecture on Render
 
 Because Render natively supports PostgreSQL, the deployment utilizes a specialized Spring Boot profile (`render`) that automatically switches the backend from MySQL to PostgreSQL. 
 
@@ -18,7 +18,7 @@ The infrastructure consists of 3 services:
 
 ---
 
-## 🚀 Step 1: Provisioning Infrastructure via Blueprint
+## Step 1: Provisioning Infrastructure via Blueprint
 
 You don't need to create services manually. We use the `render.yaml` Blueprint file located at the root of the repository to provision everything automatically.
 
@@ -32,7 +32,7 @@ Render will now provision the PostgreSQL database and begin building and deployi
 
 ---
 
-## 🔄 Step 2: Setting up Continuous Deployment (Deploy Hooks)
+## Step 2: Setting up Continuous Deployment (Deploy Hooks)
 
 To make GitHub Actions automatically trigger a deployment on Render whenever code is pushed to the `master` branch, we need to bind Render's Deploy Hooks to GitHub Secrets.
 
@@ -50,7 +50,7 @@ To make GitHub Actions automatically trigger a deployment on Render whenever cod
 
 ---
 
-## 🔍 Verification
+## Verification
 
 Once the Blueprint finishes deploying, and next time the CI/CD pipeline runs on the `master` branch, you can verify your deployment:
 

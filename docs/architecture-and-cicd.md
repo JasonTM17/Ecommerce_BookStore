@@ -4,7 +4,7 @@ This document provides a technical overview of the Ecommerce BookStore's archite
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 The application follows a **Micro-monolith** architecture pattern, explicitly separating the frontend client presentation from the backend core logic via RESTful APIs, while keeping the backend manageable as a single scalable unit.
 
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## ⚙️ CI/CD Pipeline
+## CI/CD Pipeline
 
 The project ensures high reliability through a rigorous Continuous Integration and Continuous Deployment pipeline configured via **GitHub Actions** (`.github/workflows/ci.yml`).
 
