@@ -11,7 +11,13 @@ import { ApiStatusCard } from "@/components/ui/api-status-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, SlidersHorizontal, Grid3X3, Grid2X2, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -112,7 +118,8 @@ const COPY = {
     goHome: "Go home",
     featuredHeading: {
       title: "Featured products",
-      description: "A curated selection of the books drawing the most attention.",
+      description:
+        "A curated selection of the books drawing the most attention.",
     },
     newHeading: {
       title: "New products",
@@ -127,7 +134,12 @@ const COPY = {
 
 function normalizeList<T>(data: unknown): T[] {
   if (Array.isArray(data)) return data as T[];
-  if (data && typeof data === "object" && "content" in data && Array.isArray((data as PageResponse<T>).content)) {
+  if (
+    data &&
+    typeof data === "object" &&
+    "content" in data &&
+    Array.isArray((data as PageResponse<T>).content)
+  ) {
     return (data as PageResponse<T>).content;
   }
   return [];
@@ -137,10 +149,14 @@ function sortProducts(products: Product[], sortBy: string): Product[] {
   const sorted = [...products];
   switch (sortBy) {
     case "price_asc":
-      sorted.sort((a, b) => (a.currentPrice || a.price) - (b.currentPrice || b.price));
+      sorted.sort(
+        (a, b) => (a.currentPrice || a.price) - (b.currentPrice || b.price),
+      );
       break;
     case "price_desc":
-      sorted.sort((a, b) => (b.currentPrice || b.price) - (a.currentPrice || a.price));
+      sorted.sort(
+        (a, b) => (b.currentPrice || b.price) - (a.currentPrice || a.price),
+      );
       break;
     case "name_asc":
       sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -156,9 +172,14 @@ function sortProducts(products: Product[], sortBy: string): Product[] {
   return sorted;
 }
 
-function paginateProducts(products: Product[], currentPage: number, pageSize: number): PageResponse<Product> {
+function paginateProducts(
+  products: Product[],
+  currentPage: number,
+  pageSize: number,
+): PageResponse<Product> {
   const totalElements = products.length;
-  const totalPages = totalElements === 0 ? 0 : Math.ceil(totalElements / pageSize);
+  const totalPages =
+    totalElements === 0 ? 0 : Math.ceil(totalElements / pageSize);
   const safePage = totalPages === 0 ? 0 : Math.min(currentPage, totalPages - 1);
   const start = safePage * pageSize;
   return {
@@ -175,7 +196,7 @@ function filterCollectionProducts(
   products: Product[],
   searchKeyword: string,
   selectedCategory: string,
-  selectedBrand: string
+  selectedBrand: string,
 ): Product[] {
   const normalizedKeyword = searchKeyword.trim().toLowerCase();
 
@@ -186,8 +207,12 @@ function filterCollectionProducts(
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(normalizedKeyword));
 
-    const matchesCategory = selectedCategory === "all" || product.category?.id?.toString() === selectedCategory;
-    const matchesBrand = selectedBrand === "all" || product.brand?.id?.toString() === selectedBrand;
+    const matchesCategory =
+      selectedCategory === "all" ||
+      product.category?.id?.toString() === selectedCategory;
+    const matchesBrand =
+      selectedBrand === "all" ||
+      product.brand?.id?.toString() === selectedBrand;
 
     return matchesKeyword && matchesCategory && matchesBrand;
   });
@@ -199,16 +224,25 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { addToCart, isAddingToCart } = useAddToCart("/products");
-  const collectionMode: CollectionMode = searchParams.get("featured") === "true"
-    ? "featured"
-    : searchParams.get("isNew") === "true"
-      ? "new"
-      : null;
-  const [searchKeyword, setSearchKeyword] = useState(searchParams.get("keyword") || "");
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("categoryId") || "all");
-  const [selectedBrand, setSelectedBrand] = useState(searchParams.get("brandId") || "all");
+  const collectionMode: CollectionMode =
+    searchParams.get("featured") === "true"
+      ? "featured"
+      : searchParams.get("isNew") === "true"
+        ? "new"
+        : null;
+  const [searchKeyword, setSearchKeyword] = useState(
+    searchParams.get("keyword") || "",
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("categoryId") || "all",
+  );
+  const [selectedBrand, setSelectedBrand] = useState(
+    searchParams.get("brandId") || "all",
+  );
   const [sortBy, setSortBy] = useState(searchParams.get("sortBy") || "newest");
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "0"));
+  const [currentPage, setCurrentPage] = useState(
+    parseInt(searchParams.get("page") || "0"),
+  );
   const [pageSize] = useState(12);
   const [gridSize, setGridSize] = useState<"2x2" | "3x3">("3x3");
   const [isFilterOpen, setIsFilterOpen] = useState(true);
@@ -219,21 +253,44 @@ function ProductsContent() {
     isError: productsError,
     refetch: refetchProducts,
   } = useQuery<PageResponse<Product>>({
-    queryKey: ["products", collectionMode, searchKeyword, selectedCategory, selectedBrand, sortBy, currentPage, pageSize],
+    queryKey: [
+      "products",
+      collectionMode,
+      searchKeyword,
+      selectedCategory,
+      selectedBrand,
+      sortBy,
+      currentPage,
+      pageSize,
+    ],
     retry: false,
     queryFn: async () => {
       if (collectionMode) {
-        const endpoint = collectionMode === "featured" ? "/products/featured" : "/products/new";
+        const endpoint =
+          collectionMode === "featured"
+            ? "/products/featured"
+            : "/products/new";
         const response = await api.get(endpoint);
         const collectionProducts = normalizeList<Product>(response.data);
-        const filteredProducts = filterCollectionProducts(collectionProducts, searchKeyword, selectedCategory, selectedBrand);
-        return paginateProducts(sortProducts(filteredProducts, sortBy), currentPage, pageSize);
+        const filteredProducts = filterCollectionProducts(
+          collectionProducts,
+          searchKeyword,
+          selectedCategory,
+          selectedBrand,
+        );
+        return paginateProducts(
+          sortProducts(filteredProducts, sortBy),
+          currentPage,
+          pageSize,
+        );
       }
 
       const params = new URLSearchParams();
       if (searchKeyword) params.append("keyword", searchKeyword);
-      if (selectedCategory && selectedCategory !== "all") params.append("categoryId", selectedCategory);
-      if (selectedBrand && selectedBrand !== "all") params.append("brandId", selectedBrand);
+      if (selectedCategory && selectedCategory !== "all")
+        params.append("categoryId", selectedCategory);
+      if (selectedBrand && selectedBrand !== "all")
+        params.append("brandId", selectedBrand);
       params.append("sortBy", sortBy);
       params.append("page", currentPage.toString());
       params.append("size", pageSize.toString());
@@ -277,15 +334,19 @@ function ProductsContent() {
     setCurrentPage(0);
   };
 
-  const hasActiveFilters = searchKeyword || (selectedCategory && selectedCategory !== "all") || (selectedBrand && selectedBrand !== "all");
+  const hasActiveFilters =
+    searchKeyword ||
+    (selectedCategory && selectedCategory !== "all") ||
+    (selectedBrand && selectedBrand !== "all");
   const totalPages = productsData?.totalPages || 0;
   const totalElements = productsData?.totalElements || 0;
   const products = productsData?.content || [];
-  const collectionHeading = collectionMode === "featured"
-    ? copy.featuredHeading
-    : collectionMode === "new"
-      ? copy.newHeading
-      : copy.allHeading;
+  const collectionHeading =
+    collectionMode === "featured"
+      ? copy.featuredHeading
+      : collectionMode === "new"
+        ? copy.newHeading
+        : copy.allHeading;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50/50 to-white">
@@ -293,7 +354,9 @@ function ProductsContent() {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/" className="transition-colors hover:text-blue-600">{copy.home}</Link>
+            <Link href="/" className="transition-colors hover:text-blue-600">
+              {copy.home}
+            </Link>
             <span>/</span>
             <span className="font-medium text-gray-900">{copy.products}</span>
           </div>
@@ -301,21 +364,34 @@ function ProductsContent() {
             {collectionHeading.title}
           </h1>
           <p className="text-gray-500">
-            {collectionHeading.description} <span className="font-semibold text-blue-600">{totalElements}</span>{" "}
+            {collectionHeading.description}{" "}
+            <span className="font-semibold text-blue-600">{totalElements}</span>{" "}
             {locale === "vi" ? "cuốn sách chất lượng" : "books"}
           </p>
         </div>
 
-        <div className={cn("mb-8 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300", isFilterOpen ? "shadow-md" : "")}>
-          <div className="flex cursor-pointer items-center justify-between p-5 hover:bg-gray-50 transition-colors" onClick={() => setIsFilterOpen(!isFilterOpen)}>
+        <div
+          className={cn(
+            "mb-8 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300",
+            isFilterOpen ? "shadow-md" : "",
+          )}
+        >
+          <div
+            className="flex cursor-pointer items-center justify-between p-5 hover:bg-gray-50 transition-colors"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+          >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
                 <SlidersHorizontal className="h-5 w-5 text-white" />
               </div>
               <div>
-                <span className="font-semibold text-gray-900">{copy.filterTitle}</span>
+                <span className="font-semibold text-gray-900">
+                  {copy.filterTitle}
+                </span>
                 {hasActiveFilters && (
-                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">{copy.activeFilter}</span>
+                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">
+                    {copy.activeFilter}
+                  </span>
                 )}
               </div>
             </div>
@@ -332,7 +408,14 @@ function ProductsContent() {
             </Button>
           </div>
 
-          <div className={cn("transition-all duration-300", isFilterOpen ? "max-h-[500px] opacity-100" : "max-h-0 overflow-hidden opacity-0")}>
+          <div
+            className={cn(
+              "transition-all duration-300",
+              isFilterOpen
+                ? "max-h-[500px] opacity-100"
+                : "max-h-0 overflow-hidden opacity-0",
+            )}
+          >
             <div className="border-t border-gray-100 px-5 pb-5 pt-5">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div className="relative lg:col-span-1">
@@ -350,31 +433,53 @@ function ProductsContent() {
                   />
                 </div>
 
-                <Select value={selectedCategory} onValueChange={(v) => { setSelectedCategory(v); setCurrentPage(0); }}>
+                <Select
+                  value={selectedCategory}
+                  onValueChange={(v) => {
+                    setSelectedCategory(v);
+                    setCurrentPage(0);
+                  }}
+                >
                   <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100">
                     <SelectValue placeholder={copy.categoryPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{copy.categoryAll}</SelectItem>
                     {categoriesList.map((c) => (
-                      <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                      <SelectItem key={c.id} value={c.id.toString()}>
+                        {c.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                <Select value={selectedBrand} onValueChange={(v) => { setSelectedBrand(v); setCurrentPage(0); }}>
+                <Select
+                  value={selectedBrand}
+                  onValueChange={(v) => {
+                    setSelectedBrand(v);
+                    setCurrentPage(0);
+                  }}
+                >
                   <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100">
                     <SelectValue placeholder={copy.brandPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{copy.brandAll}</SelectItem>
                     {brandsList.map((b) => (
-                      <SelectItem key={b.id} value={b.id.toString()}>{b.name}</SelectItem>
+                      <SelectItem key={b.id} value={b.id.toString()}>
+                        {b.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(0); }}>
+                <Select
+                  value={sortBy}
+                  onValueChange={(v) => {
+                    setSortBy(v);
+                    setCurrentPage(0);
+                  }}
+                >
                   <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100">
                     <SelectValue placeholder={copy.sortPlaceholder} />
                   </SelectTrigger>
@@ -389,26 +494,50 @@ function ProductsContent() {
 
               {hasActiveFilters && (
                 <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
-                  <span className="text-sm text-gray-500">{copy.activeFilters}</span>
+                  <span className="text-sm text-gray-500">
+                    {copy.activeFilters}
+                  </span>
                   {searchKeyword && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-600">
                       &ldquo;{searchKeyword}&rdquo;
-                      <X className="h-3 w-3 cursor-pointer hover:text-blue-800" onClick={() => setSearchKeyword("")} />
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-blue-800"
+                        onClick={() => setSearchKeyword("")}
+                      />
                     </span>
                   )}
                   {selectedCategory !== "all" && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-3 py-1 text-sm text-green-600">
-                      {categoriesList.find((c) => c.id.toString() === selectedCategory)?.name}
-                      <X className="h-3 w-3 cursor-pointer hover:text-green-800" onClick={() => setSelectedCategory("all")} />
+                      {
+                        categoriesList.find(
+                          (c) => c.id.toString() === selectedCategory,
+                        )?.name
+                      }
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-green-800"
+                        onClick={() => setSelectedCategory("all")}
+                      />
                     </span>
                   )}
                   {selectedBrand !== "all" && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1 text-sm text-purple-600">
-                      {brandsList.find((b) => b.id.toString() === selectedBrand)?.name}
-                      <X className="h-3 w-3 cursor-pointer hover:text-purple-800" onClick={() => setSelectedBrand("all")} />
+                      {
+                        brandsList.find(
+                          (b) => b.id.toString() === selectedBrand,
+                        )?.name
+                      }
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-purple-800"
+                        onClick={() => setSelectedBrand("all")}
+                      />
                     </span>
                   )}
-                  <Button variant="ghost" size="sm" onClick={handleClearFilters} className="ml-auto text-gray-500 hover:text-red-600">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearFilters}
+                    className="ml-auto text-gray-500 hover:text-red-600"
+                  >
                     {copy.clearAll}
                   </Button>
                 </div>
@@ -419,19 +548,45 @@ function ProductsContent() {
 
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <div className={cn("h-3 w-3 rounded-full", !productsLoading && products.length > 0 ? "bg-green-500 animate-pulse" : "bg-gray-300")} />
+            <div
+              className={cn(
+                "h-3 w-3 rounded-full",
+                !productsLoading && products.length > 0
+                  ? "bg-green-500 animate-pulse"
+                  : "bg-gray-300",
+              )}
+            />
             <p className="text-gray-600">
-              {copy.results} <span className="font-bold text-gray-900">{totalElements}</span>{" "}
+              {copy.results}{" "}
+              <span className="font-bold text-gray-900">{totalElements}</span>{" "}
               {locale === "vi" ? "sản phẩm" : "products"}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-gray-500 sm:inline">{copy.showing}</span>
+            <span className="hidden text-sm text-gray-500 sm:inline">
+              {copy.showing}
+            </span>
             <div className="flex items-center rounded-xl bg-gray-100 p-1">
-              <Button variant={gridSize === "3x3" ? "default" : "ghost"} size="icon" onClick={() => setGridSize("3x3")} className={cn("h-8 w-8 rounded-lg transition-all", gridSize === "3x3" && "shadow-md")}>
+              <Button
+                variant={gridSize === "3x3" ? "default" : "ghost"}
+                size="icon"
+                onClick={() => setGridSize("3x3")}
+                className={cn(
+                  "h-8 w-8 rounded-lg transition-all",
+                  gridSize === "3x3" && "shadow-md",
+                )}
+              >
                 <Grid3X3 className="h-4 w-4" />
               </Button>
-              <Button variant={gridSize === "2x2" ? "default" : "ghost"} size="icon" onClick={() => setGridSize("2x2")} className={cn("h-8 w-8 rounded-lg transition-all", gridSize === "2x2" && "shadow-md")}>
+              <Button
+                variant={gridSize === "2x2" ? "default" : "ghost"}
+                size="icon"
+                onClick={() => setGridSize("2x2")}
+                className={cn(
+                  "h-8 w-8 rounded-lg transition-all",
+                  gridSize === "2x2" && "shadow-md",
+                )}
+              >
                 <Grid2X2 className="h-4 w-4" />
               </Button>
             </div>
@@ -448,9 +603,18 @@ function ProductsContent() {
             primaryLabel={copy.goHome}
           />
         ) : productsLoading ? (
-          <div className={gridSize === "3x3" ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"}>
+          <div
+            className={
+              gridSize === "3x3"
+                ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                : "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            }
+          >
             {Array.from({ length: pageSize }).map((_, i) => (
-              <div key={i} className="overflow-hidden rounded-2xl bg-white shadow-sm">
+              <div
+                key={i}
+                className="overflow-hidden rounded-2xl bg-white shadow-sm"
+              >
                 <Skeleton className="h-80 w-full rounded-none" />
                 <div className="space-y-3 p-4">
                   <Skeleton className="h-4 w-3/4" />
@@ -465,65 +629,101 @@ function ProductsContent() {
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
               <Search className="h-10 w-10 text-gray-300" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">{copy.noResultsTitle}</h3>
+            <h3 className="mb-2 text-xl font-semibold text-gray-900">
+              {copy.noResultsTitle}
+            </h3>
             <p className="mb-6 text-gray-500">{copy.noResultsDescription}</p>
             {hasActiveFilters && (
-              <Button onClick={handleClearFilters} variant="outline" className="rounded-xl">
+              <Button
+                onClick={handleClearFilters}
+                variant="outline"
+                className="rounded-xl"
+              >
                 {copy.clearFilters}
               </Button>
             )}
           </div>
         ) : (
-          <div className={gridSize === "3x3" ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"}>
+          <div
+            className={
+              gridSize === "3x3"
+                ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                : "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            }
+          >
             {products.map((product, index) => (
               <div
                 key={product.id}
                 className="animate-in fade-in slide-in-from-bottom-4"
-                style={{ animationDelay: `${index * 50}ms`, animationFillMode: "backwards" }}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: "backwards",
+                }}
               >
-                <ProductCard product={product} onAddToCart={addToCart} isAddingToCart={isAddingToCart} />
+                <ProductCard
+                  product={product}
+                  onAddToCart={addToCart}
+                  isAddingToCart={isAddingToCart}
+                />
               </div>
             ))}
           </div>
         )}
 
-        {!productsLoading && !productsError && products.length > 0 && totalPages > 1 && (
-          <div className="mt-12 flex items-center justify-center gap-2">
-            <Button variant="outline" onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0} className="h-10 rounded-xl px-4">
-              {copy.previous}
-            </Button>
+        {!productsLoading &&
+          !productsError &&
+          products.length > 0 &&
+          totalPages > 1 && (
+            <div className="mt-12 flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
+                className="h-10 rounded-xl px-4"
+              >
+                {copy.previous}
+              </Button>
 
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i;
-                } else if (currentPage < 3) {
-                  pageNum = i;
-                } else if (currentPage > totalPages - 3) {
-                  pageNum = totalPages - 5 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i;
+                  } else if (currentPage < 3) {
+                    pageNum = i;
+                  } else if (currentPage > totalPages - 3) {
+                    pageNum = totalPages - 5 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
 
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={cn("h-10 w-10 rounded-xl transition-all", currentPage === pageNum && "shadow-lg shadow-blue-500/30")}
-                  >
-                    {pageNum + 1}
-                  </Button>
-                );
-              })}
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={cn(
+                        "h-10 w-10 rounded-xl transition-all",
+                        currentPage === pageNum &&
+                          "shadow-lg shadow-blue-500/30",
+                      )}
+                    >
+                      {pageNum + 1}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={currentPage >= totalPages - 1}
+                className="h-10 rounded-xl px-4"
+              >
+                {copy.next}
+              </Button>
             </div>
-
-            <Button variant="outline" onClick={() => setCurrentPage((p) => p + 1)} disabled={currentPage >= totalPages - 1} className="h-10 rounded-xl px-4">
-              {copy.next}
-            </Button>
-          </div>
-        )}
+          )}
       </main>
       <Footer />
     </div>
@@ -541,7 +741,10 @@ export default function ProductsPage() {
             <Skeleton className="mb-8 h-5 w-48" />
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="overflow-hidden rounded-2xl bg-white shadow-sm">
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-2xl bg-white shadow-sm"
+                >
                   <Skeleton className="h-80 w-full rounded-none" />
                   <div className="space-y-3 p-4">
                     <Skeleton className="h-4 w-3/4" />

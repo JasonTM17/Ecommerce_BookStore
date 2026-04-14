@@ -42,7 +42,12 @@ export function FeaturedProducts() {
   const { t, locale } = useLanguage();
   const sectionCopy = SECTION_COPY[locale];
   const { addToCart, isAddingToCart } = useAddToCart("/");
-  const { data: products, isLoading, isError, refetch } = useQuery({
+  const {
+    data: products,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["featured-products"],
     retry: false,
     queryFn: async () => {
@@ -114,7 +119,12 @@ export function FeaturedProducts() {
         </div>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {products.slice(0, 8).map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={addToCart} isAddingToCart={isAddingToCart} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={addToCart}
+              isAddingToCart={isAddingToCart}
+            />
           ))}
         </div>
       </div>
@@ -126,7 +136,12 @@ export function NewProducts() {
   const { t, locale } = useLanguage();
   const sectionCopy = SECTION_COPY[locale];
   const { addToCart, isAddingToCart } = useAddToCart("/");
-  const { data: products, isLoading, isError, refetch } = useQuery({
+  const {
+    data: products,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["new-products"],
     retry: false,
     queryFn: async () => {
@@ -198,7 +213,12 @@ export function NewProducts() {
         </div>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {products.slice(0, 8).map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={addToCart} isAddingToCart={isAddingToCart} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={addToCart}
+              isAddingToCart={isAddingToCart}
+            />
           ))}
         </div>
       </div>
@@ -209,7 +229,12 @@ export function NewProducts() {
 export function CategorySection() {
   const { t, locale } = useLanguage();
   const sectionCopy = SECTION_COPY[locale];
-  const { data: categories, isLoading, isError, refetch } = useQuery({
+  const {
+    data: categories,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["categories"],
     retry: false,
     queryFn: async () => {
@@ -274,8 +299,14 @@ export function CategorySection() {
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {categories.map((category, index) => (
-            <Link key={category.id} href={`/categories?id=${category.id}`} className="group relative h-36 overflow-hidden rounded-2xl">
-              <div className={`absolute inset-0 bg-gradient-to-br ${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]} transition-transform duration-500 group-hover:scale-110`} />
+            <Link
+              key={category.id}
+              href={`/categories?id=${category.id}`}
+              className="group relative h-36 overflow-hidden rounded-2xl"
+            >
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]} transition-transform duration-500 group-hover:scale-110`}
+              />
               <div className="absolute inset-0 bg-black/20 transition-colors group-hover:bg-black/10" />
               <div className="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -283,12 +314,15 @@ export function CategorySection() {
                 <h3 className="text-center text-lg font-bold transition-transform duration-300 group-hover:scale-105">
                   {category.name}
                 </h3>
-                {typeof category.productCount === "number" && category.productCount > 0 && (
-                  <p className="mt-2 rounded-full bg-white/20 px-3 py-1 text-sm text-white/80 backdrop-blur-sm">
-                    {category.productCount.toLocaleString(locale === "vi" ? "vi-VN" : "en-US")}{" "}
-                    {locale === "vi" ? "sản phẩm" : "titles"}
-                  </p>
-                )}
+                {typeof category.productCount === "number" &&
+                  category.productCount > 0 && (
+                    <p className="mt-2 rounded-full bg-white/20 px-3 py-1 text-sm text-white/80 backdrop-blur-sm">
+                      {category.productCount.toLocaleString(
+                        locale === "vi" ? "vi-VN" : "en-US",
+                      )}{" "}
+                      {locale === "vi" ? "sản phẩm" : "titles"}
+                    </p>
+                  )}
               </div>
 
               <div className="absolute right-3 top-3 flex h-8 w-8 translate-x-2 items-center justify-center rounded-full bg-white/20 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">

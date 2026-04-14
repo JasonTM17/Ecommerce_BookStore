@@ -109,7 +109,7 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
       data-testid="flash-sale-card"
       className={cn(
         "overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm",
-        "group transition-all duration-300 hover:border-red-200 hover:shadow-xl"
+        "group transition-all duration-300 hover:border-red-200 hover:shadow-xl",
       )}
     >
       <div className="relative aspect-[3/4] bg-gray-100">

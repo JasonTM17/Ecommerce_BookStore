@@ -124,7 +124,8 @@ export default function FlashSalePage() {
 
   const isLoading = activeLoading || upcomingLoading;
   const isError = activeError || upcomingError;
-  const isEmpty = !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
+  const isEmpty =
+    !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-red-50 via-white to-white">

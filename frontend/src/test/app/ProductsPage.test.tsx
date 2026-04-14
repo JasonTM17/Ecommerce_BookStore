@@ -16,7 +16,9 @@ vi.mock("@/components/layout/footer", () => ({
 }));
 
 vi.mock("@/components/product-card", () => ({
-  ProductCard: ({ product }: { product: { name: string } }) => <div>{product.name}</div>,
+  ProductCard: ({ product }: { product: { name: string } }) => (
+    <div>{product.name}</div>
+  ),
 }));
 
 vi.mock("@/hooks/useAddToCart", () => ({
@@ -49,7 +51,9 @@ function renderWithQueryClient(ui: ReactElement) {
     },
   });
 
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
 }
 
 describe("ProductsPage", () => {
@@ -92,7 +96,9 @@ describe("ProductsPage", () => {
 
     renderWithQueryClient(<ProductsPage />);
 
-    expect(await screen.findByRole("heading", { name: "All products" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "All products" }),
+    ).toBeInTheDocument();
   });
 
   it("shows a recovery state when product loading fails", async () => {
@@ -100,7 +106,9 @@ describe("ProductsPage", () => {
 
     renderWithQueryClient(<ProductsPage />);
 
-    expect(await screen.findByText("Chưa thể tải danh sách sách")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Chưa thể tải danh sách sách"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Thử lại" })).toBeInTheDocument();
   });
 });

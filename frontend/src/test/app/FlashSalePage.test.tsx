@@ -111,12 +111,20 @@ describe("FlashSalePage", () => {
   });
 
   it("shows a recovery state when flash sale data cannot be loaded", async () => {
-    vi.spyOn(flashSaleApi, "getActiveFlashSales").mockRejectedValueOnce(new Error("unavailable"));
-    vi.spyOn(flashSaleApi, "getUpcomingFlashSales").mockRejectedValueOnce(new Error("unavailable"));
+    vi.spyOn(flashSaleApi, "getActiveFlashSales").mockRejectedValueOnce(
+      new Error("unavailable"),
+    );
+    vi.spyOn(flashSaleApi, "getUpcomingFlashSales").mockRejectedValueOnce(
+      new Error("unavailable"),
+    );
 
     renderWithQueryClient(<FlashSalePage />);
 
-    expect(await screen.findByText("Flash sale đang tạm thời chưa tải được")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Tải lại flash sale" })).toBeInTheDocument();
+    expect(
+      await screen.findByText("Flash sale đang tạm thời chưa tải được"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Tải lại flash sale" }),
+    ).toBeInTheDocument();
   });
 });
