@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../store/AuthContext";
+import { ShoppingCart } from "lucide-react-native";
 
 export function CartScreen() {
   const navigation = useNavigation<any>();
@@ -21,9 +22,10 @@ export function CartScreen() {
 
   return (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyTitle}>Giỏ hàng mobile đang chờ phase tiếp theo</Text>
+      <ShoppingCart color="#d1d5db" size={80} style={{ marginBottom: 20 }} />
+      <Text style={styles.emptyTitle}>Giỏ hàng của bạn đang trống</Text>
       <Text style={styles.emptyText}>
-        Backend và auth đã được nối đúng. Luồng giỏ hàng sẽ là phase mobile tiếp theo để giữ pass này gọn và ổn định.
+        Hãy tiếp tục khám phá các tủ sách và chọn cho mình những tác phẩm ưng ý nhất nhé!
       </Text>
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Products")}>
         <Text style={styles.buttonText}>Khám phá sản phẩm</Text>

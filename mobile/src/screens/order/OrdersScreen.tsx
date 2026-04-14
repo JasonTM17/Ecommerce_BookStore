@@ -33,13 +33,13 @@ export function OrdersScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Đơn hàng của tôi</Text>
-        <Text style={styles.subtitle}>Màn này đã được nối đúng vào API đơn hàng hiện tại.</Text>
+        <Text style={styles.subtitle}>Kiểm tra trạng thái và lịch sử đơn hàng của bạn.</Text>
       </View>
 
       {orders.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>Chưa có đơn hàng</Text>
-          <Text style={styles.emptyText}>Khi bạn đặt hàng trên web hoặc mobile, lịch sử sẽ xuất hiện tại đây.</Text>
+          <Text style={styles.emptyTitle}>Chưa có đơn hàng nào</Text>
+          <Text style={styles.emptyText}>Khi bạn đặt mua sách, lịch sử theo dõi tiến trình giao hàng sẽ xuất hiện tại đây.</Text>
         </View>
       ) : (
         orders.map((order) => (

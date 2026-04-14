@@ -30,7 +30,7 @@ export function ProductsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Sản phẩm</Text>
-        <Text style={styles.subtitle}>Danh mục mobile đang dùng trực tiếp dữ liệu từ backend hiện tại.</Text>
+        <Text style={styles.subtitle}>Mọi tựa sách bạn cần đều có mặt tại đây.</Text>
       </View>
 
       <FlatList

@@ -47,7 +47,7 @@ export function ProductDetailScreen() {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.category}>{product?.category?.name || "Danh mục đang cập nhật"}</Text>
+        <Text style={styles.category}>{product?.category?.name || "Đang tải..."}</Text>
         <Text style={styles.title}>{product?.name || "Đang tải chi tiết sách..."}</Text>
         <Text style={styles.author}>Tác giả: {product?.author || "Đang cập nhật"}</Text>
 
@@ -62,7 +62,7 @@ export function ProductDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mô tả</Text>
           <Text style={styles.bodyText}>
-            {product?.description || "Màn chi tiết mobile đã nối dữ liệu thật. Luồng thêm vào giỏ sẽ là bước hoàn thiện tiếp theo của app native."}
+            {product?.description || "Chưa có bài viết mô tả chi tiết cho sản phẩm này."}
           </Text>
         </View>
 

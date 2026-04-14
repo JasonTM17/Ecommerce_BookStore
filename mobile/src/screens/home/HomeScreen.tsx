@@ -31,7 +31,7 @@ export function HomeScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.greeting}>Xin chào, {user?.firstName || "bạn"}!</Text>
-        <Text style={styles.subtitle}>Đây là baseline mobile để bạn tiếp tục phát triển từ cùng backend hiện tại.</Text>
+        <Text style={styles.subtitle}>Chào mừng bạn trở lại với thiên đường sách.</Text>
       </View>
 
       <View style={styles.section}>
@@ -73,7 +73,7 @@ export function HomeScreen() {
                 )}
               </View>
               <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
-              <Text style={styles.productAuthor} numberOfLines={1}>{product.author || "Tác giả cập nhật sau"}</Text>
+              <Text style={styles.productAuthor} numberOfLines={1}>{product.author || "Tác giả đang cập nhật"}</Text>
               <Text style={styles.productPrice}>{product.currentPrice.toLocaleString("vi-VN")}đ</Text>
             </TouchableOpacity>
           ))}
@@ -81,8 +81,8 @@ export function HomeScreen() {
       </View>
 
       <TouchableOpacity style={styles.banner} onPress={() => navigation.navigate("Products")}>
-        <Text style={styles.bannerTitle}>Flash Sale đồng bộ từ backend</Text>
-        <Text style={styles.bannerText}>Màn web đang là showcase chính; mobile đã sẵn sàng dùng chung nguồn dữ liệu.</Text>
+        <Text style={styles.bannerTitle}>Flash Sale Mỗi Tuần!</Text>
+        <Text style={styles.bannerText}>Khám phá những tựa sách bán chạy nhất với mức giá giảm cực sâu dành riêng cho bạn.</Text>
       </TouchableOpacity>
     </ScrollView>
   );
