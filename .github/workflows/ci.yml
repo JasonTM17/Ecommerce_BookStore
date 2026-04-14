@@ -527,15 +527,21 @@ jobs:
 
     steps:
       - name: Trigger Render backend deploy
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND_STAGING != '' }}
         run: |
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND_STAGING }}" ]; then
+            echo "⚠️ RENDER_DEPLOY_HOOK_BACKEND_STAGING secret not set. Skipping."
+            exit 0
+          fi
           echo "Triggering Render backend staging deploy..."
           curl -s "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND_STAGING }}"
           echo "Backend deploy triggered."
 
       - name: Trigger Render frontend deploy
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND_STAGING != '' }}
         run: |
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND_STAGING }}" ]; then
+            echo "⚠️ RENDER_DEPLOY_HOOK_FRONTEND_STAGING secret not set. Skipping."
+            exit 0
+          fi
           echo "Triggering Render frontend staging deploy..."
           curl -s "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND_STAGING }}"
           echo "Frontend deploy triggered."
