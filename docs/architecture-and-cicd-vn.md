@@ -109,4 +109,4 @@ stateDiagram-v2
 
 - Render hiện dùng **Blueprint/source deploy**, nên lịch sử deploy trên dashboard vẫn hiển thị theo **commit hash**.
 - Tag semver áp dụng cho artifact registry, không thay đổi cách Render hiển thị source revision.
-- Với production trên Render, backend lấy datasource từ bộ biến `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`; không dùng đường convert trực tiếp từ `DATABASE_URL`.
+- Với profile `render`, `RenderDataSourceConfig` tự động parse biến `DATABASE_URL` thành JDBC URL hợp lệ. Nếu `DATABASE_URL` không có, hệ thống dùng các biến `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` làm dự phòng.

@@ -35,7 +35,12 @@ services:
       # Spring profile
       - key: SPRING_PROFILES_ACTIVE
         value: render
-      # Database - auto-linked from Render PostgreSQL
+      # Database - primary: DATABASE_URL is parsed by RenderDataSourceConfig
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookstore-db
+          property: connectionString
+      # Database - fallback individual vars (used if DATABASE_URL parsing fails)
       - key: DB_HOST
         fromDatabase:
           name: bookstore-db

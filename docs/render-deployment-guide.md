@@ -16,15 +16,12 @@ The current Blueprint provisions three resources:
 2. **Backend API**: `bookstore-api`
 3. **Frontend web**: `bookstore-web`
 
-The backend runs with the `render` Spring profile and uses **split database variables** supplied by the Render PostgreSQL binding:
+The backend runs with the `render` Spring profile and uses two database configuration strategies (in priority order):
 
-- `DB_HOST`
-- `DB_PORT`
-- `DB_NAME`
-- `DB_USERNAME`
-- `DB_PASSWORD`
+1. **`DATABASE_URL`** (primary) — `RenderDataSourceConfig.java` automatically parses the Render-provided connection string (`postgresql://user:pass@host:port/db`) into a valid JDBC URL with separate credentials. This is the recommended approach.
+2. **Individual `DB_*` vars** (fallback) — `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` are used if `DATABASE_URL` is not present.
 
-> Important: the current production line does **not** derive `SPRING_DATASOURCE_URL` from `DATABASE_URL`. That conversion path was intentionally removed because PostgreSQL JDBC does not accept the URI format Render exposes there.
+> Note: The PostgreSQL JDBC driver does not accept credentials embedded in the URL. `RenderDataSourceConfig` handles this conversion transparently.
 
 ## Step 1: Provision infrastructure with the Blueprint
 
@@ -62,9 +59,7 @@ For `bookstore-api`, confirm the following:
 - `SPRING_PROFILES_ACTIVE=render`
 - Health check path: `/api/actuator/health/liveness`
 - Build source: `Dockerfile.backend`
-- Database binding provides the `DB_*` variables from `bookstore-db`
-
-Do not manually reintroduce `DATABASE_URL` as the primary datasource input for this production line.
+- Database binding provides `DATABASE_URL` (primary) and the `DB_*` variables (fallback) from `bookstore-db`
 
 ## Professional image tags
 

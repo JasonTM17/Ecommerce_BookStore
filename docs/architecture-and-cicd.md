@@ -109,4 +109,4 @@ stateDiagram-v2
 
 - Render currently uses **Blueprint/source deploy**, so Render's deploy history naturally displays **commit hashes** rather than release tags.
 - Semver tags apply to registry artifacts, not to the Render event history UI.
-- In the `render` Spring profile, the backend datasource is built from `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, and `DB_PASSWORD`; it does not rely on a direct `DATABASE_URL` conversion path anymore.
+- In the `render` Spring profile, `RenderDataSourceConfig` auto-parses the `DATABASE_URL` env var into a valid JDBC URL. If `DATABASE_URL` is absent, the individual `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, and `DB_PASSWORD` properties are used as fallback.

@@ -16,15 +16,12 @@ Blueprint hiện tại tạo 3 resource:
 2. **Backend API**: `bookstore-api`
 3. **Frontend Web**: `bookstore-web`
 
-Backend production trên Render chạy với profile `render` và dùng **PostgreSQL** qua bộ biến tách riêng:
+Backend production trên Render chạy với profile `render` và hỗ trợ hai cách cấu hình database (theo thứ tự ưu tiên):
 
-- `DB_HOST`
-- `DB_PORT`
-- `DB_NAME`
-- `DB_USERNAME`
-- `DB_PASSWORD`
+1. **`DATABASE_URL`** (chính) — `RenderDataSourceConfig.java` tự động phân tích connection string từ Render (`postgresql://user:pass@host:port/db`) thành JDBC URL hợp lệ với username/password tách riêng. Đây là cách khuyên dùng.
+2. **Các biến `DB_*` riêng lẻ** (dự phòng) — `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` được dùng nếu `DATABASE_URL` không tồn tại.
 
-> Lưu ý quan trọng: line hiện tại **không** dùng `DATABASE_URL` để tự dựng `SPRING_DATASOURCE_URL`. Đây là thay đổi chủ đích để tránh lỗi JDBC URL không hợp lệ trên Render.
+> Lưu ý: PostgreSQL JDBC driver không chấp nhận credentials nhúng trực tiếp trong URL. `RenderDataSourceConfig` xử lý chuyển đổi này tự động.
 
 ## Bước 1: Khởi tạo hạ tầng bằng Blueprint
 
@@ -62,9 +59,7 @@ Trên service `bookstore-api`, hãy xác nhận:
 - `SPRING_PROFILES_ACTIVE=render`
 - Health check path là `/api/actuator/health/liveness`
 - Service đang build từ `Dockerfile.backend`
-- Database binding đang cấp đúng `DB_*` env vars từ `bookstore-db`
-
-Không nên tự thêm lại `DATABASE_URL` nếu line hiện tại đang dùng Blueprint mặc định.
+- Database binding cung cấp `DATABASE_URL` (chính) và các biến `DB_*` (dự phòng) từ `bookstore-db`
 
 ## Publish registry chuyên nghiệp
 
