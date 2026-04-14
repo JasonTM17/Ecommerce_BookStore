@@ -20,6 +20,12 @@ jobs:
   backend-test:
     name: Backend Test (MySQL 8.0)
     runs-on: ubuntu-latest
+    env:
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: bookstore_test
+      MYSQL_USERNAME: bookstore
+      MYSQL_PASSWORD: bookpass
 
     services:
       mysql:
@@ -55,13 +61,13 @@ jobs:
         run: chmod +x scripts/wait-for-services.sh
 
       - name: Wait for MySQL TCP port
-        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 127.0.0.1:3306
+        run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 ${MYSQL_HOST}:${MYSQL_PORT}
 
       - name: Wait for MySQL query readiness
         run: |
           for attempt in $(seq 1 60); do
-            if mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot --silent >/dev/null 2>&1 && \
-               mysql -h 127.0.0.1 -P 3306 -u root -proot -D bookstore_test -e "SELECT 1" >/dev/null 2>&1; then
+            if mysqladmin ping --protocol=tcp -h "${MYSQL_HOST}" -P "${MYSQL_PORT}" -u "${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}" --silent >/dev/null 2>&1 && \
+               mysql --protocol=tcp -h "${MYSQL_HOST}" -P "${MYSQL_PORT}" -u "${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}" -D "${MYSQL_DATABASE}" -e "SELECT 1" >/dev/null 2>&1; then
               echo "MySQL is accepting authenticated queries."
               exit 0
             fi
@@ -78,16 +84,16 @@ jobs:
         run: |
           docker ps -a
           sudo ss -ltnp || true
-          mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot || true
-          mysql -h 127.0.0.1 -P 3306 -u root -proot -e "SHOW DATABASES;" || true
+          mysqladmin ping --protocol=tcp -h "${MYSQL_HOST}" -P "${MYSQL_PORT}" -u "${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}" || true
+          mysql --protocol=tcp -h "${MYSQL_HOST}" -P "${MYSQL_PORT}" -u "${MYSQL_USERNAME}" -p"${MYSQL_PASSWORD}" -e "SHOW DATABASES;" || true
 
       - name: Run backend tests
         run: |
           cd backend
           mvn clean test \
-            -Dspring.datasource.url=jdbc:mysql://127.0.0.1:3306/bookstore_test \
-            -Dspring.datasource.username=root \
-            -Dspring.datasource.password=root \
+            -Dspring.datasource.url=jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE} \
+            -Dspring.datasource.username=${MYSQL_USERNAME} \
+            -Dspring.datasource.password=${MYSQL_PASSWORD} \
             -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
             -Dspring.jpa.database-platform=org.hibernate.dialect.MySQLDialect \
             -DskipFrontendBuild=true
@@ -99,6 +105,7 @@ jobs:
           name: backend-test-results
           path: backend/target/surefire-reports/
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: Generate backend coverage report
         run: |
@@ -123,6 +130,7 @@ jobs:
         with:
           name: backend-coverage
           path: backend/target/site/jacoco/
+          if-no-files-found: ignore
 
       - name: Publish backend coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -166,6 +174,7 @@ jobs:
             frontend/coverage/
             frontend/src/test-results/
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: Run frontend coverage
         run: |
@@ -292,6 +301,7 @@ jobs:
           name: frontend-build
           path: frontend/.next/
           retention-days: 7
+          if-no-files-found: ignore
 
   e2e-test:
     name: E2E Test (Playwright)
@@ -387,6 +397,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine diff base
+        id: diff-base
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${{ github.event.before }}" && "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]]; then
+            echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=$(git rev-parse HEAD^)" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
@@ -395,11 +418,17 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Run backend linter (Checkstyle)
+      - name: Run backend changed-file Checkstyle
         run: |
+          mapfile -t backend_files < <(bash scripts/collect-changed-files.sh "${{ steps.diff-base.outputs.base }}" "${GITHUB_SHA}" | grep '^backend/src/.*\.java$' | sed 's#^backend/##' || true)
+          if [[ "${#backend_files[@]}" -eq 0 ]]; then
+            echo "No changed backend Java files to check."
+            exit 0
+          fi
+
+          includes=$(IFS=,; echo "${backend_files[*]}")
           cd backend
-          mvn checkstyle:check -q
-        continue-on-error: true
+          mvn -q checkstyle:check "-Dcheckstyle.includes=${includes}"
 
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -417,13 +446,20 @@ jobs:
         run: |
           cd frontend
           npm run lint
-        continue-on-error: true
 
-      - name: Run Prettier check
+      - name: Run frontend changed-file Prettier check
         run: |
+          mapfile -t frontend_files < <(bash scripts/collect-changed-files.sh "${{ steps.diff-base.outputs.base }}" "${GITHUB_SHA}" | grep '^frontend/src/.*\.\(ts\|tsx\|js\|jsx\)$' || true)
+          if [[ "${#frontend_files[@]}" -eq 0 ]]; then
+            echo "No changed frontend source files to format-check."
+            exit 0
+          fi
+
           cd frontend
-          npx prettier --check "src/**/*.{ts,tsx,js,jsx}"
-        continue-on-error: true
+          for i in "${!frontend_files[@]}"; do
+            frontend_files[$i]="${frontend_files[$i]#frontend/}"
+          done
+          npx prettier --check "${frontend_files[@]}"
 
   security:
     name: Security Scan

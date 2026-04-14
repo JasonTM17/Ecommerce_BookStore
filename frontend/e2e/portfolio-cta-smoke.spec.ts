@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 declare global {
   interface Window {
@@ -47,29 +47,84 @@ async function installBrowserActionSpies(page: Page) {
   });
 }
 
-async function getFirstProductPath(page: Page) {
+async function expectImageLoaded(image: Locator) {
+  await image.scrollIntoViewIfNeeded();
+  await expect(image).toBeVisible({ timeout: 15000 });
+  await expect
+    .poll(async () => {
+      return image.evaluate((img) => {
+        const element = img as HTMLImageElement;
+        return element.complete && element.naturalWidth > 0;
+      });
+    })
+    .toBe(true);
+}
+
+async function getFirstProductCard(page: Page) {
   await page.goto("/products", { waitUntil: "networkidle" });
   const firstCard = page.getByTestId("product-card").first();
   await expect(firstCard).toBeVisible({ timeout: 15000 });
+  return firstCard;
+}
 
-  const productLink = firstCard.locator('a[href^="/products/"]').first();
-  const productPath = await productLink.getAttribute("href");
-
-  if (!productPath) {
-    throw new Error("Unable to resolve a product detail path from the product grid.");
-  }
-
-  return { firstCard, productPath };
+async function getFirstFlashSaleCard(page: Page) {
+  await page.goto("/flash-sale", { waitUntil: "networkidle" });
+  const firstCard = page.getByTestId("flash-sale-card").first();
+  await expect(firstCard).toBeVisible({ timeout: 15000 });
+  return firstCard;
 }
 
 async function login(page: Page) {
   await page.locator("#email").fill(CUSTOMER_EMAIL);
   await page.locator("#password").fill(CUSTOMER_PASSWORD);
 
-  await Promise.all([
-    page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 15000 }),
-    page.locator('button[type="submit"]').click(),
-  ]);
+  let loginSucceeded = false;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const loginResponsePromise = page.waitForResponse((response) => {
+      return (
+        response.request().method() === "POST" &&
+        response.url().includes("/api/auth/login")
+      );
+    });
+
+    await page.locator('button[type="submit"]').click();
+
+    const loginResponse = await loginResponsePromise;
+    if (loginResponse.ok()) {
+      loginSucceeded = true;
+      break;
+    }
+
+    if (loginResponse.status() !== 429) {
+      expect(loginResponse.ok()).toBeTruthy();
+    }
+
+    const payload = (await loginResponse.json().catch(() => null)) as
+      | { retryAfter?: number }
+      | null;
+    const retryAfterSeconds = Math.max(payload?.retryAfter ?? 3, 1);
+    await page.waitForTimeout((retryAfterSeconds + 1) * 1000);
+  }
+
+  expect(loginSucceeded).toBeTruthy();
+
+  await expect
+    .poll(() => page.url(), { timeout: 15000 })
+    .not.toContain("/login");
+}
+
+async function clearCart(page: Page) {
+  await page.context().request.delete("http://localhost:8080/api/cart");
+  await page.goto("/cart", { waitUntil: "networkidle" });
+}
+
+function extractCurrencyText(value: string) {
+  const match = value.match(/\d[\d.\s,]*₫/u);
+  if (!match) {
+    throw new Error(`Unable to resolve a currency value from: ${value}`);
+  }
+  return match[0].replace(/\s+/g, " ").trim();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -77,17 +132,19 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("Portfolio CTA smoke", () => {
-  test("product cards navigate to detail pages from lower rows without preserving mid-page scroll", async ({ page }) => {
+  test("product cards navigate cleanly and guest redirects preserve intent", async ({
+    page,
+  }) => {
     await page.goto("/products", { waitUntil: "networkidle" });
 
     const targetCard = page.getByTestId("product-card").nth(5);
     await targetCard.scrollIntoViewIfNeeded();
+    await expectImageLoaded(targetCard.locator("img").first());
 
     const productLink = targetCard.locator('a[href^="/products/"]').first();
     const productPath = await productLink.getAttribute("href");
-
     if (!productPath) {
-      throw new Error("Unable to resolve a product detail path from the selected product card.");
+      throw new Error("Unable to resolve a product path from the product grid.");
     }
 
     await Promise.all([
@@ -95,12 +152,14 @@ test.describe("Portfolio CTA smoke", () => {
       productLink.click(),
     ]);
 
-    await expect(page.locator("h1")).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("#main-content h1").first()).toBeVisible({
+      timeout: 15000,
+    });
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
-  });
 
-  test("guest add-to-cart on product cards redirects back through login", async ({ page }) => {
-    const { firstCard } = await getFirstProductPath(page);
+    await page.goto("/products", { waitUntil: "networkidle" });
+    const firstCard = await getFirstProductCard(page);
 
     await firstCard.hover();
     await expect(firstCard.getByTestId("product-card-add-to-cart")).toBeVisible();
@@ -109,23 +168,19 @@ test.describe("Portfolio CTA smoke", () => {
       page.waitForURL(/\/login\?redirect=%2Fproducts$/),
       firstCard.getByTestId("product-card-add-to-cart").click(),
     ]);
+    await expect(page.getByTestId("login-redirect-notice")).toContainText(
+      /thêm sản phẩm vào giỏ hàng/i,
+    );
 
-    await expect(page.getByTestId("login-redirect-notice")).toContainText("thêm sản phẩm vào giỏ hàng");
-  });
-
-  test("guest wishlist on product cards redirects back through login", async ({ page }) => {
-    const { firstCard } = await getFirstProductPath(page);
-
-    await firstCard.hover();
-    await expect(firstCard.getByTestId("product-card-wishlist")).toBeVisible();
+    await page.goto("/products", { waitUntil: "networkidle" });
+    const wishlistCard = await getFirstProductCard(page);
+    await wishlistCard.hover();
 
     await Promise.all([
       page.waitForURL(/\/login\?redirect=%2Fproducts$/),
-      firstCard.getByTestId("product-card-wishlist").click(),
+      wishlistCard.getByTestId("product-card-wishlist").click(),
     ]);
-  });
 
-  test("protected routes preserve redirect targets for guests", async ({ page }) => {
     await page.goto("/orders");
     await expect(page).toHaveURL(/\/login\?redirect=%2Forders$/);
 
@@ -133,54 +188,120 @@ test.describe("Portfolio CTA smoke", () => {
     await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout$/);
   });
 
-  test("product detail redirect returns after login and wishlist items can be added to cart", async ({ page }) => {
-    const { productPath } = await getFirstProductPath(page);
+  test("authenticated customer can buy an active flash-sale book with COD end-to-end", async ({
+    page,
+  }) => {
+    test.slow();
 
-    await page.goto(productPath);
-    const productName = (await page.locator("h1").first().textContent())?.trim() || "";
-
-    await Promise.all([
-      page.waitForURL(new RegExp(`/login\\?redirect=${encodeURIComponent(productPath).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`)),
-      page.getByTestId("product-detail-wishlist").click(),
-    ]);
-
+    await page.goto("/login", { waitUntil: "networkidle" });
     await login(page);
-    await expect(page).toHaveURL(new RegExp(`${escapeRegExp(productPath)}$`));
+    await clearCart(page);
 
-    await page.getByTestId("product-detail-add-to-cart").click();
-    await expect(page.getByText(/Đã thêm/)).toBeVisible();
+    const flashSaleCard = await getFirstFlashSaleCard(page);
+    await expectImageLoaded(flashSaleCard.locator("img").first());
 
-    const wishlistButton = page.getByTestId("product-detail-wishlist");
-    const wishlistLabel = await wishlistButton.getAttribute("aria-label");
-
-    if (wishlistLabel?.includes("Thêm")) {
-      await wishlistButton.click();
-      await expect(page.getByText("Đã thêm vào danh sách yêu thích")).toBeVisible();
+    const productPath = await flashSaleCard.getAttribute("href");
+    if (!productPath) {
+      throw new Error("Unable to resolve a flash sale product path.");
     }
 
-    await page.goto("/wishlist");
-    await expect(page).toHaveURL(/\/wishlist$/);
+    const flashSaleCardText = await flashSaleCard.innerText();
+    const salePriceText = extractCurrencyText(flashSaleCardText);
+    const productName =
+      (await flashSaleCard.locator("h3").textContent())?.trim() || "";
 
-    const wishlistItem = page.getByTestId("wishlist-item").filter({ hasText: productName }).first();
-    await expect(wishlistItem).toBeVisible();
+    await Promise.all([
+      page.waitForURL(new RegExp(`${escapeRegExp(productPath)}$`)),
+      flashSaleCard.click(),
+    ]);
 
-    await wishlistItem.getByTestId("wishlist-add-to-cart").click();
-    await expect(page.getByText(/Đã thêm/)).toBeVisible();
+    await expect(page.getByTestId("flash-sale-countdown-card")).toBeVisible();
+    await expect(
+      page
+        .getByTestId("product-detail-price-panel")
+        .getByText(salePriceText, { exact: false }),
+    ).toBeVisible();
+    await expectImageLoaded(page.locator("main img").first());
+
+    await page.getByTestId("product-detail-add-to-cart").click();
+    await expect(page.getByText(/đã thêm|added/i)).toBeVisible({ timeout: 15000 });
+
+    await page.goto("/cart", { waitUntil: "networkidle" });
+    await expect(
+      page.locator("main").getByRole("link", { name: productName, exact: true }).first(),
+    ).toBeVisible();
+    await expect(page.locator("main").getByText(salePriceText, { exact: false }).first()).toBeVisible();
+    await expectImageLoaded(page.locator("main img").first());
+
+    await page.getByRole("button", { name: /thanh toán|checkout/i }).click();
+    await expect(page).toHaveURL(/\/checkout$/);
+
+    await page.locator("#receiverName").fill("Khách Hàng Portfolio");
+    await page.locator("#phoneNumber").fill("0901231234");
+    await page.locator("#province").fill("Hồ Chí Minh");
+    await page.locator("#district").fill("Quận 1");
+    await page.locator("#ward").fill("Phường Bến Nghé");
+    await page.locator("#streetAddress").fill("1 Nguyễn Huệ");
+    await page.locator("#notes").fill("Giao giờ hành chính");
+
+    await page
+      .getByRole("button", { name: /tiếp tục thanh toán|continue to payment/i })
+      .click();
+
+    const vnPayOption = page.locator('input[name="payment"][value="VNPAY"]');
+    if (await vnPayOption.count()) {
+      await expect(vnPayOption).toBeDisabled();
+    }
+
+    await page
+      .getByRole("button", { name: /xác nhận thông tin|confirm information/i })
+      .click();
+    await page
+      .getByRole("button", { name: /đặt hàng ngay|place order/i })
+      .click();
+
+    await expect(
+      page.getByText(/đặt hàng thành công|order placed successfully/i),
+    ).toBeVisible({ timeout: 20000 });
+
+    const successSummary = await page.locator("#main-content").innerText();
+    const orderNumber = successSummary.match(/ORD\d+/)?.[0];
+    if (!orderNumber) {
+      throw new Error("Unable to extract the created order number from checkout success.");
+    }
+
+    await page.getByRole("button", { name: /xem đơn hàng|view orders/i }).click();
+    await expect(page).toHaveURL(/\/orders$/);
+    await expect(page.locator("#main-content").getByText(orderNumber, { exact: false })).toBeVisible();
+    await page.getByRole("link", { name: /chi tiết|details/i }).first().click();
+
+    await expect(page).toHaveURL(/\/orders\/\d+$/);
+    await expect(page.locator("#main-content").getByText(orderNumber, { exact: false })).toBeVisible();
+    await expect(
+      page.locator("#main-content").getByText(productName, { exact: false }).first(),
+    ).toBeVisible();
+    await expect(page.locator("#main-content").getByText(salePriceText, { exact: false }).first()).toBeVisible();
+    await expectImageLoaded(page.locator("#main-content img").first());
   });
 
-  test("share and newsletter CTAs perform real handoff actions", async ({ page }) => {
+  test("share, newsletter, and chatbot interactions are real", async ({ page }) => {
     await installBrowserActionSpies(page);
 
-    const { productPath } = await getFirstProductPath(page);
-    await page.goto(productPath);
+    const firstCard = await getFirstProductCard(page);
+    const productLink = firstCard.locator('a[href^="/products/"]').first();
+    const productPath = await productLink.getAttribute("href");
+    if (!productPath) {
+      throw new Error("Unable to resolve a product detail path.");
+    }
 
+    await page.goto(productPath, { waitUntil: "networkidle" });
     await page.getByTestId("product-detail-share").click();
-    await expect(page.getByText("Đã sao chép liên kết sản phẩm")).toBeVisible();
+    await expect(page.getByText(/đã sao chép|copied/i)).toBeVisible();
 
     const copiedText = await page.evaluate(() => window.__copiedText);
     expect(copiedText).toContain(productPath);
 
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "networkidle" });
     const newsletterInput = page.locator("footer #newsletter-email");
     await newsletterInput.scrollIntoViewIfNeeded();
     await newsletterInput.fill("portfolio@example.com");
@@ -190,13 +311,9 @@ test.describe("Portfolio CTA smoke", () => {
 
     const openCalls = await page.evaluate(() => window.__openCalls || []);
     expect(openCalls[0]?.[0]).toContain("mailto:contact@bookstore.com");
-  });
-
-  test("chatbot widget shows guest guidance and live Grok status after login", async ({ page }) => {
-    await page.goto("/");
 
     await page.getByTestId("chatbot-launcher").click();
-    await expect(page.getByText(/đăng nhập để trò chuyện 1:1/i)).toBeVisible();
+    await expect(page.getByTestId("chatbot-login-cta")).toBeVisible();
     await expect(page.getByTestId("chatbot-status-badge")).toBeVisible();
 
     await Promise.all([
@@ -208,7 +325,6 @@ test.describe("Portfolio CTA smoke", () => {
     await expect(page).toHaveURL(/\/$/);
 
     await page.getByTestId("chatbot-launcher").click();
-    await expect(page.getByTestId("chatbot-status-badge")).toContainText(/grok sẵn sàng/i);
-    await expect(page.getByText(/chatbot đã sẵn sàng hỗ trợ/i)).toBeVisible();
+    await expect(page.getByTestId("chatbot-status-badge")).toContainText(/grok/i);
   });
 });

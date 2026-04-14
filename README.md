@@ -20,6 +20,7 @@ Portfolio full-stack bookstore built with Spring Boot, Next.js, MySQL, Docker Co
    - database credentials
    - `GROK_ENABLED=true` and `GROK_API_KEY=...` if you want Grok enabled locally
    - `FLASHSALE_AUTO_*` if you want to tune the weekly flash sale rotation
+   - `NEXT_PUBLIC_VNPAY_ENABLED=true` plus valid `VNPAY_*` credentials if you want VNPay enabled in checkout
 
 3. Start the full stack:
 
@@ -49,7 +50,7 @@ cd backend
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-Backend local/dev reads the repo-root `.env` file through Spring config import, so you do not need to manually export `GROK_*`, mail, or flash-sale automation variables first.
+Backend local/dev reads the repo-root `.env` file through Spring config import, so you do not need to manually export `GROK_*`, mail, flash-sale automation, or VNPay variables first.
 
 ### Frontend
 
@@ -82,12 +83,13 @@ Supported environment variables:
 - `FLASHSALE_AUTO_STOCK_MAX`
 - `FLASHSALE_AUTO_MAX_PER_USER`
 
-## Automated Marketing Services
+## Automated marketing services
 
 The backend includes scheduled services to drive customer engagement:
-- **Abandoned Cart Reminders**: Automatically identifies carts inactive for > 24 hours and sends a promotional email with a 10% discount code.
-- **Birthday Greetings**: Daily checks for user birthdays and sends a 20% discount coupon as a gift.
-- **Service Monitoring**: Health checks available at `/api/actuator/health`.
+
+- Abandoned cart reminders for carts inactive longer than 24 hours
+- Birthday greetings with a promotional coupon gift
+- Service monitoring via `/api/actuator/health`
 
 ## Testing
 
@@ -115,6 +117,12 @@ cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
 - Set `GROK_ENABLED=true` together with `GROK_API_KEY` to enable Grok in local/dev or Docker
 - Frontend chatbot health is driven by `/api/chatbot/health`
 
+## Payments
+
+- `COD` is always available in the portfolio checkout flow.
+- `VNPay` is only shown when `NEXT_PUBLIC_VNPAY_ENABLED=true` and the backend has valid `VNPAY_*` configuration.
+- Default local return route: [http://localhost:3001/payment/return](http://localhost:3001/payment/return)
+
 ## Repository layout
 
 ```text
@@ -132,4 +140,4 @@ Ecommerce_BookStore/
 
 - This repository is optimized for portfolio and demo flows first.
 - CI coverage gates are kept honest against the current baseline.
-- Do not commit real secrets — always use `.env` (gitignored) for local overrides.
+- Do not commit real secrets - always use `.env` (gitignored) for local overrides.
