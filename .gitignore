@@ -49,6 +49,7 @@ uploads/
 
 # Docker volumes
 docker-data/
+uploads_data/
 
 # Third-party embedded repos
 agency-agents/
@@ -57,13 +58,15 @@ agency-agents/
 *.log
 *.tmp
 *.temp
+tmp-*
+tmp_*
 .cache/
 
 # Playwright
+playwright-report/
 frontend/playwright-report/
 frontend/test-results/
 frontend/artifacts/
-
 
 # Cursor
 .cursor/
