@@ -1,12 +1,9 @@
 # ===========================================
 # Stage 1: Build
 # ===========================================
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM maven:3.9.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
-
-# Install Maven
-RUN apk add --no-cache maven
 
 # Copy Maven config first (for dependency caching)
 COPY backend/pom.xml .
@@ -21,15 +18,17 @@ RUN mvn clean package -DskipTests -B
 # ===========================================
 # Stage 2: Runtime
 # ===========================================
-FROM eclipse-temurin:17-jre-alpine AS runner
+FROM eclipse-temurin:17-jre-jammy AS runner
 
 WORKDIR /app
 
 # Install utilities
-RUN apk add --no-cache postgresql-client curl dumb-init
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-client curl dumb-init \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd --system appgroup && useradd --system --gid appgroup appuser
 
 # Create uploads directory
 RUN mkdir -p /app/uploads /app/logs && chown -R appuser:appgroup /app/uploads /app/logs
