@@ -334,7 +334,7 @@ jobs:
         run: |
           docker compose -f docker-compose.e2e.yml \
             --profile e2e \
-            up --build -d
+            up --build -d mysql backend frontend
 
       - name: Wait for MySQL
         run: ./scripts/wait-for-services.sh --timeout 180 --interval 5 127.0.0.1:3307
