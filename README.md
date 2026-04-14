@@ -123,6 +123,12 @@ cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
 - `VNPay` is only shown when `NEXT_PUBLIC_VNPAY_ENABLED=true` and the backend has valid `VNPAY_*` configuration.
 - Default local return route: [http://localhost:3001/payment/return](http://localhost:3001/payment/return)
 
+## Documentation
+
+Please refer to the `docs/` folder for comprehensive guides:
+- [System Architecture & CI/CD Pipeline](./docs/architecture-and-cicd.md)
+- [Render.com Deployment Guide](./docs/render-deployment-guide.md)
+
 ## Repository layout
 
 ```text

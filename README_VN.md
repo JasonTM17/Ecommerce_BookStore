@@ -59,5 +59,11 @@ Hệ thống sẽ khả dụng tại:
 - **Rate Limiting**: Chống tấn công brute-force ở các điểm nhạy cảm (Login, Register, Chatbot).
 - **CI/CD**: Tự động chạy Unit Test, Integration Test (MySQL), E2E Test (Playwright) và Security Scan (Trivy) trên mỗi lần push.
 
+## 📚 Tài liệu chi tiết
+
+Vui lòng tham khảo thư mục `docs/` để biết thêm chi tiết về cấu trúc hệ thống:
+- [Kiến trúc Hệ thống & CI/CD Pipeline](./docs/architecture-and-cicd.md)
+- [Hướng dẫn Deploy lên Render.com (Production)](./docs/render-deployment-guide.md)
+
 ---
 *Dự án được phát triển bởi **JasonTM17** cho mục đích Portfolio.*
