@@ -2,7 +2,7 @@
 import type { ReactElement } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ProductDetailPage from "@/app/products/[id]/page";
 import { apiPublic } from "@/lib/api";
 
@@ -18,7 +18,9 @@ vi.mock("@/components/layout/footer", () => ({
 }));
 
 vi.mock("@/components/product-card", () => ({
-  ProductCard: ({ product }: { product: { name: string } }) => <div>{product.name}</div>,
+  ProductCard: ({ product }: { product: { name: string } }) => (
+    <div>{product.name}</div>
+  ),
 }));
 
 vi.mock("@/hooks/useAddToCart", () => ({
@@ -69,7 +71,13 @@ vi.mock("@/lib/toast", () => ({
 }));
 
 vi.mock("next/image", () => ({
-  default: ({ fill: _fill, ...props }: Record<string, unknown>) => <img {...props} alt={String(props.alt ?? "")} />,
+  default: ({
+    fill: _fill,
+    priority: _priority,
+    ...props
+  }: Record<string, unknown>) => (
+    <img {...props} alt={String(props.alt ?? "")} />
+  ),
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -91,15 +99,19 @@ function renderWithQueryClient(ui: ReactElement) {
     },
   });
 
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
 }
 
 function buildProduct(overrides: Record<string, unknown> = {}) {
   return {
     id: 106,
     name: "A Brief History of Time",
-    shortDescription: "Cuốn sách khoa học nổi tiếng dành cho showcase flash sale.",
-    description: "Một hành trình ngắn gọn qua vũ trụ, thời gian và các câu hỏi lớn của vật lý hiện đại.",
+    shortDescription:
+      "Cuốn sách khoa học nổi tiếng dành cho showcase flash sale.",
+    description:
+      "Một hành trình ngắn gọn qua vũ trụ, thời gian và các câu hỏi lớn của vật lý hiện đại.",
     author: "Stephen Hawking",
     publisher: "Bantam",
     price: 129000,
@@ -142,6 +154,8 @@ describe("ProductDetailPage", () => {
               id: 700,
               endTime: "2099-04-13T12:00:00.000Z",
               remainingStock: 7,
+              stockLimit: 12,
+              soldCount: 5,
               maxPerUser: 2,
             },
           }),
@@ -173,20 +187,40 @@ describe("ProductDetailPage", () => {
 
     const { rerender } = renderWithQueryClient(<ProductDetailPage />);
 
-    expect(await screen.findByTestId("flash-sale-countdown-card")).toBeInTheDocument();
-    expect(screen.getByText("Flash sale còn lại")).toBeInTheDocument();
-    expect(screen.getByText("Sau khi hết thời gian này, giá sẽ trở về mức thông thường.")).toBeInTheDocument();
-    expect(screen.getByText("Còn 7 suất giá tốt trong đợt sale này")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("flash-sale-countdown-card"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Flash sale đang diễn ra")).toBeInTheDocument();
+    expect(screen.getByText("Giá ưu đãi chỉ còn trong")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Sau khi hết thời gian này, giá sẽ trở về mức thông thường.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Còn 7 suất giá tốt trong đợt sale này"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Đã bán 5")).toBeInTheDocument();
+    expect(screen.getByText("Tổng 12 suất")).toBeInTheDocument();
 
     localeState.locale = "en";
     rerender(
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
         <ProductDetailPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
-    expect(await screen.findByText("Flash sale ends in")).toBeInTheDocument();
-    expect(screen.getByText("When this timer ends, the price will return to the standard amount.")).toBeInTheDocument();
+    expect(await screen.findByText("Flash sale is live")).toBeInTheDocument();
+    expect(screen.getByText("Special price ends in")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "When this timer ends, the price will return to the standard amount.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("refetches the product detail and hides the countdown after the flash sale expires", async () => {
@@ -244,16 +278,26 @@ describe("ProductDetailPage", () => {
 
     renderWithQueryClient(<ProductDetailPage />);
 
-    expect(await screen.findByTestId("flash-sale-countdown-card")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("flash-sale-countdown-card"),
+    ).toBeInTheDocument();
     expect(productRequests).toBe(1);
 
-    await waitFor(() => {
-      expect(productRequests).toBe(2);
-    }, { timeout: 4000 });
+    await waitFor(
+      () => {
+        expect(productRequests).toBe(2);
+      },
+      { timeout: 4000 },
+    );
 
-    await waitFor(() => {
-      expect(screen.queryByTestId("flash-sale-countdown-card")).not.toBeInTheDocument();
-    }, { timeout: 4000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByTestId("flash-sale-countdown-card"),
+        ).not.toBeInTheDocument();
+      },
+      { timeout: 4000 },
+    );
 
     expect(screen.getByText("129.000 ₫")).toBeInTheDocument();
   });

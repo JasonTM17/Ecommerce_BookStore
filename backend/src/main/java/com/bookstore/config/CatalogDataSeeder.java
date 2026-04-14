@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -62,6 +63,38 @@ public final class CatalogDataSeeder {
         List<Product> products = buildSampleProducts(slots, brands, rand);
         productRepository.saveAll(products);
         log.info("Created {} products (existing catalog)", products.size());
+        return products;
+    }
+
+    public static List<Product> normalizeExistingProductImages(
+            ProductRepository productRepository,
+            List<Product> products,
+            Logger log) {
+
+        if (products == null || products.isEmpty()) {
+            return List.of();
+        }
+
+        List<Product> updatedProducts = new ArrayList<>();
+        for (Product product : products) {
+            String normalizedImageUrl = resolveNormalizedImageUrl(product);
+            List<String> normalizedImages = resolveNormalizedImages(product, normalizedImageUrl);
+
+            boolean imageUrlChanged = !normalizedImageUrl.equals(product.getImageUrl());
+            boolean imagesChanged = !normalizedImages.equals(product.getImages());
+
+            if (imageUrlChanged || imagesChanged) {
+                product.setImageUrl(normalizedImageUrl);
+                product.setImages(normalizedImages);
+                updatedProducts.add(product);
+            }
+        }
+
+        if (!updatedProducts.isEmpty()) {
+            productRepository.saveAll(updatedProducts);
+            log.info("Normalized image paths for {} existing products", updatedProducts.size());
+        }
+
         return products;
     }
 
@@ -485,6 +518,10 @@ public final class CatalogDataSeeder {
     }
 
     private static String resolvePlaceholderPath(Category category) {
+        if (category == null) {
+            return "/images/books/placeholders/default.svg";
+        }
+
         return switch (ShowcaseBookCatalog.forCategory(category.getName()).isEmpty() ? resolveThemeIndex(category) : resolveThemeIndex(category)) {
             case 0, 6 -> "/images/books/placeholders/literature.svg";
             case 1 -> "/images/books/placeholders/business.svg";
@@ -496,5 +533,51 @@ public final class CatalogDataSeeder {
             case 9 -> "/images/books/placeholders/art.svg";
             default -> "/images/books/placeholders/default.svg";
         };
+    }
+
+    private static String resolveNormalizedImageUrl(Product product) {
+        if (product != null && ShowcaseBookCatalog.isCuratedIsbn(product.getIsbn())) {
+            return ShowcaseBookCatalog.localCoverPath(product.getIsbn());
+        }
+
+        if (product != null && product.getImages() != null) {
+            for (String image : product.getImages()) {
+                if (image != null && !image.isBlank() && image.startsWith("/")) {
+                    return image;
+                }
+            }
+        }
+
+        if (product != null && product.getImageUrl() != null && !product.getImageUrl().isBlank() && product.getImageUrl().startsWith("/")) {
+            return product.getImageUrl();
+        }
+
+        return resolvePlaceholderPath(product != null ? product.getCategory() : null);
+    }
+
+    private static List<String> resolveNormalizedImages(Product product, String normalizedImageUrl) {
+        LinkedHashSet<String> images = new LinkedHashSet<>();
+
+        if (product != null && ShowcaseBookCatalog.isCuratedIsbn(product.getIsbn())) {
+            images.add(ShowcaseBookCatalog.localCoverPath(product.getIsbn()));
+        }
+
+        if (product != null && product.getImages() != null) {
+            for (String image : product.getImages()) {
+                if (image != null && !image.isBlank() && image.startsWith("/")) {
+                    images.add(image);
+                }
+            }
+        }
+
+        if (product != null && product.getImageUrl() != null && !product.getImageUrl().isBlank() && product.getImageUrl().startsWith("/")) {
+            images.add(product.getImageUrl());
+        }
+
+        if (images.isEmpty()) {
+            images.add(normalizedImageUrl);
+        }
+
+        return List.copyOf(images);
     }
 }

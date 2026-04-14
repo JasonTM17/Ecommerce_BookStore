@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public final class ShowcaseBookCatalog {
 
     private static final String OPEN_LIBRARY_SOURCE = "Open Library Covers API";
+    private static final String LOCAL_COVERS_BASE = "/images/books/covers/";
 
     private static final List<ShowcaseBookSeed> BOOKS = List.of(
             new ShowcaseBookSeed("tieu-thuyet", "The Great Gatsby", "F. Scott Fitzgerald", "Scribner", "9780743273565", 2004, "English", cover("9780743273565"), OPEN_LIBRARY_SOURCE),
@@ -67,6 +68,10 @@ public final class ShowcaseBookCatalog {
         return isbn != null && CURATED_ISBNS.contains(isbn);
     }
 
+    public static String localCoverPath(String isbn) {
+        return LOCAL_COVERS_BASE + isbn + "-L.jpg";
+    }
+
     public static List<Product> prioritizeProducts(List<Product> products) {
         return products.stream()
                 .sorted(Comparator
@@ -80,7 +85,7 @@ public final class ShowcaseBookCatalog {
     }
 
     private static String cover(String isbn) {
-        return "https://covers.openlibrary.org/b/isbn/" + isbn + "-L.jpg";
+        return localCoverPath(isbn);
     }
 
     private static String slugify(String input) {

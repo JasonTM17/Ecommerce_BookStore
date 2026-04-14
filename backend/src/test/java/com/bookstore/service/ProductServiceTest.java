@@ -187,6 +187,8 @@ class ProductServiceTest {
         assertEquals(25L, response.getActiveFlashSale().getId());
         assertEquals(flashSale.getEndTime(), response.getActiveFlashSale().getEndTime());
         assertEquals(flashSale.getRemainingStock(), response.getActiveFlashSale().getRemainingStock());
+        assertEquals(flashSale.getStockLimit(), response.getActiveFlashSale().getStockLimit());
+        assertEquals(flashSale.getSoldCount(), response.getActiveFlashSale().getSoldCount());
         assertEquals(2, response.getActiveFlashSale().getMaxPerUser());
     }
 

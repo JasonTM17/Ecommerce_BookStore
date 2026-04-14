@@ -18,9 +18,11 @@ public class PaymentResponse {
 
     private boolean success;
     private String message;
+    private Long orderId;
     private String transactionId;
     private String paymentUrl;
     private String orderNumber;
+    private String paymentStatus;
     private BigDecimal amount;
     private LocalDateTime expiresAt;
 }

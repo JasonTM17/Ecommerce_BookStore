@@ -27,6 +27,7 @@ import com.bookstore.repository.ProductRepository;
 import com.bookstore.repository.ReviewRepository;
 import com.bookstore.repository.UserRepository;
 import com.bookstore.repository.WishlistRepository;
+import com.bookstore.service.ProductImageNormalizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -54,9 +55,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DataSeeder {
 
     private static final int TARGET_CUSTOMER_COUNT = 24;
+    private static final int TARGET_ACTIVE_FLASH_SALES = 2;
+    private static final int TARGET_UPCOMING_FLASH_SALES = 2;
     private static final String DEMO_CUSTOMER_EMAIL = "customer@example.com";
 
     private final PasswordEncoder passwordEncoder;
+    private final ProductImageNormalizationService productImageNormalizationService;
 
     @Bean
     @Profile("!test")
@@ -213,7 +217,7 @@ public class DataSeeder {
             ProductRepository productRepository) {
 
         if (productRepository.count() > 0) {
-            return productRepository.findAll();
+            return productImageNormalizationService.normalizeExistingProductImages();
         }
 
         if (categoryRepository.count() > 0) {
@@ -600,38 +604,112 @@ public class DataSeeder {
     }
 
     private void ensureFlashSales(FlashSaleRepository flashSaleRepository, List<Product> prioritizedProducts) {
-        if (flashSaleRepository.count() > 0 || prioritizedProducts.isEmpty()) {
+        if (prioritizedProducts.isEmpty()) {
             return;
         }
 
         LocalDateTime now = LocalDateTime.now();
+        deactivateExpiredFlashSales(flashSaleRepository, now);
+
+        List<FlashSale> activeSales = flashSaleRepository.findActiveFlashSales(now);
+        List<FlashSale> upcomingSales = flashSaleRepository.findUpcomingFlashSales(now);
+
+        int activeNeeded = Math.max(0, TARGET_ACTIVE_FLASH_SALES - activeSales.size());
+        int upcomingNeeded = Math.max(0, TARGET_UPCOMING_FLASH_SALES - upcomingSales.size());
+
+        if (activeNeeded == 0 && upcomingNeeded == 0) {
+            return;
+        }
+
+        Set<Long> scheduledProductIds = new HashSet<>(flashSaleRepository.findScheduledProductIdsFrom(now));
         List<Product> showcaseProducts = prioritizedProducts.stream()
                 .filter(product -> Boolean.TRUE.equals(product.getIsActive()))
-                .limit(4)
+                .filter(product -> product.getStockQuantity() != null && product.getStockQuantity() > 0)
+                .filter(product -> product.getCurrentPrice() != null && product.getCurrentPrice().compareTo(BigDecimal.ZERO) > 0)
+                .filter(product -> !scheduledProductIds.contains(product.getId()))
+                .limit(activeNeeded + upcomingNeeded)
                 .toList();
 
-        List<FlashSale> flashSales = new ArrayList<>();
-        for (int i = 0; i < showcaseProducts.size(); i++) {
-            Product product = showcaseProducts.get(i);
-            BigDecimal originalPrice = product.getCurrentPrice();
-            BigDecimal salePrice = originalPrice.multiply(BigDecimal.valueOf(i < 2 ? 0.72 : 0.78))
-                    .setScale(0, java.math.RoundingMode.HALF_UP);
+        if (showcaseProducts.isEmpty()) {
+            log.info("Skipped flash sale top-up because no eligible showcase products were available");
+            return;
+        }
 
-            flashSales.add(FlashSale.builder()
-                    .product(product)
-                    .originalPrice(originalPrice)
-                    .salePrice(salePrice)
-                    .startTime(i < 2 ? now.minusHours(3L + i) : now.plusHours(12L + i * 6))
-                    .endTime(i < 2 ? now.plusHours(18L - i) : now.plusHours(42L + i * 6))
-                    .stockLimit(40 + i * 10)
-                    .soldCount(i < 2 ? 8 + i * 4 : 0)
-                    .maxPerUser(2)
-                    .isActive(true)
-                    .build());
+        List<FlashSale> flashSales = new ArrayList<>();
+        int cursor = 0;
+
+        for (int i = 0; i < activeNeeded && cursor < showcaseProducts.size(); i++, cursor++) {
+            flashSales.add(buildShowcaseFlashSale(
+                    showcaseProducts.get(cursor),
+                    now.minusHours(2L + i),
+                    now.plusHours(18L + i * 4),
+                    40 + i * 10,
+                    8 + i * 4,
+                    BigDecimal.valueOf(0.72)
+            ));
+        }
+
+        for (int i = 0; i < upcomingNeeded && cursor < showcaseProducts.size(); i++, cursor++) {
+            flashSales.add(buildShowcaseFlashSale(
+                    showcaseProducts.get(cursor),
+                    now.plusHours(8L + i * 6),
+                    now.plusHours(32L + i * 6),
+                    60 + i * 10,
+                    0,
+                    BigDecimal.valueOf(0.78)
+            ));
+        }
+
+        if (flashSales.isEmpty()) {
+            return;
         }
 
         flashSaleRepository.saveAll(flashSales);
-        log.info("Created {} flash sale entries", flashSales.size());
+        log.info(
+                "Ensured flash sale showcase coverage ({} active, {} upcoming created)",
+                Math.min(activeNeeded, flashSales.size()),
+                Math.max(0, flashSales.size() - activeNeeded)
+        );
+    }
+
+    private void deactivateExpiredFlashSales(FlashSaleRepository flashSaleRepository, LocalDateTime now) {
+        List<FlashSale> expiredFlashSales = flashSaleRepository.findExpiredActiveFlashSales(now);
+        if (expiredFlashSales.isEmpty()) {
+            return;
+        }
+
+        expiredFlashSales.forEach(flashSale -> flashSale.setIsActive(false));
+        flashSaleRepository.saveAll(expiredFlashSales);
+        log.info("Deactivated {} expired flash sale entries during demo seeding", expiredFlashSales.size());
+    }
+
+    private FlashSale buildShowcaseFlashSale(
+            Product product,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            int stockLimit,
+            int soldCount,
+            BigDecimal saleRatio) {
+
+        BigDecimal originalPrice = product.getCurrentPrice().setScale(0, java.math.RoundingMode.HALF_UP);
+        BigDecimal salePrice = originalPrice.multiply(saleRatio)
+                .setScale(0, java.math.RoundingMode.HALF_UP);
+
+        if (salePrice.compareTo(originalPrice) >= 0) {
+            salePrice = originalPrice.subtract(BigDecimal.ONE).max(BigDecimal.ONE);
+        }
+
+        return FlashSale.builder()
+                .product(product)
+                .originalPrice(originalPrice)
+                .salePrice(salePrice)
+                .startTime(startTime)
+                .endTime(endTime)
+                .stockLimit(stockLimit)
+                .soldCount(Math.min(soldCount, Math.max(0, stockLimit - 1)))
+                .maxPerUser(2)
+                .isActive(true)
+                .build();
     }
 
     private String slugify(String input) {

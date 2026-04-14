@@ -32,7 +32,7 @@ public class PaymentController {
             @RequestBody Map<String, Object> request) {
         Long orderId = Long.valueOf(request.get("orderId").toString());
         String ipAddress = request.get("ipAddress") != null ? request.get("ipAddress").toString() : "127.0.0.1";
-        PaymentResponse response = vnPayService.createPayment(orderId, ipAddress);
+        PaymentResponse response = vnPayService.createPayment(user, orderId, ipAddress);
         return ResponseEntity.ok(ApiResponse.success(response, response.getMessage()));
     }
 
@@ -58,7 +58,7 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getPaymentStatus(
             @AuthenticationPrincipal User user,
             @PathVariable Long orderId) {
-        return ResponseEntity.ok(ApiResponse.success(Map.of("orderId", orderId, "status", "check_with_repository")));
+        return ResponseEntity.ok(ApiResponse.success(vnPayService.getPaymentStatus(user, orderId)));
     }
 
     @PostMapping("/{orderId}/refund")

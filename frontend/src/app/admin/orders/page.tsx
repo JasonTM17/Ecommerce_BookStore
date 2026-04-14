@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -160,18 +160,12 @@ const COPY = {
 
 export default function AdminOrdersPage() {
   const router = useRouter();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading: isAuthLoading } = useAuth(true, true);
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    if (!isAuthenticated || !isAdmin) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, isAdmin, router]);
 
   const { data, isLoading } = useQuery<PageResponse<Order>>({
     queryKey: ["admin-orders", page, status, search],
@@ -195,7 +189,7 @@ export default function AdminOrdersPage() {
     retry: false,
   });
 
-  if (!isAuthenticated || !isAdmin) {
+  if (isAuthLoading || !isAuthenticated || !isAdmin) {
     return null;
   }
 

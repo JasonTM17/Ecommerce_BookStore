@@ -58,6 +58,8 @@ public class ProductResponse {
         private Long id;
         private LocalDateTime endTime;
         private Integer remainingStock;
+        private Integer stockLimit;
+        private Integer soldCount;
         private Integer maxPerUser;
     }
 }

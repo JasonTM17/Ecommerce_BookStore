@@ -424,6 +424,8 @@ public class ProductService {
                 .id(flashSale.getId())
                 .endTime(flashSale.getEndTime())
                 .remainingStock(flashSale.getRemainingStock())
+                .stockLimit(flashSale.getStockLimit())
+                .soldCount(flashSale.getSoldCount())
                 .maxPerUser(flashSale.getMaxPerUser())
                 .build();
     }

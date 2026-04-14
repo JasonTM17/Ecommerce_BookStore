@@ -2,9 +2,8 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Calendar,
@@ -142,9 +141,8 @@ const COPY = {
 } as const;
 
 export default function AdminUsersPage() {
-  const router = useRouter();
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading: isAuthLoading } = useAuth(true, true);
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const [page, setPage] = useState(0);
@@ -153,12 +151,6 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated || !isAdmin) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, isAdmin, router]);
 
   const { data, isLoading } = useQuery<PageResponse<UserRecord>>({
     queryKey: ["admin-users", page, search, roleFilter, statusFilter],
@@ -213,7 +205,7 @@ export default function AdminUsersPage() {
     },
   });
 
-  if (!isAuthenticated || !isAdmin) {
+  if (isAuthLoading || !isAuthenticated || !isAdmin) {
     return null;
   }
 

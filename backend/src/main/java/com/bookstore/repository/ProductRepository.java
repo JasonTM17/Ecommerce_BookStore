@@ -1,6 +1,7 @@
 package com.bookstore.repository;
 
 import com.bookstore.entity.Product;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> findByIsbn(String isbn);
 
     boolean existsByIsbn(String isbn);
+
+    @EntityGraph(attributePaths = {"category", "images"})
+    @Query("SELECT p FROM Product p")
+    List<Product> findAllWithCategoryAndImages();
 
     /** Eager-load associations needed for {@link com.bookstore.service.ProductService#mapToProductResponse}. */
     @Query(

@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -175,18 +175,12 @@ export default function AdminOrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading: isAuthLoading } = useAuth(true, true);
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const orderId = String(params.id);
   const [newStatus, setNewStatus] = useState("");
   const [newPaymentStatus, setNewPaymentStatus] = useState("");
-
-  useEffect(() => {
-    if (!isAuthenticated || !isAdmin) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, isAdmin, router]);
 
   const { data: order, isLoading } = useQuery<Order>({
     queryKey: ["admin-order", orderId],
@@ -242,7 +236,7 @@ export default function AdminOrderDetailPage() {
     [copy]
   );
 
-  if (!isAuthenticated || !isAdmin) {
+  if (isAuthLoading || !isAuthenticated || !isAdmin) {
     return null;
   }
 

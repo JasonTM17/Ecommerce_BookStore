@@ -1,43 +1,66 @@
-import { api } from "./api";
+import { api, apiPublic, type ApiResponse } from "./api";
 
 export interface PaymentResponse {
-  orderId: number;
-  paymentUrl: string;
-  transactionId: string;
-  amount: number;
-  paymentMethod: string;
-  status: string;
-  createdAt: string;
+  success: boolean;
+  message?: string;
+  orderId?: number;
+  paymentUrl?: string;
+  transactionId?: string;
+  amount?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  orderNumber?: string;
+  expiresAt?: string;
+  createdAt?: string;
 }
 
 export interface PaymentStatus {
   orderId: number;
-  status: string;
+  orderNumber?: string;
+  paymentMethod?: string;
   paymentStatus: string;
-  transactionId: string | null;
-  paidAt: string | null;
+  transactionId?: string | null;
+  paidAt?: string | null;
+  expiresAt?: string | null;
+  amount?: number;
+  success?: boolean;
 }
 
 export const paymentApi = {
-  createVNPayPayment: async (orderId: number) => {
-    const response = await api.post<{ data: PaymentResponse }>(
+  async createVNPayPayment(orderId: number) {
+    const response = await api.post<ApiResponse<PaymentResponse>>(
       "/payments/vnpay/create",
-      { orderId }
+      {
+        orderId,
+      },
     );
-    return response.data.data;
+    return response.data.data as PaymentResponse;
   },
 
-  getPaymentStatus: async (orderId: number) => {
-    const response = await api.get<{ data: PaymentStatus }>(
-      `/payments/${orderId}/status`
+  async confirmVNPayReturn(params: Record<string, string>) {
+    const response = await apiPublic.get<ApiResponse<PaymentResponse>>(
+      "/payments/vnpay/return",
+      {
+        params,
+      },
     );
-    return response.data.data;
+    return response.data.data as PaymentResponse;
   },
 
-  requestRefund: async (orderId: number, reason: string) => {
-    const response = await api.post<{ data: any }>(`/payments/${orderId}/refund`, {
-      reason,
-    });
-    return response.data.data;
+  async getPaymentStatus(orderId: number) {
+    const response = await api.get<ApiResponse<PaymentStatus>>(
+      `/payments/${orderId}/status`,
+    );
+    return response.data.data as PaymentStatus;
+  },
+
+  async requestRefund(orderId: number, reason: string) {
+    const response = await api.post<ApiResponse<PaymentResponse>>(
+      `/payments/${orderId}/refund`,
+      {
+        reason,
+      },
+    );
+    return response.data.data as PaymentResponse;
   },
 };

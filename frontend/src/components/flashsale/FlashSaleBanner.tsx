@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { flashSaleApi, FlashSale } from "@/lib/flashsale";
 import { Loader2, Zap, Clock } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { ProductImage } from "@/components/ui/ProductImage";
+import { getCategoryPlaceholderImage } from "@/lib/product-images";
 
 export function FlashSaleBanner() {
   const { data: flashSales = [], isLoading } = useQuery({
@@ -51,17 +52,17 @@ function FlashSaleQuickView({ sale }: { sale: FlashSale }) {
   return (
     <Link
       href={`/products/${sale.product.id}`}
+      data-testid="flash-sale-banner-item"
       className="flex items-center gap-3 bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 shrink-0 transition-colors"
     >
       <div className="w-10 h-14 bg-white rounded overflow-hidden relative">
-        {sale.product.imageUrl && (
-          <Image
-            src={sale.product.imageUrl}
-            alt={sale.product.name}
-            fill
-            className="object-cover"
-          />
-        )}
+        <ProductImage
+          src={sale.product.imageUrl || undefined}
+          fallbackSrc={getCategoryPlaceholderImage()}
+          alt={sale.product.name}
+          fill
+          className="object-cover"
+        />
       </div>
       <div>
         <p className="text-white text-sm font-medium line-clamp-1">
@@ -78,7 +79,9 @@ function FlashSaleQuickView({ sale }: { sale: FlashSale }) {
         <div className="flex items-center gap-1 text-xs text-white/80 mt-1">
           <Clock className="h-3 w-3" />
           <span className="font-mono tabular-nums">
-            {String(timeLeft.hours).padStart(2, "0")}:{String(timeLeft.minutes).padStart(2, "0")}:{String(timeLeft.seconds).padStart(2, "0")}
+            {String(timeLeft.hours).padStart(2, "0")}:
+            {String(timeLeft.minutes).padStart(2, "0")}:
+            {String(timeLeft.seconds).padStart(2, "0")}
           </span>
         </div>
       </div>

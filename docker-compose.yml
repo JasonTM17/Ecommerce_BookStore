@@ -76,6 +76,11 @@ services:
       GROK_API_KEY: ${GROK_API_KEY:-}
       GROK_MODEL: ${GROK_MODEL:-grok-3}
       GROK_API_URL: ${GROK_API_URL:-https://api.x.ai/v1/chat/completions}
+      VNPAY_URL: ${VNPAY_URL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+      VNPAY_MERCHANT_ID: ${VNPAY_MERCHANT_ID:-}
+      VNPAY_MERCHANT_KEY: ${VNPAY_MERCHANT_KEY:-}
+      VNPAY_RETURN_URL: ${VNPAY_RETURN_URL:-http://localhost:3001/payment/return}
+      VNPAY_IPN_URL: ${VNPAY_IPN_URL:-http://localhost:8080/api/payments/vnpay/ipn}
       # Weekly flash sale automation
       FLASHSALE_AUTO_ENABLED: ${FLASHSALE_AUTO_ENABLED:-true}
       FLASHSALE_AUTO_CRON: "${FLASHSALE_AUTO_CRON:-0 5 0 ? * MON}"
@@ -98,11 +103,11 @@ services:
       # Email (cấu hình trong .env)
       MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
       MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME:-xiaozhongli1710@gmail.com}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-ebze tvdw nxfy xnur}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-noreply@bookstore.com}
-      APP_EMAIL_TEST_ENABLED: "true"
-      APP_EMAIL_ALLOWED_RECIPIENTS: "jasonbmt06@gmail.com,xiaozhongli1710@gmail.com"
+      APP_EMAIL_TEST_ENABLED: ${APP_EMAIL_TEST_ENABLED:-false}
+      APP_EMAIL_ALLOWED_RECIPIENTS: ${APP_EMAIL_ALLOWED_RECIPIENTS:-}
     ports:
       - "8080:8080"
     volumes:
@@ -127,6 +132,7 @@ services:
         NEXT_PUBLIC_API_URL: /api
         NEXT_PUBLIC_APP_NAME: BookStore
         NEXT_PUBLIC_APP_DESCRIPTION: Professional Vietnamese E-Commerce BookStore Platform
+        NEXT_PUBLIC_VNPAY_ENABLED: ${NEXT_PUBLIC_VNPAY_ENABLED:-false}
         API_PROXY_TARGET: http://backend:8080/api
     container_name: bookstore-frontend
     restart: unless-stopped
@@ -134,6 +140,7 @@ services:
       NEXT_PUBLIC_API_URL: /api
       NEXT_PUBLIC_APP_NAME: BookStore
       NEXT_PUBLIC_APP_DESCRIPTION: Professional Vietnamese E-Commerce BookStore Platform
+      NEXT_PUBLIC_VNPAY_ENABLED: ${NEXT_PUBLIC_VNPAY_ENABLED:-false}
       API_PROXY_TARGET: http://backend:8080/api
     ports:
       - "3001:3000"

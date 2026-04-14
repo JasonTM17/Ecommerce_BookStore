@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { afterAll, describe, it, expect, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useCartStore } from "@/lib/store";
 import type { CartItem, Product } from "@/lib/store";
 
 // Mock localStorage for persist middleware
+const originalLocalStorage = globalThis.localStorage;
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
@@ -11,6 +12,10 @@ const localStorageMock = {
   clear: vi.fn(),
 };
 vi.stubGlobal("localStorage", localStorageMock);
+
+afterAll(() => {
+  vi.stubGlobal("localStorage", originalLocalStorage);
+});
 
 const mockProduct: Product = {
   id: 1,

@@ -42,7 +42,7 @@ public class VNPayService {
     @Value("${vnpay.merchant.key:}")
     private String merchantKey;
 
-    @Value("${vnpay.return.url:http://localhost:3000/payment/return}")
+    @Value("${vnpay.return.url:http://localhost:3001/payment/return}")
     private String returnUrl;
 
     @Value("${vnpay.ipn.url:http://localhost:8080/api/payments/vnpay/ipn}")
@@ -52,9 +52,10 @@ public class VNPayService {
     private String appBaseUrl;
 
     @Transactional
-    public PaymentResponse createPayment(Long orderId, String ipAddress) {
-        Order order = orderRepository.findByIdWithUser(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+    public PaymentResponse createPayment(User user, Long orderId, String ipAddress) {
+        validateConfigured();
+
+        Order order = findAuthorizedOrder(user, orderId);
 
         if (!PaymentMethod.VNPAY.name().equals(order.getPaymentMethod())) {
             throw new BadRequestException("Đơn hàng không hỗ trợ thanh toán VNPay");
@@ -79,8 +80,11 @@ public class VNPayService {
 
         return PaymentResponse.builder()
                 .success(true)
+                .orderId(order.getId())
                 .transactionId(transactionId)
                 .paymentUrl(paymentUrl)
+                .orderNumber(order.getOrderNumber())
+                .paymentStatus(order.getPaymentStatus().name())
                 .amount(order.getTotalAmount())
                 .expiresAt(transaction.getExpiredAt())
                 .message("Redirect to VNPay to complete payment")
@@ -119,6 +123,7 @@ public class VNPayService {
         if (!verifySignature(params, secureHash)) {
             return PaymentResponse.builder()
                     .success(false)
+                    .paymentStatus(PaymentStatus.FAILED.name())
                     .message("Invalid signature")
                     .build();
         }
@@ -141,7 +146,9 @@ public class VNPayService {
 
             return PaymentResponse.builder()
                     .success(true)
+                    .orderId(order.getId())
                     .transactionId(transactionId)
+                    .paymentStatus(order.getPaymentStatus().name())
                     .amount(transaction.getAmount())
                     .message("Thanh toán thành công!")
                     .orderNumber(order.getOrderNumber())
@@ -155,7 +162,11 @@ public class VNPayService {
 
             return PaymentResponse.builder()
                     .success(false)
+                    .orderId(transaction.getOrder().getId())
                     .transactionId(transactionId)
+                    .paymentStatus(transaction.getOrder().getPaymentStatus().name())
+                    .orderNumber(transaction.getOrder().getOrderNumber())
+                    .amount(transaction.getAmount())
                     .message("Thanh toán thất bại. Mã lỗi: " + vnpResponseCode)
                     .build();
         }
@@ -205,6 +216,24 @@ public class VNPayService {
                 .transactionId(transactionId)
                 .message("00".equals(vnpResponseCode) ? "Success" : "Failed")
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getPaymentStatus(User user, Long orderId) {
+        Order order = findAuthorizedOrder(user, orderId);
+        Optional<PaymentTransaction> transaction = transactionRepository.findByOrderId(orderId);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("orderId", order.getId());
+        response.put("orderNumber", order.getOrderNumber());
+        response.put("paymentMethod", order.getPaymentMethod());
+        response.put("paymentStatus", order.getPaymentStatus().name());
+        response.put("transactionId", transaction.map(PaymentTransaction::getTransactionId).orElse(null));
+        response.put("paidAt", transaction.map(PaymentTransaction::getPaidAt).orElse(null));
+        response.put("expiresAt", transaction.map(PaymentTransaction::getExpiredAt).orElse(null));
+        response.put("amount", transaction.map(PaymentTransaction::getAmount).orElse(order.getTotalAmount()));
+        response.put("success", order.getPaymentStatus() == PaymentStatus.SUCCESS);
+        return response;
     }
 
     @Transactional
@@ -290,6 +319,32 @@ public class VNPayService {
 
     private String generateTransactionId() {
         return "TXN" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private void validateConfigured() {
+        if (!isConfigured()) {
+            throw new BadRequestException("VNPay chưa được cấu hình trong môi trường hiện tại");
+        }
+    }
+
+    private boolean isConfigured() {
+        return merchantId != null
+                && !merchantId.isBlank()
+                && !merchantId.contains("your-merchant-id")
+                && merchantKey != null
+                && !merchantKey.isBlank()
+                && !merchantKey.contains("your-merchant-key");
+    }
+
+    private Order findAuthorizedOrder(User user, Long orderId) {
+        Order order = orderRepository.findByIdWithUser(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+
+        if (user == null || (!order.getUser().getId().equals(user.getId()) && !user.getRoles().contains(Role.ADMIN))) {
+            throw new BadRequestException("Bạn không có quyền truy cập giao dịch thanh toán này");
+        }
+
+        return order;
     }
 
     private void sendOrderConfirmationEmail(Order order) {

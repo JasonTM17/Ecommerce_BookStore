@@ -5,7 +5,6 @@ export const dynamic = "force-dynamic";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -29,17 +28,24 @@ import { api } from "@/lib/api";
 import { useAuthStore, type Order } from "@/lib/store";
 import { buildLoginRedirect, cn, formatCurrency } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/language-provider";
+import { ProductImage } from "@/components/ui/ProductImage";
+import {
+  getCategoryPlaceholderImage,
+  resolveProductImageSource,
+} from "@/lib/product-images";
 
 const COPY = {
   vi: {
     back: "Quay lại đơn hàng",
     detailLabel: "Chi tiết đơn hàng",
     orderNotFound: "Không tìm thấy đơn hàng",
-    orderNotFoundDescription: "Đơn hàng này có thể không còn tồn tại hoặc không thuộc về tài khoản hiện tại.",
+    orderNotFoundDescription:
+      "Đơn hàng này có thể không còn tồn tại hoặc không thuộc về tài khoản hiện tại.",
     viewOrders: "Xem tất cả đơn hàng",
     continueShopping: "Tiếp tục mua sắm",
     unableToLoad: "Không thể tải đơn hàng",
-    retryDescription: "Vui lòng thử lại sau. Nếu vấn đề vẫn tiếp diễn, hãy liên hệ hỗ trợ.",
+    retryDescription:
+      "Vui lòng thử lại sau. Nếu vấn đề vẫn tiếp diễn, hãy liên hệ hỗ trợ.",
     returnOrders: "Quay lại đơn hàng",
     currentStatus: "Trạng thái hiện tại",
     placedAt: "Thời gian đặt",
@@ -68,11 +74,13 @@ const COPY = {
     back: "Back to orders",
     detailLabel: "Order details",
     orderNotFound: "Order not found",
-    orderNotFoundDescription: "This order may no longer exist or may not belong to the current account.",
+    orderNotFoundDescription:
+      "This order may no longer exist or may not belong to the current account.",
     viewOrders: "View all orders",
     continueShopping: "Continue shopping",
     unableToLoad: "Unable to load this order",
-    retryDescription: "Please try again in a moment. If the problem keeps happening, contact support.",
+    retryDescription:
+      "Please try again in a moment. If the problem keeps happening, contact support.",
     returnOrders: "Return to orders",
     currentStatus: "Current status",
     placedAt: "Placed at",
@@ -99,12 +107,27 @@ const COPY = {
   },
 } as const;
 
-const STATUS_CONFIG: Record<string, { icon: typeof Package; color: string; bgColor: string }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { icon: typeof Package; color: string; bgColor: string }
+> = {
   PENDING: { icon: Clock, color: "text-yellow-600", bgColor: "bg-yellow-100" },
-  CONFIRMED: { icon: CheckCircle, color: "text-blue-600", bgColor: "bg-blue-100" },
-  PROCESSING: { icon: Package, color: "text-purple-600", bgColor: "bg-purple-100" },
+  CONFIRMED: {
+    icon: CheckCircle,
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
+  },
+  PROCESSING: {
+    icon: Package,
+    color: "text-purple-600",
+    bgColor: "bg-purple-100",
+  },
   SHIPPED: { icon: Truck, color: "text-orange-600", bgColor: "bg-orange-100" },
-  DELIVERED: { icon: CheckCircle, color: "text-green-600", bgColor: "bg-green-100" },
+  DELIVERED: {
+    icon: CheckCircle,
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+  },
   CANCELLED: { icon: XCircle, color: "text-red-600", bgColor: "bg-red-100" },
   REFUNDED: { icon: RotateCcw, color: "text-gray-600", bgColor: "bg-gray-100" },
 };
@@ -123,7 +146,13 @@ function formatDateTime(value: string | undefined, locale: "vi" | "en") {
   }).format(new Date(value));
 }
 
-function OrderStatusBadge({ order, locale }: { order: Order; locale: "vi" | "en" }) {
+function OrderStatusBadge({
+  order,
+  locale,
+}: {
+  order: Order;
+  locale: "vi" | "en";
+}) {
   const config = STATUS_CONFIG[order.orderStatus] || STATUS_CONFIG.PENDING;
   const Icon = config.icon;
   return (
@@ -131,11 +160,12 @@ function OrderStatusBadge({ order, locale }: { order: Order; locale: "vi" | "en"
       className={cn(
         "inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium",
         config.bgColor,
-        config.color
+        config.color,
       )}
     >
       <Icon className="h-4 w-4" />
-      {order.orderStatusDisplayName || (locale === "vi" ? order.orderStatus : order.orderStatus)}
+      {order.orderStatusDisplayName ||
+        (locale === "vi" ? order.orderStatus : order.orderStatus)}
     </span>
   );
 }
@@ -188,7 +218,9 @@ export default function OrderDetailPage() {
           </Link>
           <div>
             <p className="text-sm text-gray-500">{copy.detailLabel}</p>
-            <h1 className="text-3xl font-bold text-gray-900">{order?.orderNumber || `#${params?.id ?? ""}`}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {order?.orderNumber || `#${params?.id ?? ""}`}
+            </h1>
           </div>
         </div>
 
@@ -203,8 +235,12 @@ export default function OrderDetailPage() {
         ) : showMissingState ? (
           <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-8 py-20 text-center shadow-sm">
             <ShoppingBag className="mx-auto mb-4 h-14 w-14 text-gray-300" />
-            <h2 className="mb-2 text-2xl font-semibold text-gray-900">{copy.orderNotFound}</h2>
-            <p className="mx-auto mb-6 max-w-xl text-gray-500">{copy.orderNotFoundDescription}</p>
+            <h2 className="mb-2 text-2xl font-semibold text-gray-900">
+              {copy.orderNotFound}
+            </h2>
+            <p className="mx-auto mb-6 max-w-xl text-gray-500">
+              {copy.orderNotFoundDescription}
+            </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link href="/orders">
                 <Button>{copy.viewOrders}</Button>
@@ -217,8 +253,12 @@ export default function OrderDetailPage() {
         ) : !order ? (
           <div className="rounded-3xl border border-gray-200 bg-white px-8 py-20 text-center shadow-sm">
             <Package className="mx-auto mb-4 h-14 w-14 text-gray-300" />
-            <h2 className="mb-2 text-2xl font-semibold text-gray-900">{copy.unableToLoad}</h2>
-            <p className="mx-auto mb-6 max-w-xl text-gray-500">{copy.retryDescription}</p>
+            <h2 className="mb-2 text-2xl font-semibold text-gray-900">
+              {copy.unableToLoad}
+            </h2>
+            <p className="mx-auto mb-6 max-w-xl text-gray-500">
+              {copy.retryDescription}
+            </p>
             <Link href="/orders">
               <Button>{copy.returnOrders}</Button>
             </Link>
@@ -229,14 +269,18 @@ export default function OrderDetailPage() {
               <div className="rounded-3xl bg-white p-6 shadow-sm">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">{copy.currentStatus}</p>
+                    <p className="text-sm text-gray-500">
+                      {copy.currentStatus}
+                    </p>
                     <div className="mt-2">
                       <OrderStatusBadge order={order} locale={locale} />
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-500">{copy.placedAt}</p>
-                    <p className="font-medium text-gray-900">{formatDateTime(order.createdAt, locale)}</p>
+                    <p className="font-medium text-gray-900">
+                      {formatDateTime(order.createdAt, locale)}
+                    </p>
                   </div>
                 </div>
 
@@ -246,27 +290,41 @@ export default function OrderDetailPage() {
                     <p className="mt-1 font-semibold text-gray-900">
                       {order.paymentStatusDisplayName || order.paymentStatus}
                     </p>
-                    <p className="mt-1 text-sm text-gray-500">{order.paymentMethod || copy.notAvailable}</p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {order.paymentMethod || copy.notAvailable}
+                    </p>
                   </div>
                   <div className="rounded-2xl bg-gray-50 p-4">
                     <p className="text-sm text-gray-500">{copy.delivery}</p>
                     <p className="mt-1 font-semibold text-gray-900">
-                      {order.shippingMethod || (locale === "vi" ? "Giao hàng tiêu chuẩn" : "Standard shipping")}
+                      {order.shippingMethod ||
+                        (locale === "vi"
+                          ? "Giao hàng tiêu chuẩn"
+                          : "Standard shipping")}
                     </p>
                     <p className="mt-1 text-sm text-gray-500">
-                      {copy.delivered}: {order.deliveredAt ? formatDateTime(order.deliveredAt, locale) : copy.pending}
+                      {copy.delivered}:{" "}
+                      {order.deliveredAt
+                        ? formatDateTime(order.deliveredAt, locale)
+                        : copy.pending}
                     </p>
                   </div>
                   <div className="rounded-2xl bg-gray-50 p-4">
                     <p className="text-sm text-gray-500">{copy.totalAmount}</p>
-                    <p className="mt-1 text-xl font-bold text-blue-600">{formatCurrency(order.totalAmount)}</p>
-                    <p className="mt-1 text-sm text-gray-500">{copy.includes}</p>
+                    <p className="mt-1 text-xl font-bold text-blue-600">
+                      {formatCurrency(order.totalAmount)}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {copy.includes}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <section className="rounded-3xl bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-xl font-semibold text-gray-900">{copy.itemsTitle}</h2>
+                <h2 className="mb-4 text-xl font-semibold text-gray-900">
+                  {copy.itemsTitle}
+                </h2>
                 <div className="space-y-4">
                   {order.orderItems.map((item) => (
                     <div
@@ -274,24 +332,25 @@ export default function OrderDetailPage() {
                       className="flex flex-col gap-4 rounded-2xl border border-gray-100 p-4 sm:flex-row sm:items-center"
                     >
                       <div className="relative h-28 w-24 overflow-hidden rounded-2xl bg-gray-100">
-                        {item.product.imageUrl ? (
-                          <Image
-                            src={item.product.imageUrl}
-                            alt={item.product.name}
-                            fill
-                            className="object-cover"
-                            sizes="96px"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-sm text-gray-400">
-                            {copy.noImage}
-                          </div>
-                        )}
+                        <ProductImage
+                          src={resolveProductImageSource(item.product)}
+                          fallbackSrc={getCategoryPlaceholderImage(
+                            item.product.category?.name,
+                          )}
+                          alt={item.product.name}
+                          fill
+                          className="object-cover"
+                          sizes="96px"
+                        />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="text-lg font-semibold text-gray-900">{item.product.name}</p>
-                        <p className="mt-1 text-sm text-gray-500">{item.product.author || item.product.publisher}</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {item.product.name}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500">
+                          {item.product.author || item.product.publisher}
+                        </p>
                         <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-600">
                           <span>Qty: {item.quantity}</span>
                           <span>Unit price: {formatCurrency(item.price)}</span>
@@ -300,7 +359,9 @@ export default function OrderDetailPage() {
 
                       <div className="text-left sm:text-right">
                         <p className="text-sm text-gray-500">{copy.subtotal}</p>
-                        <p className="text-lg font-bold text-gray-900">{formatCurrency(item.subtotal)}</p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {formatCurrency(item.subtotal)}
+                        </p>
                         <Link
                           href={`/products/${item.product.id}`}
                           className="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700"
@@ -316,12 +377,16 @@ export default function OrderDetailPage() {
 
             <aside className="space-y-6">
               <section className="rounded-3xl bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-xl font-semibold text-gray-900">{copy.shippingInfo}</h2>
+                <h2 className="mb-4 text-xl font-semibold text-gray-900">
+                  {copy.shippingInfo}
+                </h2>
                 <div className="space-y-4 text-sm text-gray-600">
                   <div className="flex items-start gap-3">
                     <MapPin className="mt-0.5 h-4 w-4 text-blue-600" />
                     <div>
-                      <p className="font-medium text-gray-900">{order.shippingReceiverName}</p>
+                      <p className="font-medium text-gray-900">
+                        {order.shippingReceiverName}
+                      </p>
                       <p>{order.shippingAddress}</p>
                     </div>
                   </div>
@@ -335,7 +400,9 @@ export default function OrderDetailPage() {
                   <div className="flex items-start gap-3">
                     <CreditCard className="mt-0.5 h-4 w-4 text-blue-600" />
                     <div>
-                      <p className="font-medium text-gray-900">{copy.paymentMethod}</p>
+                      <p className="font-medium text-gray-900">
+                        {copy.paymentMethod}
+                      </p>
                       <p>{order.paymentMethod || copy.notAvailable}</p>
                     </div>
                   </div>
@@ -343,7 +410,9 @@ export default function OrderDetailPage() {
               </section>
 
               <section className="rounded-3xl bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-xl font-semibold text-gray-900">{copy.summary}</h2>
+                <h2 className="mb-4 text-xl font-semibold text-gray-900">
+                  {copy.summary}
+                </h2>
                 <div className="space-y-3 text-sm text-gray-600">
                   <div className="flex items-center justify-between">
                     <span>{copy.subtotal}</span>
@@ -372,8 +441,12 @@ export default function OrderDetailPage() {
 
               {order.notes ? (
                 <section className="rounded-3xl bg-white p-6 shadow-sm">
-                  <h2 className="mb-3 text-xl font-semibold text-gray-900">{copy.notes}</h2>
-                  <p className="text-sm leading-6 text-gray-600">{order.notes}</p>
+                  <h2 className="mb-3 text-xl font-semibold text-gray-900">
+                    {copy.notes}
+                  </h2>
+                  <p className="text-sm leading-6 text-gray-600">
+                    {order.notes}
+                  </p>
                 </section>
               ) : null}
             </aside>

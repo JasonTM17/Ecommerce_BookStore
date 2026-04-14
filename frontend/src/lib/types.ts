@@ -5,6 +5,8 @@ export interface ActiveFlashSaleSummary {
   endTime: string;
   remainingStock?: number;
   maxPerUser?: number;
+  stockLimit?: number;
+  soldCount?: number;
 }
 
 export interface Product {
@@ -140,7 +142,10 @@ export function formatPrice(price: number): string {
   }).format(price);
 }
 
-export function calculateDiscount(originalPrice: number, discountPercent: number): number {
+export function calculateDiscount(
+  originalPrice: number,
+  discountPercent: number,
+): number {
   return Math.round(originalPrice * (1 - discountPercent / 100));
 }
 

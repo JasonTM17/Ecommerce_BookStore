@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { Zap, Clock, ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { flashSaleApi, FlashSale } from "@/lib/flashsale";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { ProductImage } from "@/components/ui/ProductImage";
+import { getCategoryPlaceholderImage } from "@/lib/product-images";
 
 export function FlashSaleSection() {
   const { data: activeSales = [] } = useQuery({
@@ -29,11 +30,16 @@ export function FlashSaleSection() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Flash Sale</h2>
-              <p className="text-gray-500">Giảm giá cực sốc trong thời gian có hạn</p>
+              <p className="text-gray-500">
+                Giảm giá cực sốc trong thời gian có hạn
+              </p>
             </div>
           </div>
           <Link href="/flash-sale">
-            <Button variant="outline" className="border-red-200 text-red-500 hover:bg-red-50">
+            <Button
+              variant="outline"
+              className="border-red-200 text-red-500 hover:bg-red-50"
+            >
               Xem tất cả
             </Button>
           </Link>
@@ -71,27 +77,26 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
   return (
     <Link
       href={`/products/${sale.product.id}`}
+      data-testid="flash-sale-card"
       className={cn(
         "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden",
-        "hover:shadow-xl hover:border-red-200 transition-all duration-300 group"
+        "hover:shadow-xl hover:border-red-200 transition-all duration-300 group",
       )}
     >
       {/* Image */}
       <div className="relative aspect-[3/4] bg-gray-100">
-        {sale.product.imageUrl && (
-          <Image
-            src={sale.product.imageUrl}
-            alt={sale.product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        )}
+        <ProductImage
+          src={sale.product.imageUrl || undefined}
+          fallbackSrc={getCategoryPlaceholderImage()}
+          alt={sale.product.name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+        />
 
         {/* Flash Sale Badge */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           <div className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-md flex items-center gap-1">
-            <Zap className="h-3 w-3" />
-            -{sale.discountPercent}%
+            <Zap className="h-3 w-3" />-{sale.discountPercent}%
           </div>
         </div>
 
@@ -104,7 +109,9 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
           <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all"
-              style={{ width: `${Math.min(100, (sale.soldCount / sale.stockLimit) * 100)}%` }}
+              style={{
+                width: `${Math.min(100, (sale.soldCount / sale.stockLimit) * 100)}%`,
+              }}
             />
           </div>
         </div>
@@ -119,8 +126,12 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg font-bold text-red-600">{formatPrice(sale.salePrice)}</span>
-          <span className="text-sm text-gray-400 line-through">{formatPrice(sale.originalPrice)}</span>
+          <span className="text-lg font-bold text-red-600">
+            {formatPrice(sale.salePrice)}
+          </span>
+          <span className="text-sm text-gray-400 line-through">
+            {formatPrice(sale.originalPrice)}
+          </span>
         </div>
 
         {/* Countdown */}

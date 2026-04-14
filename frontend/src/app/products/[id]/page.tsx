@@ -2,30 +2,50 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { apiPublic } from "@/lib/api";
-import { Product, Review, PageResponse } from "@/lib/types";
-import { buildLoginRedirect, cn, formatCurrency } from "@/lib/utils";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { ProductCard } from "@/components/product-card";
-import { FlashSaleCountdownCard } from "@/components/flashsale/FlashSaleCountdownCard";
-import { Button } from "@/components/ui/button";
-import { useAddToCart } from "@/hooks/useAddToCart";
-import { useAuth } from "@/components/providers/auth-provider";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useToast } from "@/components/ui/use-toast";
-import { notifyToast } from "@/lib/toast";
-import { Star, ShoppingCart, Minus, Plus, Heart, Share2, Truck, Shield, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Heart,
+  Minus,
+  Plus,
+  RotateCcw,
+  Share2,
+  Shield,
+  ShoppingCart,
+  Star,
+  Truck,
+} from "lucide-react";
+import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
+import { useAuth } from "@/components/providers/auth-provider";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { FlashSaleCountdownCard } from "@/components/flashsale/FlashSaleCountdownCard";
+import { ProductCard } from "@/components/product-card";
+import { ProductImage } from "@/components/ui/ProductImage";
+import { useAddToCart } from "@/hooks/useAddToCart";
+import { useWishlist } from "@/hooks/useWishlist";
+import { apiPublic } from "@/lib/api";
+import {
+  getCategoryPlaceholderImage,
+  resolveProductImageSource,
+} from "@/lib/product-images";
+import { notifyToast } from "@/lib/toast";
+import type { PageResponse, Product, Review } from "@/lib/types";
+import { buildLoginRedirect, cn, formatCurrency } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/language-provider";
 
-function normalizeRouteParam(id: string | string[] | undefined): string | undefined {
-  if (id === undefined || id === null) return undefined;
+function normalizeRouteParam(
+  id: string | string[] | undefined,
+): string | undefined {
+  if (id === undefined || id === null) {
+    return undefined;
+  }
+
   return Array.isArray(id) ? id[0] : String(id);
 }
 
@@ -35,7 +55,8 @@ const COPY = {
     backToProducts: "Quay lại trang sản phẩm",
     notFoundTitle: "Sản phẩm không tồn tại",
     loadErrorTitle: "Không thể tải sản phẩm",
-    loadErrorDescription: "Kiểm tra kết nối mạng và đảm bảo API backend đang chạy (NEXT_PUBLIC_API_URL).",
+    loadErrorDescription:
+      "Kiểm tra kết nối mạng và đảm bảo API backend đang chạy đúng cấu hình.",
     loading: "Đang tải sản phẩm...",
     breadcrumbHome: "Trang chủ",
     breadcrumbProducts: "Sản phẩm",
@@ -54,22 +75,25 @@ const COPY = {
     freeShipping: "Miễn phí giao hàng cho đơn từ 200.000đ",
     authentic: "100% sản phẩm chính hãng",
     returns: "Đổi trả trong 7 ngày",
-    description: "Mô Tả Sản Phẩm",
-    reviews: "Đánh Giá Sản Phẩm",
-    related: "Sản Phẩm Liên Quan",
+    description: "Mô tả sản phẩm",
+    reviews: "Đánh giá sản phẩm",
+    related: "Sản phẩm liên quan",
     productUnavailable: "Sản phẩm không còn khả dụng",
     noImage: "Ảnh sản phẩm",
     copied: "Đã sao chép liên kết sản phẩm",
     copyHint: "Bạn có thể chia sẻ ngay bây giờ.",
     shareFailed: "Không thể chia sẻ sản phẩm",
     shareFailedHint: "Vui lòng thử lại sau.",
+    reviewFallbackUser: "Người dùng",
+    verifiedPurchase: "Đã mua hàng",
   },
   en: {
     invalidRoute: "Invalid product route",
     backToProducts: "Back to products",
     notFoundTitle: "Product does not exist",
     loadErrorTitle: "Unable to load product",
-    loadErrorDescription: "Check your network connection and make sure the backend API is running (NEXT_PUBLIC_API_URL).",
+    loadErrorDescription:
+      "Check your network connection and make sure the backend API is running.",
     loading: "Loading product...",
     breadcrumbHome: "Home",
     breadcrumbProducts: "Products",
@@ -88,15 +112,17 @@ const COPY = {
     freeShipping: "Free shipping on orders over 200,000đ",
     authentic: "100% authentic products",
     returns: "7-day returns",
-    description: "Product Description",
-    reviews: "Product Reviews",
-    related: "Related Products",
+    description: "Product description",
+    reviews: "Product reviews",
+    related: "Related products",
     productUnavailable: "This product is no longer available",
     noImage: "Product image",
     copied: "Product link copied",
     copyHint: "You can share it right away.",
     shareFailed: "Unable to share product",
     shareFailedHint: "Please try again later.",
+    reviewFallbackUser: "User",
+    verifiedPurchase: "Verified purchase",
   },
 } as const;
 
@@ -114,9 +140,13 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const productId = normalizeRouteParam(params.id as string | string[] | undefined);
-  const numericId = productId !== undefined ? Number(productId) : NaN;
-  const idValid = Boolean(productId && !Number.isNaN(numericId) && numericId > 0);
+  const productId = normalizeRouteParam(
+    params.id as string | string[] | undefined,
+  );
+  const numericId = productId !== undefined ? Number(productId) : Number.NaN;
+  const idValid = Boolean(
+    productId && !Number.isNaN(numericId) && numericId > 0,
+  );
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -142,8 +172,9 @@ export default function ProductDetailPage() {
     queryKey: ["related-products", productId, product?.category?.id],
     enabled: idValid && Boolean(product?.category?.id),
     queryFn: async () => {
-      const catId = product!.category!.id;
-      const response = await apiPublic.get(`/products/${productId}/related?categoryId=${catId}`);
+      const response = await apiPublic.get(
+        `/products/${productId}/related?categoryId=${product!.category!.id}`,
+      );
       return response.data as Product[];
     },
   });
@@ -152,10 +183,61 @@ export default function ProductDetailPage() {
     queryKey: ["reviews", productId],
     enabled: idValid,
     queryFn: async () => {
-      const response = await apiPublic.get(`/reviews/product/${productId}?page=0&size=5`);
+      const response = await apiPublic.get(
+        `/reviews/product/${productId}?page=0&size=5`,
+      );
       return response.data as PageResponse<Review>;
     },
   });
+
+  const handleToggleWishlist = async () => {
+    if (!product) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      router.push(buildLoginRedirect(pathname || `/products/${product.id}`));
+      return;
+    }
+
+    await toggleWishlist(product.id);
+  };
+
+  const handleShare = async () => {
+    if (!product) {
+      return;
+    }
+
+    const shareUrl =
+      typeof window === "undefined"
+        ? `/products/${product.id}`
+        : window.location.href;
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({
+          title: product.name,
+          text: product.shortDescription || product.name,
+          url: shareUrl,
+        });
+        return;
+      }
+
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        notifyToast(toast, "success", copy.copied, {
+          description: copy.copyHint,
+        });
+        return;
+      }
+
+      throw new Error("Clipboard API is unavailable");
+    } catch {
+      notifyToast(toast, "error", copy.shareFailed, {
+        description: copy.shareFailedHint,
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -165,11 +247,12 @@ export default function ProductDetailPage() {
           <div className="container mx-auto px-4">
             <div className="animate-pulse">
               <div className="grid gap-8 md:grid-cols-2">
-                <div className="h-96 rounded-lg bg-gray-200" />
+                <div className="aspect-square rounded-3xl bg-gray-200" />
                 <div className="space-y-4">
-                  <div className="h-8 rounded bg-gray-200 w-3/4" />
-                  <div className="h-6 rounded bg-gray-200 w-1/2" />
-                  <div className="h-10 rounded bg-gray-200 w-1/3" />
+                  <div className="h-6 w-32 rounded bg-gray-200" />
+                  <div className="h-10 w-3/4 rounded bg-gray-200" />
+                  <div className="h-8 w-1/2 rounded bg-gray-200" />
+                  <div className="h-40 rounded-3xl bg-gray-200" />
                 </div>
               </div>
             </div>
@@ -186,8 +269,12 @@ export default function ProductDetailPage() {
         <Header />
         <main className="flex-1 py-16">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="mb-4 text-2xl font-bold text-gray-900">{copy.invalidRoute}</h1>
-            <Button onClick={() => router.push("/products")}>{copy.backToProducts}</Button>
+            <h1 className="mb-4 text-2xl font-bold text-gray-900">
+              {copy.invalidRoute}
+            </h1>
+            <Button onClick={() => router.push("/products")}>
+              {copy.backToProducts}
+            </Button>
           </div>
         </main>
         <Footer />
@@ -198,14 +285,21 @@ export default function ProductDetailPage() {
   if (isFetched && (isError || !product)) {
     const status = isAxiosError(error) ? error.response?.status : undefined;
     const notFound = status === 404;
+
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 py-16">
           <div className="container mx-auto max-w-lg px-4 text-center">
-            <h1 className="mb-4 text-2xl font-bold text-gray-900">{notFound ? copy.notFoundTitle : copy.loadErrorTitle}</h1>
-            <p className="mb-6 text-gray-600">{notFound ? copy.productUnavailable : copy.loadErrorDescription}</p>
-            <Button onClick={() => router.push("/products")}>{copy.backToProducts}</Button>
+            <h1 className="mb-4 text-2xl font-bold text-gray-900">
+              {notFound ? copy.notFoundTitle : copy.loadErrorTitle}
+            </h1>
+            <p className="mb-6 text-gray-600">
+              {notFound ? copy.productUnavailable : copy.loadErrorDescription}
+            </p>
+            <Button onClick={() => router.push("/products")}>
+              {copy.backToProducts}
+            </Button>
           </div>
         </main>
         <Footer />
@@ -221,64 +315,56 @@ export default function ProductDetailPage() {
     );
   }
 
-  const hasDiscount = product.discountPercent && product.discountPercent > 0;
+  const hasDiscount = Boolean(
+    product.discountPercent && product.discountPercent > 0,
+  );
+  const isWishlistPending = isAdding || isRemoving;
+  const isWishlisted = isAuthenticated && isInWishlist(product.id);
+  const galleryImages =
+    product.images && product.images.length > 0
+      ? product.images
+      : product.imageUrl
+        ? [product.imageUrl]
+        : [resolveProductImageSource(product)];
+  const selectedGalleryImage = galleryImages[selectedImage] || galleryImages[0];
+  const fallbackSrc = getCategoryPlaceholderImage(product.category?.name);
   const hasActiveFlashSaleCountdown =
     Boolean(product.activeFlashSale) &&
     product.currentPrice < product.price &&
     new Date(product.activeFlashSale!.endTime).getTime() > Date.now();
-  const isWishlistPending = isAdding || isRemoving;
-  const isWishlisted = isAuthenticated && isInWishlist(product.id);
-
-  const handleToggleWishlist = async () => {
-    if (!isAuthenticated) {
-      router.push(buildLoginRedirect(pathname || `/products/${product.id}`));
-      return;
-    }
-    await toggleWishlist(product.id);
-  };
-
-  const handleShare = async () => {
-    const shareUrl = typeof window === "undefined" ? `/products/${product.id}` : window.location.href;
-
-    try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({
-          title: product.name,
-          text: product.shortDescription || product.name,
-          url: shareUrl,
-        });
-        return;
-      }
-
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(shareUrl);
-        notifyToast(toast, "success", copy.copied, { description: copy.copyHint });
-        return;
-      }
-
-      throw new Error("Clipboard API is unavailable");
-    } catch {
-      notifyToast(toast, "error", copy.shareFailed, { description: copy.shareFailedHint });
-    }
-  };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4">
           <nav className="mb-6 text-sm">
-            <ol className="flex items-center gap-2 text-gray-600">
-              <li><Link href="/" className="hover:text-primary">{copy.breadcrumbHome}</Link></li>
+            <ol className="flex flex-wrap items-center gap-2 text-gray-600">
+              <li>
+                <Link href="/" className="hover:text-primary">
+                  {copy.breadcrumbHome}
+                </Link>
+              </li>
               <li>/</li>
-              <li><Link href="/products" className="hover:text-primary">{copy.breadcrumbProducts}</Link></li>
-              {product.category && (
+              <li>
+                <Link href="/products" className="hover:text-primary">
+                  {copy.breadcrumbProducts}
+                </Link>
+              </li>
+              {product.category ? (
                 <>
                   <li>/</li>
-                  <li><Link href={`/products?categoryId=${product.category.id}`} className="hover:text-primary">{product.category.name}</Link></li>
+                  <li>
+                    <Link
+                      href={`/products?categoryId=${product.category.id}`}
+                      className="hover:text-primary"
+                    >
+                      {product.category.name}
+                    </Link>
+                  </li>
                 </>
-              )}
+              ) : null}
               <li>/</li>
               <li className="font-medium text-gray-900">{product.name}</li>
             </ol>
@@ -286,74 +372,120 @@ export default function ProductDetailPage() {
 
           <div className="mb-12 grid gap-8 md:grid-cols-2">
             <div className="space-y-4">
-              <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
-                {product.images && product.images.length > 0 ? (
-                  <Image src={product.images[selectedImage]} alt={product.name} fill className="object-cover" />
-                ) : product.imageUrl ? (
-                  <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-9xl">📚</span>
-                  </div>
-                )}
-                {hasDiscount && (
-                  <span className="absolute left-4 top-4 rounded-lg bg-red-500 px-3 py-1 font-semibold text-white">
+              <div className="relative aspect-square overflow-hidden rounded-3xl bg-gray-100 shadow-sm">
+                <ProductImage
+                  src={selectedGalleryImage}
+                  fallbackSrc={fallbackSrc}
+                  alt={product.name || copy.noImage}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                {hasDiscount ? (
+                  <span className="absolute left-4 top-4 rounded-xl bg-red-500 px-3 py-1.5 text-sm font-semibold text-white shadow-lg">
                     -{product.discountPercent}%
                   </span>
-                )}
+                ) : null}
               </div>
-              {product.images && product.images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto">
-                  {product.images.map((img, idx) => (
+
+              {galleryImages.length > 1 ? (
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {galleryImages.map((image, index) => (
                     <button
-                      key={idx}
-                      onClick={() => setSelectedImage(idx)}
-                      className={`relative h-20 w-20 overflow-hidden rounded-lg border-2 ${selectedImage === idx ? "border-primary" : "border-gray-200"}`}
+                      key={`${image}-${index}`}
+                      onClick={() => setSelectedImage(index)}
+                      className={cn(
+                        "relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 bg-gray-100 transition",
+                        selectedImage === index
+                          ? "border-primary"
+                          : "border-gray-200",
+                      )}
                     >
-                      <Image src={img} alt="" fill className="object-cover" />
+                      <ProductImage
+                        src={image}
+                        fallbackSrc={fallbackSrc}
+                        alt=""
+                        fill
+                        className="object-cover"
+                      />
                     </button>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
 
             <div className="space-y-6">
               <div>
-                {product.category && <span className="text-sm text-gray-500">{product.category.name}</span>}
-                <h1 className="mt-1 text-3xl font-bold text-gray-900">{product.name}</h1>
-                {product.author && <p className="mt-2 text-lg text-gray-600">{copy.authorPrefix} {product.author}</p>}
-                {product.publisher && <p className="text-gray-500">{copy.publisherPrefix} {product.publisher}</p>}
+                {product.category ? (
+                  <span className="text-sm font-medium text-gray-500">
+                    {product.category.name}
+                  </span>
+                ) : null}
+                <h1 className="mt-1 text-3xl font-bold text-gray-900">
+                  {product.name}
+                </h1>
+                {product.author ? (
+                  <p className="mt-2 text-lg text-gray-600">
+                    {copy.authorPrefix} {product.author}
+                  </p>
+                ) : null}
+                {product.publisher ? (
+                  <p className="text-gray-500">
+                    {copy.publisherPrefix} {product.publisher}
+                  </p>
+                ) : null}
               </div>
 
-              {product.avgRating && product.avgRating > 0 && (
+              {product.avgRating && product.avgRating > 0 ? (
                 <div className="flex items-center gap-2">
                   <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
+                    {[...Array(5)].map((_, index) => (
                       <Star
-                        key={i}
-                        className={`h-5 w-5 ${i < Math.round(product.avgRating!) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+                        key={index}
+                        className={cn(
+                          "h-5 w-5",
+                          index < Math.round(product.avgRating ?? 0)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-300",
+                        )}
                       />
                     ))}
                   </div>
                   <span className="text-gray-600">
-                    {product.avgRating.toFixed(1)} ({product.reviewCount} {copy.ratingSuffix})
+                    {product.avgRating.toFixed(1)} ({product.reviewCount}{" "}
+                    {copy.ratingSuffix})
                   </span>
                 </div>
-              )}
+              ) : null}
 
-              <div className="rounded-lg bg-gray-50 p-6">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-bold text-primary">{formatCurrency(product.currentPrice)}</span>
-                  {hasDiscount && (
+              <div
+                className="rounded-3xl bg-gray-50 p-6"
+                data-testid="product-detail-price-panel"
+              >
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <span
+                    className="text-4xl font-bold text-primary"
+                    data-testid="product-detail-current-price"
+                  >
+                    {formatCurrency(product.currentPrice)}
+                  </span>
+                  {hasDiscount ? (
                     <>
-                      <span className="text-xl text-gray-400 line-through">{formatCurrency(product.price)}</span>
-                      <span className="text-lg font-medium text-red-500">{copy.savePrefix} {formatCurrency(product.price - product.currentPrice)}</span>
+                      <span className="text-xl text-gray-400 line-through">
+                        {formatCurrency(product.price)}
+                      </span>
+                      <span className="text-lg font-medium text-red-500">
+                        {copy.savePrefix}{" "}
+                        {formatCurrency(product.price - product.currentPrice)}
+                      </span>
                     </>
-                  )}
+                  ) : null}
                 </div>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm">
                   {product.inStock ? (
-                    <span className="text-green-600">{copy.inStock(product.stockQuantity)}</span>
+                    <span className="text-green-600">
+                      {copy.inStock(product.stockQuantity)}
+                    </span>
                   ) : (
                     <span className="text-red-600">{copy.outOfStock}</span>
                   )}
@@ -366,31 +498,56 @@ export default function ProductDetailPage() {
                   endTime={product.activeFlashSale.endTime}
                   remainingStock={product.activeFlashSale.remainingStock}
                   maxPerUser={product.activeFlashSale.maxPerUser}
+                  stockLimit={product.activeFlashSale.stockLimit}
+                  soldCount={product.activeFlashSale.soldCount}
                   onExpire={() => {
                     void refetchProduct();
                   }}
                 />
               ) : null}
 
-              {product.shortDescription && <p className="text-gray-600">{product.shortDescription}</p>}
+              {product.shortDescription ? (
+                <p className="text-lg leading-8 text-gray-600">
+                  {product.shortDescription}
+                </p>
+              ) : null}
 
-              {product.inStock && (
+              {product.inStock ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <span className="text-gray-600">{copy.quantity}</span>
-                    <div className="flex items-center rounded-lg border">
-                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 hover:bg-gray-100">
+                    <div className="flex items-center rounded-2xl border border-gray-200 bg-white">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="p-3 hover:bg-gray-50"
+                        aria-label="Decrease quantity"
+                      >
                         <Minus className="h-5 w-5" />
                       </button>
                       <input
                         type="number"
                         value={quantity}
-                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-16 border-x py-2 text-center"
+                        onChange={(event) =>
+                          setQuantity(
+                            Math.max(
+                              1,
+                              Number.parseInt(event.target.value, 10) || 1,
+                            ),
+                          )
+                        }
+                        className="w-20 border-x border-gray-200 py-3 text-center"
                         min="1"
                         max={product.stockQuantity}
                       />
-                      <button onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))} className="p-2 hover:bg-gray-100">
+                      <button
+                        onClick={() =>
+                          setQuantity(
+                            Math.min(product.stockQuantity, quantity + 1),
+                          )
+                        }
+                        className="p-3 hover:bg-gray-50"
+                        aria-label="Increase quantity"
+                      >
                         <Plus className="h-5 w-5" />
                       </button>
                     </div>
@@ -402,7 +559,7 @@ export default function ProductDetailPage() {
                       onClick={() => addToCart(product, quantity)}
                       disabled={isAddingToCart}
                       data-testid="product-detail-add-to-cart"
-                      className="flex-1"
+                      className="min-w-[220px] flex-1"
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
                       {isAddingToCart ? copy.addingToCart : copy.addToCart}
@@ -413,28 +570,46 @@ export default function ProductDetailPage() {
                       onClick={handleToggleWishlist}
                       disabled={isWishlistPending}
                       data-testid="product-detail-wishlist"
-                      aria-label={isWishlisted ? copy.wishlistRemove : copy.wishlistAdd}
-                      className={cn(isWishlisted && "border-red-200 text-red-500 hover:bg-red-50")}
+                      aria-label={
+                        isWishlisted ? copy.wishlistRemove : copy.wishlistAdd
+                      }
+                      className={cn(
+                        "h-12 w-12 px-0",
+                        isWishlisted &&
+                          "border-red-200 text-red-500 hover:bg-red-50",
+                      )}
                     >
-                      <Heart className="h-5 w-5" />
+                      <Heart
+                        className={cn(
+                          "h-5 w-5",
+                          isWishlisted && "fill-current",
+                        )}
+                      />
                     </Button>
-                    <Button variant="outline" size="lg" onClick={handleShare} data-testid="product-detail-share" aria-label={copy.share}>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={handleShare}
+                      data-testid="product-detail-share"
+                      aria-label={copy.share}
+                      className="h-12 w-12 px-0"
+                    >
                       <Share2 className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
-              )}
+              ) : null}
 
-              <div className="grid grid-cols-1 gap-3 border-t pt-4">
-                <div className="flex items-center gap-3 text-sm">
+              <div className="grid gap-3 border-t border-gray-100 pt-4">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
                   <Truck className="h-5 w-5 text-gray-400" />
                   <span>{copy.freeShipping}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
                   <Shield className="h-5 w-5 text-gray-400" />
                   <span>{copy.authentic}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
                   <RotateCcw className="h-5 w-5 text-gray-400" />
                   <span>{copy.returns}</span>
                 </div>
@@ -442,58 +617,95 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {product.description && (
-            <div className="mb-12">
-              <h2 className="mb-4 text-xl font-bold text-gray-900">{copy.description}</h2>
-              <div className="prose max-w-none">
-                <p className="whitespace-pre-line text-gray-600">{product.description}</p>
+          {product.description ? (
+            <section className="mb-12">
+              <h2 className="mb-4 text-xl font-bold text-gray-900">
+                {copy.description}
+              </h2>
+              <div className="prose max-w-none text-gray-600">
+                <p className="whitespace-pre-line">{product.description}</p>
               </div>
-            </div>
-          )}
+            </section>
+          ) : null}
 
-          {reviewsData && reviewsData.content.length > 0 && (
-            <div className="mb-12">
-              <h2 className="mb-4 text-xl font-bold text-gray-900">{copy.reviews}</h2>
+          {reviewsData && reviewsData.content.length > 0 ? (
+            <section className="mb-12">
+              <h2 className="mb-4 text-xl font-bold text-gray-900">
+                {copy.reviews}
+              </h2>
               <div className="space-y-4">
                 {reviewsData.content.map((review) => (
-                  <div key={review.id} className="rounded-lg border bg-white p-4">
+                  <div
+                    key={review.id}
+                    className="rounded-2xl border border-gray-100 bg-white p-4"
+                  >
                     <div className="mb-2 flex items-center gap-3">
                       <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-200">
                         {review.user.avatarUrl ? (
-                          <Image src={review.user.avatarUrl} alt="" fill className="rounded-full" />
+                          <Image
+                            src={review.user.avatarUrl}
+                            alt=""
+                            fill
+                            className="rounded-full"
+                          />
                         ) : (
-                          <span className="font-medium text-gray-500">{review.user.fullName?.[0] || "U"}</span>
+                          <span className="font-medium text-gray-500">
+                            {review.user.fullName?.[0] || "U"}
+                          </span>
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{review.user.fullName || (locale === "vi" ? "Người dùng" : "User")}</p>
+                        <p className="font-medium text-gray-900">
+                          {review.user.fullName || copy.reviewFallbackUser}
+                        </p>
                         <div className="flex items-center gap-2">
                           <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+                            {[...Array(5)].map((_, index) => (
+                              <Star
+                                key={index}
+                                className={cn(
+                                  "h-4 w-4",
+                                  index < review.rating
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-gray-300",
+                                )}
+                              />
                             ))}
                           </div>
-                          {review.isVerifiedPurchase && <span className="text-xs text-green-600">{locale === "vi" ? "Đã mua hàng" : "Verified purchase"}</span>}
+                          {review.isVerifiedPurchase ? (
+                            <span className="text-xs text-green-600">
+                              {copy.verifiedPurchase}
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                     </div>
-                    {review.comment && <p className="text-gray-600">{review.comment}</p>}
+                    {review.comment ? (
+                      <p className="text-gray-600">{review.comment}</p>
+                    ) : null}
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            </section>
+          ) : null}
 
-          {relatedProducts && relatedProducts.length > 0 && (
-            <div>
-              <h2 className="mb-6 text-xl font-bold text-gray-900">{copy.related}</h2>
+          {relatedProducts && relatedProducts.length > 0 ? (
+            <section>
+              <h2 className="mb-6 text-xl font-bold text-gray-900">
+                {copy.related}
+              </h2>
               <div className="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
-                {relatedProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} onAddToCart={addToCart} isAddingToCart={isAddingToCart} />
+                {relatedProducts.map((relatedProduct) => (
+                  <ProductCard
+                    key={relatedProduct.id}
+                    product={relatedProduct}
+                    onAddToCart={(productToAdd) => addToCart(productToAdd, 1)}
+                    isAddingToCart={isAddingToCart}
+                  />
                 ))}
               </div>
-            </div>
-          )}
+            </section>
+          ) : null}
         </div>
       </main>
 

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Heart, Trash2, ShoppingCart, Star, Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -12,11 +11,17 @@ import { useAddToCart } from "@/hooks/useAddToCart";
 import type { Product } from "@/lib/types";
 import { buildLoginRedirect } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/language-provider";
+import { ProductImage } from "@/components/ui/ProductImage";
+import {
+  getCategoryPlaceholderImage,
+  resolveProductImageSource,
+} from "@/lib/product-images";
 
 const COPY = {
   vi: {
     loginRequiredTitle: "Đăng nhập để xem wishlist",
-    loginRequiredDescription: "Vui lòng đăng nhập để xem danh sách yêu thích của bạn",
+    loginRequiredDescription:
+      "Vui lòng đăng nhập để xem danh sách yêu thích của bạn",
     loginButton: "Đăng nhập",
     title: "Danh Sách Yêu Thích",
     subtitle: (count: number) => `${count} sản phẩm trong wishlist`,
@@ -66,7 +71,10 @@ export function WishlistPage() {
   };
 
   const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("vi-VN", {
@@ -79,9 +87,14 @@ export function WishlistPage() {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <Heart className="mx-auto mb-4 h-16 w-16 text-gray-300" />
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">{copy.loginRequiredTitle}</h1>
+        <h1 className="mb-2 text-2xl font-bold text-gray-900">
+          {copy.loginRequiredTitle}
+        </h1>
         <p className="mb-6 text-gray-500">{copy.loginRequiredDescription}</p>
-        <Button onClick={() => router.push(buildLoginRedirect("/wishlist"))} className="bg-blue-600">
+        <Button
+          onClick={() => router.push(buildLoginRedirect("/wishlist"))}
+          className="bg-blue-600"
+        >
           {copy.loginButton}
         </Button>
       </div>
@@ -93,7 +106,9 @@ export function WishlistPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{copy.title}</h1>
-          <p className="mt-1 text-gray-500">{copy.subtitle(wishlistItems.length)}</p>
+          <p className="mt-1 text-gray-500">
+            {copy.subtitle(wishlistItems.length)}
+          </p>
         </div>
       </div>
 
@@ -105,10 +120,14 @@ export function WishlistPage() {
       ) : wishlistItems.length === 0 ? (
         <div className="py-16 text-center">
           <Heart className="mx-auto mb-4 h-16 w-16 text-gray-300" />
-          <h2 className="mb-2 text-xl font-semibold text-gray-900">{copy.emptyTitle}</h2>
+          <h2 className="mb-2 text-xl font-semibold text-gray-900">
+            {copy.emptyTitle}
+          </h2>
           <p className="mb-6 text-gray-500">{copy.emptyDescription}</p>
           <Link href="/products">
-            <Button className="bg-blue-600 hover:bg-blue-700">{copy.browseProducts}</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              {copy.browseProducts}
+            </Button>
           </Link>
         </div>
       ) : (
@@ -119,20 +138,20 @@ export function WishlistPage() {
               data-testid="wishlist-item"
               className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-lg"
             >
-              <Link href={`/products/${item.product.id}`} className="block relative">
+              <Link
+                href={`/products/${item.product.id}`}
+                className="block relative"
+              >
                 <div className="relative aspect-[3/4] bg-gray-100">
-                  {item.product.imageUrl ? (
-                    <Image
-                      src={item.product.imageUrl}
-                      alt={item.product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gray-100">
-                      <span className="text-gray-400">No Image</span>
-                    </div>
-                  )}
+                  <ProductImage
+                    src={resolveProductImageSource(item.product as Product)}
+                    fallbackSrc={getCategoryPlaceholderImage(
+                      (item.product as Product).category?.name,
+                    )}
+                    alt={item.product.name}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
 
                 <div className="absolute left-3 top-3 flex flex-col gap-2">
@@ -168,12 +187,16 @@ export function WishlistPage() {
                     {item.product.name}
                   </h3>
                 </Link>
-                <p className="mb-2 text-sm text-gray-500">{item.product.author}</p>
+                <p className="mb-2 text-sm text-gray-500">
+                  {item.product.author}
+                </p>
 
                 <div className="mb-3 flex items-center gap-2">
                   <div className="flex items-center">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="ml-1 text-sm font-medium">{item.product.avgRating.toFixed(1)}</span>
+                    <span className="ml-1 text-sm font-medium">
+                      {item.product.avgRating.toFixed(1)}
+                    </span>
                   </div>
                   <span className="text-sm text-gray-400">
                     ({item.product.reviewCount} {copy.ratingSuffix})
@@ -183,13 +206,16 @@ export function WishlistPage() {
                 <div className="mb-4 flex items-center justify-between">
                   <div>
                     <span className="text-lg font-bold text-blue-600">
-                      {formatPrice(item.product.currentPrice || item.product.price)}
+                      {formatPrice(
+                        item.product.currentPrice || item.product.price,
+                      )}
                     </span>
-                    {item.product.currentPrice && item.product.currentPrice < item.product.price && (
-                      <span className="ml-2 text-sm text-gray-400 line-through">
-                        {formatPrice(item.product.price)}
-                      </span>
-                    )}
+                    {item.product.currentPrice &&
+                      item.product.currentPrice < item.product.price && (
+                        <span className="ml-2 text-sm text-gray-400 line-through">
+                          {formatPrice(item.product.price)}
+                        </span>
+                      )}
                   </div>
                 </div>
 
@@ -204,7 +230,7 @@ export function WishlistPage() {
                           ...(item.product as Product),
                           inStock: item.isInStock,
                         },
-                        1
+                        1,
                       )
                     }
                   >
