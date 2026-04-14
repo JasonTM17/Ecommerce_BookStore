@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveProxyTarget } from "@/lib/server/api-proxy";
 
-const REQUEST_TIMEOUT_MS = 15000;
-
-function normalizeProxyTarget(rawTarget?: string) {
-  const fallback = "http://localhost:8080/api";
-  const target = (rawTarget || fallback).trim().replace(/\/+$/, "");
-  return target.endsWith("/api") ? target : `${target}/api`;
-}
+const REQUEST_TIMEOUT_MS = Number(process.env.API_PROXY_TIMEOUT_MS || "65000");
 
 function buildTargetUrl(request: NextRequest, pathSegments: string[]) {
-  const baseUrl = normalizeProxyTarget(process.env.API_PROXY_TARGET);
+  const baseUrl = resolveProxyTarget(process.env);
   const joinedPath = pathSegments.join("/");
   const search = request.nextUrl.search || "";
   return `${baseUrl}/${joinedPath}${search}`;

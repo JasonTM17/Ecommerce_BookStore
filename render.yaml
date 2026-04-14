@@ -107,9 +107,16 @@ services:
     dockerContext: .
     healthCheckPath: /
     envVars:
+      - key: BACKEND_HOSTPORT
+        fromService:
+          type: web
+          name: bookstore-api
+          property: hostport
       # API proxy to backend
       - key: API_PROXY_TARGET
         value: https://bookstore-api.onrender.com/api
+      - key: API_PROXY_TIMEOUT_MS
+        value: "65000"
       - key: NEXT_PUBLIC_API_URL
         value: /api
       - key: NEXT_PUBLIC_APP_NAME
