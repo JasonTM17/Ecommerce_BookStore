@@ -11,6 +11,7 @@ import { ProductDetailScreen } from "../screens/product/ProductDetailScreen";
 import { CartScreen } from "../screens/cart/CartScreen";
 import { ChatbotScreen } from "../screens/chatbot/ChatbotScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
+import { CheckoutScreen } from "../screens/cart/CheckoutScreen";
 import { OrdersScreen } from "../screens/order/OrdersScreen";
 
 const Stack = createNativeStackNavigator();
@@ -101,6 +102,7 @@ export function AppNavigator() {
         <>
           <Stack.Screen name="Main" component={TabNavigator} options={{ headerShown: false }} />
           <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={{ title: "Chi tiết sản phẩm" }} />
+          <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: "Tiến hành Đặt hàng" }} />
           <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: "Đơn hàng của tôi" }} />
         </>
       ) : (

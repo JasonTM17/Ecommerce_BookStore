@@ -72,8 +72,8 @@ export function ChatbotScreen() {
   if (!isAuthenticated) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyTitle}>Đăng nhập để dùng chatbot</Text>
-        <Text style={styles.emptyText}>Màn mobile đã nối đúng endpoint chatbot, nhưng cần phiên người dùng để trò chuyện.</Text>
+        <Text style={styles.emptyTitle}>Vui lòng đăng nhập</Text>
+        <Text style={styles.emptyText}>Trợ lý AI thông minh của chúng tôi luôn sẵn sàng hỗ trợ bạn tìm sách và giải đáp thắc mắc. Hãy đăng nhập để bắt đầu trò chuyện nhé!</Text>
         <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate("Login")}>
           <Text style={styles.primaryButtonText}>Đi tới đăng nhập</Text>
         </TouchableOpacity>

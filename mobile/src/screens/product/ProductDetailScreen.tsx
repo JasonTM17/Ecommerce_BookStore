@@ -1,8 +1,9 @@
-import React from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BookOpen } from "lucide-react-native";
-import { RouteProp, useRoute } from "@react-navigation/native";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BookOpen, ShoppingCart } from "lucide-react-native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../../store/AuthContext";
 import api from "../../api/client";
 
 type RootStackParamList = {
@@ -34,8 +35,41 @@ export function ProductDetailScreen() {
     },
   });
 
+  const queryClient = useQueryClient();
+  const navigation = useNavigation<any>();
+  const { isAuthenticated } = useAuth();
+  const [quantity, setQuantity] = useState(1);
+
+  const addToCartMutation = useMutation({
+    mutationFn: async () => {
+      await api.post("/cart/items", { productId, quantity });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mobile-cart"] });
+      Alert.alert("Thành công", "Đã thêm sản phẩm vào giỏ hàng!", [
+        { text: "Tiếp tục mua sắm", style: "cancel" },
+        { text: "Xem giỏ hàng", onPress: () => navigation.navigate("Cart") }
+      ]);
+    },
+    onError: () => {
+      Alert.alert("Lỗi", "Không thể thêm vào giỏ hàng. Vui lòng thử lại.");
+    }
+  });
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      Alert.alert("Yêu cầu đăng nhập", "Vui lòng đăng nhập để thêm vào giỏ hàng.", [
+        { text: "Hủy", style: "cancel" },
+        { text: "Đăng nhập", onPress: () => navigation.navigate("Login") }
+      ]);
+      return;
+    }
+    addToCartMutation.mutate();
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.screenWrapper}>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
       <View style={styles.imageContainer}>
         {product?.imageUrl ? (
           <Image source={{ uri: product.imageUrl }} style={styles.image} />
@@ -71,14 +105,46 @@ export function ProductDetailScreen() {
           <Text style={styles.bodyText}>Nhà xuất bản: {product?.publisher || "Đang cập nhật"}</Text>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+
+      <View style={styles.bottomBar}>
+        <View style={styles.quantityContainer}>
+          <TouchableOpacity 
+            style={styles.quantityBtn} 
+            onPress={() => setQuantity(Math.max(1, quantity - 1))}
+          >
+            <Text style={styles.quantityBtnText}>-</Text>
+          </TouchableOpacity>
+          <Text style={styles.quantityText}>{quantity}</Text>
+          <TouchableOpacity 
+            style={styles.quantityBtn} 
+            onPress={() => setQuantity(Math.min(product?.stockQuantity || 1, quantity + 1))}
+          >
+            <Text style={styles.quantityBtnText}>+</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity 
+          style={[styles.addToCartBtn, !product?.stockQuantity && styles.disabledBtn]} 
+          onPress={handleAddToCart}
+          disabled={!product?.stockQuantity || addToCartMutation.isPending}
+        >
+          <ShoppingCart color="#fff" size={20} />
+          <Text style={styles.addToCartText}>
+            {product?.stockQuantity ? "Thêm vào giỏ" : "Hết hàng"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screenWrapper: {
     flex: 1,
     backgroundColor: "#ffffff",
+  },
+  container: {
+    flex: 1,
   },
   imageContainer: {
     aspectRatio: 1,
@@ -152,5 +218,59 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: "#4b5563",
+  },
+  bottomBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#ffffff",
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  quantityBtn: {
+    padding: 8,
+  },
+  quantityBtnText: {
+    fontSize: 20,
+    color: "#374151",
+    fontWeight: "500",
+  },
+  quantityText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginHorizontal: 12,
+  },
+  addToCartBtn: {
+    flex: 1,
+    backgroundColor: "#2563eb",
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    gap: 8,
+  },
+  disabledBtn: {
+    backgroundColor: "#9ca3af",
+  },
+  addToCartText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
