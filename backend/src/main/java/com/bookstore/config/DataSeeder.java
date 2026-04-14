@@ -31,6 +31,7 @@ import com.bookstore.service.ProductImageNormalizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -47,6 +48,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
@@ -61,6 +64,8 @@ public class DataSeeder {
 
     private final PasswordEncoder passwordEncoder;
     private final ProductImageNormalizationService productImageNormalizationService;
+    private final DemoSeedProperties demoSeedProperties;
+    private final AtomicBoolean deferredSeedStarted = new AtomicBoolean(false);
 
     @Bean
     @Profile("!test")
@@ -79,6 +84,16 @@ public class DataSeeder {
             FlashSaleRepository flashSaleRepository) {
 
         return args -> {
+            if (!demoSeedProperties.isEnabled()) {
+                log.info("Portfolio demo seeding is disabled for this profile.");
+                return;
+            }
+
+            if (demoSeedProperties.isDeferred()) {
+                log.info("Deferring portfolio demo seeding until the application is ready.");
+                return;
+            }
+
             log.info("Ensuring portfolio demo data...");
 
             User admin = ensureUser(
@@ -123,6 +138,114 @@ public class DataSeeder {
             log.info("Flash sales: {}", flashSaleRepository.count());
             log.info("========================================");
         };
+    }
+
+    @Bean
+    @Profile("!test")
+    org.springframework.context.ApplicationListener<ApplicationReadyEvent> deferredDatabaseInitialization(
+            UserRepository userRepository,
+            CategoryRepository categoryRepository,
+            BrandRepository brandRepository,
+            ProductRepository productRepository,
+            CartRepository cartRepository,
+            CartItemRepository cartItemRepository,
+            OrderRepository orderRepository,
+            ReviewRepository reviewRepository,
+            AddressRepository addressRepository,
+            WishlistRepository wishlistRepository,
+            CouponRepository couponRepository,
+            FlashSaleRepository flashSaleRepository) {
+
+        return event -> {
+            if (!demoSeedProperties.isEnabled() || !demoSeedProperties.isDeferred()) {
+                return;
+            }
+
+            if (!deferredSeedStarted.compareAndSet(false, true)) {
+                log.info("Deferred portfolio demo seeding has already been scheduled.");
+                return;
+            }
+
+            log.info("Scheduling deferred portfolio demo seeding after application readiness.");
+            CompletableFuture.runAsync(() -> {
+                try {
+                    seedPortfolioDemoDataDeferred(
+                            userRepository,
+                            categoryRepository,
+                            brandRepository,
+                            productRepository,
+                            cartRepository,
+                            cartItemRepository,
+                            orderRepository,
+                            reviewRepository,
+                            addressRepository,
+                            wishlistRepository,
+                            couponRepository,
+                            flashSaleRepository);
+                } catch (Exception ex) {
+                    log.error("Deferred portfolio demo seeding failed", ex);
+                }
+            });
+        };
+    }
+
+    private void seedPortfolioDemoDataDeferred(
+            UserRepository userRepository,
+            CategoryRepository categoryRepository,
+            BrandRepository brandRepository,
+            ProductRepository productRepository,
+            CartRepository cartRepository,
+            CartItemRepository cartItemRepository,
+            OrderRepository orderRepository,
+            ReviewRepository reviewRepository,
+            AddressRepository addressRepository,
+            WishlistRepository wishlistRepository,
+            CouponRepository couponRepository,
+            FlashSaleRepository flashSaleRepository) {
+
+        log.info("Ensuring portfolio demo data (deferred)...");
+
+        User admin = ensureUser(
+                userRepository,
+                "admin@bookstore.com",
+                "Admin123!",
+                "Nguyá»…n",
+                "SÆ¡n",
+                "0901234567",
+                Set.of(Role.ADMIN));
+
+        User manager = ensureUser(
+                userRepository,
+                "manager@bookstore.com",
+                "Manager123!",
+                "Tráº§n",
+                "Minh",
+                "0902345678",
+                Set.of(Role.MANAGER));
+
+        List<User> customers = ensureCustomerUsers(userRepository);
+        List<Product> products = ensureCatalog(categoryRepository, brandRepository, productRepository);
+        List<Product> prioritizedProducts = ShowcaseBookCatalog.prioritizeProducts(products);
+
+        Random rand = new Random(42);
+        ensureAddresses(customers, addressRepository, rand);
+        ensureOrders(customers, products, prioritizedProducts, orderRepository, reviewRepository, rand);
+        ensureCarts(admin, customers, products, prioritizedProducts, cartRepository, cartItemRepository, rand);
+        ensureWishlists(customers, products, prioritizedProducts, wishlistRepository, rand);
+        ensureCoupons(couponRepository, admin);
+        ensureFlashSales(flashSaleRepository, prioritizedProducts);
+
+        log.info("========================================");
+        log.info("Portfolio demo data is ready (deferred)");
+        log.info("========================================");
+        log.info("Admin: admin@bookstore.com / Admin123!");
+        log.info("Manager: manager@bookstore.com / Manager123!");
+        log.info("Customer: customer@example.com / Customer123!");
+        log.info("Customers: {}", customers.size());
+        log.info("Products: {}", products.size());
+        log.info("Coupons: {}", couponRepository.count());
+        log.info("Flash sales: {}", flashSaleRepository.count());
+        log.info("========================================");
     }
 
     private User ensureUser(
