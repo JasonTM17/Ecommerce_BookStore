@@ -13,7 +13,7 @@ COPY backend/src ./src
 RUN mvn dependency:go-offline -B
 
 # Build the application
-RUN mvn clean package -DskipTests -B
+RUN export MAVEN_OPTS="-Xmx300m" && mvn clean package -DskipTests -B
 
 # ===========================================
 # Stage 2: Runtime
@@ -47,6 +47,6 @@ EXPOSE 8080
 USER appuser
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
-  CMD curl -f http://localhost:8080/api/actuator/health || exit 1
+  CMD curl -f http://localhost:${PORT:-8080}/api/actuator/health || exit 1
 
 ENTRYPOINT ["dumb-init", "--", "sh", "-c", "mkdir -p /app/logs && java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]
