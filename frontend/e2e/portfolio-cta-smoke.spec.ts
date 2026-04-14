@@ -127,9 +127,9 @@ async function login(page: Page) {
       );
     }
 
-    const payload = (await loginResponse.json().catch(() => null)) as
-      | { retryAfter?: number }
-      | null;
+    const payload = (await loginResponse.json().catch(() => null)) as {
+      retryAfter?: number;
+    } | null;
     const retryAfterSeconds = Math.max(payload?.retryAfter ?? 3, 1);
     await page.waitForTimeout((retryAfterSeconds + 1) * 1000);
   }
@@ -171,7 +171,9 @@ test.describe("Portfolio CTA smoke", () => {
     const productLink = targetCard.locator('a[href^="/products/"]').first();
     const productPath = await productLink.getAttribute("href");
     if (!productPath) {
-      throw new Error("Unable to resolve a product path from the product grid.");
+      throw new Error(
+        "Unable to resolve a product path from the product grid.",
+      );
     }
 
     await Promise.all([
@@ -187,7 +189,9 @@ test.describe("Portfolio CTA smoke", () => {
 
     const firstCard = await getFirstProductCard(page);
     await firstCard.hover();
-    await expect(firstCard.getByTestId("product-card-add-to-cart")).toBeVisible();
+    await expect(
+      firstCard.getByTestId("product-card-add-to-cart"),
+    ).toBeVisible();
 
     await Promise.all([
       page.waitForURL(/\/login\?redirect=%2Fproducts$/),
@@ -241,6 +245,12 @@ test.describe("Portfolio CTA smoke", () => {
 
     await expect(page.getByTestId("flash-sale-countdown-card")).toBeVisible();
     await expect(
+      page.getByTestId("product-detail-flash-sale-context"),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId("product-detail-flash-sale-context"),
+    ).toContainText(/flash sale đang diễn ra|flash sale is live/i);
+    await expect(
       page
         .getByTestId("product-detail-price-panel")
         .getByText(salePriceText, { exact: false }),
@@ -287,7 +297,9 @@ test.describe("Portfolio CTA smoke", () => {
     await page
       .getByRole("button", { name: /xác nhận thông tin|confirm information/i })
       .click();
-    await page.getByRole("button", { name: /đặt hàng ngay|place order/i }).click();
+    await page
+      .getByRole("button", { name: /đặt hàng ngay|place order/i })
+      .click();
 
     await expect(
       page.getByText(/đặt hàng thành công|order placed successfully/i),
@@ -301,12 +313,17 @@ test.describe("Portfolio CTA smoke", () => {
       );
     }
 
-    await page.getByRole("button", { name: /xem đơn hàng|view orders/i }).click();
+    await page
+      .getByRole("button", { name: /xem đơn hàng|view orders/i })
+      .click();
     await expect(page).toHaveURL(/\/orders$/);
     await expect(
       page.locator("#main-content").getByText(orderNumber, { exact: false }),
     ).toBeVisible();
-    await page.getByRole("link", { name: /chi tiết|details/i }).first().click();
+    await page
+      .getByRole("link", { name: /chi tiết|details/i })
+      .first()
+      .click();
 
     await expect(page).toHaveURL(/\/orders\/\d+$/);
     await expect(

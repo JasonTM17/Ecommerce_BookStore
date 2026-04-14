@@ -8,10 +8,68 @@ import { Footer } from "@/components/layout/footer";
 import { FlashSaleCard } from "@/components/flashsale/FlashSaleCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/components/providers/language-provider";
 import { flashSaleApi } from "@/lib/flashsale";
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
+const COPY = {
+  vi: {
+    heroBadge: "Ưu đãi giới hạn thời gian được đồng bộ từ API thật",
+    heroDescription:
+      "Săn deal nổi bật khi hàng còn trong kho. Các chiến dịch đang chạy được cập nhật tự động và lịch mở bán sắp tới nằm ngay bên dưới.",
+    browseBooks: "Xem toàn bộ sách",
+    browsePromotions: "Xem khuyến mãi",
+    emptyTitle: "Hiện chưa có flash sale nào",
+    emptyDescription:
+      "Hiện chưa có chiến dịch nào đang chạy hoặc sắp mở bán. Bạn vẫn có thể xem khuyến mãi hoặc khám phá toàn bộ catalog sách.",
+    emptyCatalog: "Khám phá catalog",
+    emptyCoupon: "Xem coupon công khai",
+    activeBadge: "Đang diễn ra",
+    activeHeading: "Chiến dịch đang chạy",
+    activeDescription:
+      "Các deal này đang hoạt động ngay bây giờ và liên kết trực tiếp tới trang chi tiết sản phẩm thật.",
+    activeEmpty: "Hiện chưa có flash sale nào đang diễn ra.",
+    upcomingBadge: "Sắp diễn ra",
+    upcomingHeading: "Lịch mở bán tiếp theo",
+    upcomingDescription:
+      "Theo dõi trước các campaign sắp mở để chủ động săn deal khi bắt đầu.",
+    startsAt: "Bắt đầu lúc",
+    discountLabel: "Mức giảm",
+    estimatedPrice: "Giá dự kiến",
+    stockLabel: "Số lượng",
+    previewProduct: "Xem trước sản phẩm",
+    upcomingEmpty: "Chưa có campaign sắp tới nào được lên lịch.",
+  },
+  en: {
+    heroBadge: "Time-limited offers synced from the live API",
+    heroDescription:
+      "Catch standout deals while stock lasts. Live campaigns are refreshed automatically and the next launch window is listed below.",
+    browseBooks: "Browse all books",
+    browsePromotions: "View promotions",
+    emptyTitle: "No flash sale is live right now",
+    emptyDescription:
+      "There is no active or upcoming flash-sale campaign at the moment. You can still browse promotions or explore the full catalog.",
+    emptyCatalog: "Browse catalog",
+    emptyCoupon: "View public coupons",
+    activeBadge: "Live now",
+    activeHeading: "Active campaigns",
+    activeDescription:
+      "These deals are currently running and link directly to the real product detail pages.",
+    activeEmpty: "There is no active flash sale right now.",
+    upcomingBadge: "Coming up",
+    upcomingHeading: "Next launch window",
+    upcomingDescription:
+      "Track the next campaigns ahead of time so you can jump in the moment they go live.",
+    startsAt: "Starts at",
+    discountLabel: "Discount",
+    estimatedPrice: "Estimated price",
+    stockLabel: "Stock",
+    previewProduct: "Preview product",
+    upcomingEmpty: "No upcoming campaign has been scheduled yet.",
+  },
+} as const;
+
+function formatDate(value: string, locale: "vi" | "en") {
+  return new Intl.DateTimeFormat(locale === "vi" ? "vi-VN" : "en-US", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -20,8 +78,8 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("vi-VN", {
+function formatMoney(value: number, locale: "vi" | "en") {
+  return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {
     style: "currency",
     currency: "VND",
     minimumFractionDigits: 0,
@@ -29,6 +87,8 @@ function formatMoney(value: number) {
 }
 
 export default function FlashSalePage() {
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const { data: activeSales = [], isLoading: activeLoading } = useQuery({
     queryKey: ["flash-sale-page", "active"],
     queryFn: flashSaleApi.getActiveFlashSales,
@@ -40,7 +100,8 @@ export default function FlashSalePage() {
   });
 
   const isLoading = activeLoading || upcomingLoading;
-  const isEmpty = !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
+  const isEmpty =
+    !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-red-50 via-white to-white">
@@ -56,19 +117,22 @@ export default function FlashSalePage() {
             <div className="max-w-3xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur">
                 <Zap className="h-4 w-4" />
-                Ưu đãi giới hạn thời gian được đồng bộ từ API thật
+                {copy.heroBadge}
               </div>
               <h1 className="text-4xl font-bold sm:text-5xl">Flash Sale</h1>
-              <p className="mt-4 text-lg text-red-50">
-                Săn deal nổi bật khi hàng còn trong kho. Các chiến dịch đang chạy được cập nhật tự động và lịch mở bán sắp tới nằm ngay bên dưới.
-              </p>
+              <p className="mt-4 text-lg text-red-50">{copy.heroDescription}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/products">
-                  <Button className="bg-white text-red-600 hover:bg-red-50">Xem toàn bộ sách</Button>
+                  <Button className="bg-white text-red-600 hover:bg-red-50">
+                    {copy.browseBooks}
+                  </Button>
                 </Link>
                 <Link href="/promotions">
-                  <Button variant="outline" className="border-white/60 bg-transparent text-white hover:bg-white/10">
-                    Xem khuyến mãi
+                  <Button
+                    variant="outline"
+                    className="border-white/60 bg-transparent text-white hover:bg-white/10"
+                  >
+                    {copy.browsePromotions}
                   </Button>
                 </Link>
               </div>
@@ -99,16 +163,18 @@ export default function FlashSalePage() {
           ) : isEmpty ? (
             <div className="rounded-3xl border border-dashed border-red-200 bg-white px-8 py-20 text-center shadow-sm">
               <Sparkles className="mx-auto mb-4 h-14 w-14 text-red-300" />
-              <h2 className="mb-2 text-2xl font-semibold text-gray-900">Hiện chưa có flash sale nào</h2>
+              <h2 className="mb-2 text-2xl font-semibold text-gray-900">
+                {copy.emptyTitle}
+              </h2>
               <p className="mx-auto mb-6 max-w-2xl text-gray-500">
-                Hiện chưa có chiến dịch nào đang chạy hoặc sắp mở bán. Bạn vẫn có thể xem khuyến mãi hoặc khám phá toàn bộ catalog sách.
+                {copy.emptyDescription}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link href="/products">
-                  <Button>Khám phá catalog</Button>
+                  <Button>{copy.emptyCatalog}</Button>
                 </Link>
                 <Link href="/promotions">
-                  <Button variant="outline">Xem coupon công khai</Button>
+                  <Button variant="outline">{copy.emptyCoupon}</Button>
                 </Link>
               </div>
             </div>
@@ -119,10 +185,14 @@ export default function FlashSalePage() {
                   <div>
                     <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-700">
                       <Flame className="h-4 w-4" />
-                      Đang diễn ra
+                      {copy.activeBadge}
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900">Chiến dịch đang chạy</h2>
-                    <p className="mt-2 text-gray-500">Các deal này đang hoạt động ngay bây giờ và liên kết trực tiếp tới trang chi tiết sản phẩm thật.</p>
+                    <h2 className="text-3xl font-bold text-gray-900">
+                      {copy.activeHeading}
+                    </h2>
+                    <p className="mt-2 text-gray-500">
+                      {copy.activeDescription}
+                    </p>
                   </div>
                 </div>
 
@@ -134,7 +204,7 @@ export default function FlashSalePage() {
                   </div>
                 ) : (
                   <div className="rounded-3xl border border-gray-200 bg-white p-8 text-center text-gray-500">
-                    Hiện chưa có flash sale nào đang diễn ra.
+                    {copy.activeEmpty}
                   </div>
                 )}
               </section>
@@ -143,34 +213,59 @@ export default function FlashSalePage() {
                 <div className="mb-6">
                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
                     <CalendarClock className="h-4 w-4" />
-                    Sắp diễn ra
+                    {copy.upcomingBadge}
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900">Lịch mở bán tiếp theo</h2>
-                  <p className="mt-2 text-gray-500">Theo dõi trước các campaign sắp mở để chủ động săn deal khi bắt đầu.</p>
+                  <h2 className="text-3xl font-bold text-gray-900">
+                    {copy.upcomingHeading}
+                  </h2>
+                  <p className="mt-2 text-gray-500">
+                    {copy.upcomingDescription}
+                  </p>
                 </div>
 
                 {upcomingSales.length > 0 ? (
                   <div className="grid gap-4 lg:grid-cols-2">
                     {upcomingSales.map((sale) => (
-                      <div key={sale.id} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                      <div
+                        key={sale.id}
+                        className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm"
+                      >
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div>
-                            <p className="text-sm font-medium text-blue-600">Bắt đầu lúc {formatDate(sale.startTime)}</p>
-                            <h3 className="mt-2 text-xl font-semibold text-gray-900">{sale.product.name}</h3>
-                            <p className="mt-1 text-sm text-gray-500">{sale.product.author}</p>
+                            <p className="text-sm font-medium text-blue-600">
+                              {copy.startsAt}{" "}
+                              {formatDate(sale.startTime, locale)}
+                            </p>
+                            <h3 className="mt-2 text-xl font-semibold text-gray-900">
+                              {sale.product.name}
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              {sale.product.author}
+                            </p>
                           </div>
                           <div className="rounded-2xl bg-gray-50 px-4 py-3 text-right">
-                            <p className="text-sm text-gray-500">Mức giảm</p>
-                            <p className="text-2xl font-bold text-red-600">-{sale.discountPercent}%</p>
+                            <p className="text-sm text-gray-500">
+                              {copy.discountLabel}
+                            </p>
+                            <p className="text-2xl font-bold text-red-600">
+                              -{sale.discountPercent}%
+                            </p>
                           </div>
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                          <span>Giá dự kiến: {formatMoney(sale.salePrice)}</span>
-                          <span>Số lượng: {sale.stockLimit}</span>
+                          <span>
+                            {copy.estimatedPrice}:{" "}
+                            {formatMoney(sale.salePrice, locale)}
+                          </span>
+                          <span>
+                            {copy.stockLabel}: {sale.stockLimit}
+                          </span>
                         </div>
                         <div className="mt-5">
                           <Link href={`/products/${sale.product.id}`}>
-                            <Button variant="outline">Xem trước sản phẩm</Button>
+                            <Button variant="outline">
+                              {copy.previewProduct}
+                            </Button>
                           </Link>
                         </div>
                       </div>
@@ -178,7 +273,7 @@ export default function FlashSalePage() {
                   </div>
                 ) : (
                   <div className="rounded-3xl border border-gray-200 bg-white p-8 text-center text-gray-500">
-                    Chưa có campaign sắp tới nào được lên lịch.
+                    {copy.upcomingEmpty}
                   </div>
                 )}
               </section>

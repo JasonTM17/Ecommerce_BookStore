@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { ReactElement } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ProductDetailPage from "@/app/products/[id]/page";
@@ -55,6 +55,7 @@ vi.mock("@/components/providers/language-provider", () => ({
 vi.mock("next/navigation", () => ({
   useParams: () => ({ id: "106" }),
   usePathname: () => "/products/106",
+  useSearchParams: () => new URLSearchParams("source=flash-sale&saleId=700"),
   useRouter: () => ({
     push: pushMock,
   }),
@@ -190,7 +191,22 @@ describe("ProductDetailPage", () => {
     expect(
       await screen.findByTestId("flash-sale-countdown-card"),
     ).toBeInTheDocument();
-    expect(screen.getByText("Flash sale đang diễn ra")).toBeInTheDocument();
+    const flashSaleContext = screen.getByTestId(
+      "product-detail-flash-sale-context",
+    );
+    expect(flashSaleContext).toBeInTheDocument();
+    expect(
+      within(flashSaleContext).getByText("Flash sale đang diễn ra"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Giá đang được áp trực tiếp từ deal live"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Bạn đang xem sản phẩm từ khu Flash Sale. Giá sẽ tự quay về mức thường khi chương trình kết thúc.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Giá đang áp dụng")).toBeInTheDocument();
     expect(screen.getByText("Giá ưu đãi chỉ còn trong")).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -214,7 +230,14 @@ describe("ProductDetailPage", () => {
       </QueryClientProvider>,
     );
 
-    expect(await screen.findByText("Flash sale is live")).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("product-detail-flash-sale-context")).getByText(
+        "Flash sale is live",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("This price is coming from the live deal"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Special price ends in")).toBeInTheDocument();
     expect(
       screen.getByText(

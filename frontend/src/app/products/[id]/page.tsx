@@ -2,13 +2,19 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
+  Flame,
   Heart,
   Minus,
   Plus,
@@ -86,6 +92,17 @@ const COPY = {
     shareFailedHint: "Vui lòng thử lại sau.",
     reviewFallbackUser: "Người dùng",
     verifiedPurchase: "Đã mua hàng",
+    flashSaleBadge: "Flash sale đang diễn ra",
+    flashSaleTitle: "Giá đang được áp trực tiếp từ deal live",
+    flashSaleDescription:
+      "Hoàn tất đơn trước khi bộ đếm kết thúc để giữ mức giá ưu đãi này.",
+    flashSaleEntryHint:
+      "Bạn đang xem sản phẩm từ khu Flash Sale. Giá sẽ tự quay về mức thường khi chương trình kết thúc.",
+    flashSaleBackLink: "Quay lại Flash Sale",
+    flashSalePriceLive: "Giá đang áp dụng",
+    flashSaleRemaining: (count: number) => `Còn ${count} suất sale`,
+    flashSaleLimit: (count: number) => `Tối đa ${count} cuốn/khách`,
+    flashSaleStockTotal: (count: number) => `${count} suất trong chương trình`,
   },
   en: {
     invalidRoute: "Invalid product route",
@@ -123,6 +140,17 @@ const COPY = {
     shareFailedHint: "Please try again later.",
     reviewFallbackUser: "User",
     verifiedPurchase: "Verified purchase",
+    flashSaleBadge: "Flash sale is live",
+    flashSaleTitle: "This price is coming from the live deal",
+    flashSaleDescription:
+      "Complete your order before the countdown ends to keep this discounted price.",
+    flashSaleEntryHint:
+      "You opened this product from the Flash Sale hub. The price will return when the campaign ends.",
+    flashSaleBackLink: "Back to Flash Sale",
+    flashSalePriceLive: "Live deal price",
+    flashSaleRemaining: (count: number) => `${count} sale slots left`,
+    flashSaleLimit: (count: number) => `Up to ${count} copies/customer`,
+    flashSaleStockTotal: (count: number) => `${count} total sale slots`,
   },
 } as const;
 
@@ -131,6 +159,7 @@ export default function ProductDetailPage() {
   const copy = COPY[locale];
   const params = useParams();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { addToCart, isAddingToCart } = useAddToCart();
   const { isAuthenticated } = useAuth();
@@ -328,10 +357,34 @@ export default function ProductDetailPage() {
         : [resolveProductImageSource(product)];
   const selectedGalleryImage = galleryImages[selectedImage] || galleryImages[0];
   const fallbackSrc = getCategoryPlaceholderImage(product.category?.name);
-  const hasActiveFlashSaleCountdown =
+  const hasActiveFlashSale =
     Boolean(product.activeFlashSale) &&
     product.currentPrice < product.price &&
     new Date(product.activeFlashSale!.endTime).getTime() > Date.now();
+  const enteredFromFlashSale =
+    hasActiveFlashSale && searchParams.get("source") === "flash-sale";
+  const flashSaleHighlights: string[] = [];
+  if (hasActiveFlashSale && product.activeFlashSale) {
+    flashSaleHighlights.push(copy.flashSalePriceLive);
+
+    if (product.activeFlashSale.remainingStock !== undefined) {
+      flashSaleHighlights.push(
+        copy.flashSaleRemaining(product.activeFlashSale.remainingStock),
+      );
+    }
+
+    if (product.activeFlashSale.maxPerUser !== undefined) {
+      flashSaleHighlights.push(
+        copy.flashSaleLimit(product.activeFlashSale.maxPerUser),
+      );
+    }
+
+    if (product.activeFlashSale.stockLimit !== undefined) {
+      flashSaleHighlights.push(
+        copy.flashSaleStockTotal(product.activeFlashSale.stockLimit),
+      );
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -381,8 +434,17 @@ export default function ProductDetailPage() {
                   className="object-cover"
                   priority
                 />
+                {hasActiveFlashSale ? (
+                  <div
+                    data-testid="product-detail-flash-sale-image-badge"
+                    className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-500/30"
+                  >
+                    <Flame className="h-4 w-4" />
+                    <span>{copy.flashSaleBadge}</span>
+                  </div>
+                ) : null}
                 {hasDiscount ? (
-                  <span className="absolute left-4 top-4 rounded-xl bg-red-500 px-3 py-1.5 text-sm font-semibold text-white shadow-lg">
+                  <span className="absolute right-4 top-4 rounded-xl bg-red-500 px-3 py-1.5 text-sm font-semibold text-white shadow-lg">
                     -{product.discountPercent}%
                   </span>
                 ) : null}
@@ -416,6 +478,39 @@ export default function ProductDetailPage() {
 
             <div className="space-y-6">
               <div>
+                {hasActiveFlashSale && product.activeFlashSale ? (
+                  <div
+                    data-testid="product-detail-flash-sale-context"
+                    className="mb-4 overflow-hidden rounded-3xl border border-red-200 bg-gradient-to-r from-red-50 via-orange-50 to-white p-4 shadow-sm"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-red-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                          <Flame className="h-4 w-4" />
+                          <span>{copy.flashSaleBadge}</span>
+                        </div>
+                        <div>
+                          <p className="text-lg font-bold text-gray-900">
+                            {copy.flashSaleTitle}
+                          </p>
+                          <p className="mt-1 max-w-2xl text-sm text-gray-600">
+                            {enteredFromFlashSale
+                              ? copy.flashSaleEntryHint
+                              : copy.flashSaleDescription}
+                          </p>
+                        </div>
+                      </div>
+                      <Link href="/flash-sale" className="shrink-0">
+                        <Button
+                          variant="outline"
+                          className="border-red-200 text-red-600 hover:bg-red-50"
+                        >
+                          {copy.flashSaleBackLink}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : null}
                 {product.category ? (
                   <span className="text-sm font-medium text-gray-500">
                     {product.category.name}
@@ -459,9 +554,26 @@ export default function ProductDetailPage() {
               ) : null}
 
               <div
-                className="rounded-3xl bg-gray-50 p-6"
+                className={cn(
+                  "rounded-3xl p-6",
+                  hasActiveFlashSale
+                    ? "border border-red-200 bg-gradient-to-br from-red-50 via-white to-orange-50 shadow-sm"
+                    : "bg-gray-50",
+                )}
                 data-testid="product-detail-price-panel"
               >
+                {flashSaleHighlights.length > 0 ? (
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {flashSaleHighlights.map((highlight) => (
+                      <span
+                        key={highlight}
+                        className="rounded-full border border-red-100 bg-white px-3 py-1 text-xs font-semibold text-red-600"
+                      >
+                        {highlight}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="flex flex-wrap items-baseline gap-3">
                   <span
                     className="text-4xl font-bold text-primary"
@@ -492,7 +604,7 @@ export default function ProductDetailPage() {
                 </p>
               </div>
 
-              {hasActiveFlashSaleCountdown && product.activeFlashSale ? (
+              {hasActiveFlashSale && product.activeFlashSale ? (
                 <FlashSaleCountdownCard
                   locale={locale}
                   endTime={product.activeFlashSale.endTime}

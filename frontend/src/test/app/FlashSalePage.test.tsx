@@ -13,8 +13,17 @@ vi.mock("@/components/layout/footer", () => ({
   Footer: () => <div>Footer</div>,
 }));
 
+vi.mock("@/components/providers/language-provider", () => ({
+  useLanguage: () => ({
+    locale: "vi" as const,
+    isLoading: false,
+  }),
+}));
+
 vi.mock("@/components/flashsale/FlashSaleCard", () => ({
-  FlashSaleCard: ({ sale }: { sale: { product: { name: string } } }) => <div>{sale.product.name}</div>,
+  FlashSaleCard: ({ sale }: { sale: { product: { name: string } } }) => (
+    <div>{sale.product.name}</div>
+  ),
 }));
 
 function renderWithQueryClient(ui: ReactElement) {
@@ -26,7 +35,9 @@ function renderWithQueryClient(ui: ReactElement) {
     },
   });
 
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
 }
 
 describe("FlashSalePage", () => {
@@ -91,7 +102,11 @@ describe("FlashSalePage", () => {
 
     expect(await screen.findByText("Active Deal")).toBeInTheDocument();
     expect(screen.getByText("Upcoming Deal")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /chiến dịch đang chạy/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /lịch mở bán tiếp theo/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /chiến dịch đang chạy/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /lịch mở bán tiếp theo/i }),
+    ).toBeInTheDocument();
   });
 });

@@ -9,8 +9,34 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { getCategoryPlaceholderImage } from "@/lib/product-images";
+import { useLanguage } from "@/components/providers/language-provider";
+
+const COPY = {
+  vi: {
+    sectionTitle: "Flash Sale",
+    sectionSubtitle: "Giảm giá cực sốc trong thời gian có hạn",
+    sectionAction: "Xem tất cả",
+    sold: "Đã bán",
+    remaining: "Còn",
+    dealBadge: "Deal đang chạy",
+  },
+  en: {
+    sectionTitle: "Flash Sale",
+    sectionSubtitle: "Limited-time deals synced from the live store data",
+    sectionAction: "View all",
+    sold: "Sold",
+    remaining: "Left",
+    dealBadge: "Live deal",
+  },
+} as const;
+
+function buildFlashSaleHref(productId: number, saleId: number) {
+  return `/products/${productId}?source=flash-sale&saleId=${saleId}`;
+}
 
 export function FlashSaleSection() {
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const { data: activeSales = [] } = useQuery({
     queryKey: ["flash-sales-active"],
     queryFn: flashSaleApi.getActiveFlashSales,
@@ -29,10 +55,10 @@ export function FlashSaleSection() {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Flash Sale</h2>
-              <p className="text-gray-500">
-                Giảm giá cực sốc trong thời gian có hạn
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {copy.sectionTitle}
+              </h2>
+              <p className="text-gray-500">{copy.sectionSubtitle}</p>
             </div>
           </div>
           <Link href="/flash-sale">
@@ -40,7 +66,7 @@ export function FlashSaleSection() {
               variant="outline"
               className="border-red-200 text-red-500 hover:bg-red-50"
             >
-              Xem tất cả
+              {copy.sectionAction}
             </Button>
           </Link>
         </div>
@@ -56,6 +82,8 @@ export function FlashSaleSection() {
 }
 
 export function FlashSaleCard({ sale }: { sale: FlashSale }) {
+  const { locale } = useLanguage();
+  const copy = COPY[locale];
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(sale.endTime));
   const [mounted, setMounted] = useState(false);
 
@@ -68,7 +96,7 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
   }, [sale.endTime]);
 
   const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", {
+    new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {
       style: "currency",
       currency: "VND",
       minimumFractionDigits: 0,
@@ -76,7 +104,7 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
 
   return (
     <Link
-      href={`/products/${sale.product.id}`}
+      href={buildFlashSaleHref(sale.product.id, sale.id)}
       data-testid="flash-sale-card"
       className={cn(
         "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden",
@@ -98,13 +126,20 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
           <div className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-md flex items-center gap-1">
             <Zap className="h-3 w-3" />-{sale.discountPercent}%
           </div>
+          <div className="px-2 py-1 bg-white/95 text-red-600 text-[11px] font-semibold rounded-md shadow-sm">
+            {copy.dealBadge}
+          </div>
         </div>
 
         {/* Stock Progress */}
         <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
           <div className="flex items-center justify-between text-white text-xs mb-1">
-            <span>Đã bán {sale.soldCount}</span>
-            <span>Còn {sale.remainingStock}</span>
+            <span>
+              {copy.sold} {sale.soldCount}
+            </span>
+            <span>
+              {copy.remaining} {sale.remainingStock}
+            </span>
           </div>
           <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
             <div
