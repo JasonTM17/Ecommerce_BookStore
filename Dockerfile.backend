@@ -37,7 +37,7 @@ RUN mkdir -p /app/uploads /app/logs && chown -R appuser:appgroup /app/uploads /a
 COPY --from=builder /app/target/*.jar app.jar
 
 # Set environment
-ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+ENV JAVA_OPTS="-Xms256m -Xmx300m -XX:+UseSerialGC"
 ENV SPRING_PROFILES_ACTIVE=prod
 
 # Expose port
