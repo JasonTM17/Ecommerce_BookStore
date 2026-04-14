@@ -49,4 +49,4 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
   CMD curl -f http://localhost:8080/api/actuator/health || exit 1
 
-ENTRYPOINT ["dumb-init", "--", "sh", "-c", "mkdir -p /app/logs && java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["dumb-init", "--", "sh", "-c", "mkdir -p /app/logs && java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]

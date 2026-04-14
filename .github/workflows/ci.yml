@@ -520,47 +520,51 @@ jobs:
           sarif_file: trivy-results.sarif
 
   deploy-staging:
-    name: Deploy to Staging
+    name: Deploy to Staging (Render)
     runs-on: ubuntu-latest
     needs: [backend-test, frontend-test, code-quality, docker-publish-backend, docker-publish-frontend]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Health check staging server
+      - name: Trigger Render backend deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND_STAGING != '' }}
         run: |
-          echo "Checking staging server health..."
-          # curl -f https://staging.bookstore.com/api/health || exit 1
+          echo "Triggering Render backend staging deploy..."
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND_STAGING }}"
+          echo "Backend deploy triggered."
 
-      - name: Deploy to staging server
+      - name: Trigger Render frontend deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND_STAGING != '' }}
         run: |
-          echo "Deploy staging workflow triggered"
-          # ./deploy.sh staging
-        env:
-          STAGING_URL: ${{ secrets.STAGING_URL }}
-          STAGING_TOKEN: ${{ secrets.STAGING_TOKEN }}
+          echo "Triggering Render frontend staging deploy..."
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND_STAGING }}"
+          echo "Frontend deploy triggered."
 
   deploy-production:
-    name: Deploy to Production
+    name: Deploy to Production (Render)
     runs-on: ubuntu-latest
     needs: [backend-test, frontend-test, e2e-test, code-quality, security, docker-publish-backend, docker-publish-frontend]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Health check production server
+      - name: Trigger Render backend deploy
         run: |
-          echo "Checking production server health..."
-          # curl -f https://bookstore.com/api/health || exit 1
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}" ]; then
+            echo "⚠️ RENDER_DEPLOY_HOOK_BACKEND secret not set. Skipping deploy."
+            echo "→ Set it in GitHub repo Settings > Secrets > Actions"
+            exit 0
+          fi
+          echo "Triggering Render backend production deploy..."
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}"
+          echo "Backend deploy triggered."
 
-      - name: Deploy to production server
+      - name: Trigger Render frontend deploy
         run: |
-          echo "Deploy production workflow triggered"
-          # ./deploy.sh production
-        env:
-          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
-          PRODUCTION_TOKEN: ${{ secrets.PRODUCTION_TOKEN }}
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}" ]; then
+            echo "⚠️ RENDER_DEPLOY_HOOK_FRONTEND secret not set. Skipping deploy."
+            echo "→ Set it in GitHub repo Settings > Secrets > Actions"
+            exit 0
+          fi
+          echo "Triggering Render frontend production deploy..."
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}"
+          echo "Frontend deploy triggered."

@@ -1,0 +1,117 @@
+# ==============================================================================
+# render.yaml - Render Blueprint (Infrastructure as Code)
+#
+# Deploy full-stack BookStore to Render.com:
+#   1. PostgreSQL Database (free tier)
+#   2. Spring Boot Backend (Docker)
+#   3. Next.js Frontend (Docker)
+#
+# Usage:
+#   1. Push this file to GitHub
+#   2. Render Dashboard > New > Blueprint > Connect repo
+#   3. Apply Blueprint
+# ==============================================================================
+
+databases:
+  - name: bookstore-db
+    plan: free
+    databaseName: bookstore
+    user: bookstore
+    region: singapore
+
+services:
+  # --------------------------------------------------------------------------
+  # Backend - Spring Boot API (Docker)
+  # --------------------------------------------------------------------------
+  - type: web
+    name: bookstore-api
+    plan: free
+    region: singapore
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
+    healthCheckPath: /api/actuator/health/liveness
+    envVars:
+      # Spring profile
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      # Database - auto-linked from Render PostgreSQL
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookstore-db
+          property: connectionString
+      - key: DB_HOST
+        fromDatabase:
+          name: bookstore-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: bookstore-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: bookstore-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: bookstore-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: bookstore-db
+          property: password
+      # JPA
+      - key: JPA_DDL_AUTO
+        value: update
+      # JWT
+      - key: JWT_SECRET
+        generateValue: true
+      # CORS - will be updated after frontend deploys
+      - key: CORS_ORIGINS
+        value: https://bookstore-web.onrender.com
+      # App
+      - key: APP_BASE_URL
+        value: https://bookstore-web.onrender.com
+      - key: UPLOAD_DIR
+        value: /app/uploads
+      # Rate Limiting
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
+      - key: RATE_LIMIT_AUTH_LIMIT
+        value: "10"
+      - key: RATE_LIMIT_API_LIMIT
+        value: "200"
+      - key: RATE_LIMIT_PUBLIC_LIMIT
+        value: "500"
+      # Email - disabled by default
+      - key: APP_EMAIL_TEST_ENABLED
+        value: "false"
+      # Grok AI - disabled by default
+      - key: GROK_ENABLED
+        value: "false"
+
+  # --------------------------------------------------------------------------
+  # Frontend - Next.js Application (Docker)
+  # --------------------------------------------------------------------------
+  - type: web
+    name: bookstore-web
+    plan: free
+    region: singapore
+    runtime: docker
+    dockerfilePath: ./Dockerfile.frontend
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      # API proxy to backend
+      - key: API_PROXY_TARGET
+        value: https://bookstore-api.onrender.com/api
+      - key: NEXT_PUBLIC_API_URL
+        value: /api
+      - key: NEXT_PUBLIC_APP_NAME
+        value: BookStore
+      - key: NEXT_PUBLIC_APP_DESCRIPTION
+        value: "Professional Vietnamese E-Commerce BookStore Platform"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NODE_ENV
+        value: production
