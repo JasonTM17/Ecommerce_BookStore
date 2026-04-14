@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   JAVA_VERSION: "17"
   NODE_VERSION: "20"
@@ -202,10 +206,11 @@ jobs:
           name: frontend
           fail_ci_if_error: false
 
-  docker-build:
-    name: Docker Build & Push (GHCR)
+  docker-publish-backend:
+    name: Docker Publish Backend (GHCR)
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test]
+    timeout-minutes: 75
+    needs: [backend-test, frontend-test, frontend-build, e2e-test, code-quality, security]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
     permissions:
       contents: read
@@ -243,9 +248,33 @@ jobs:
           push: true
           tags: ${{ steps.meta-backend.outputs.tags }}
           labels: ${{ steps.meta-backend.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend-image
+          cache-to: type=gha,mode=max,scope=backend-image
           platforms: linux/amd64,linux/arm64
+
+  docker-publish-frontend:
+    name: Docker Publish Frontend (GHCR)
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    needs: [backend-test, frontend-test, frontend-build, e2e-test, code-quality, security]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (frontend)
         id: meta-frontend
@@ -265,8 +294,8 @@ jobs:
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend-image
+          cache-to: type=gha,mode=max,scope=frontend-image
           platforms: linux/amd64,linux/arm64
 
   frontend-build:
@@ -349,6 +378,11 @@ jobs:
         run: |
           cd frontend
           npx playwright install --with-deps chromium
+
+      - name: Fix Playwright output directory permissions
+        run: |
+          sudo rm -rf frontend/test-results frontend/playwright-report
+          mkdir -p frontend/test-results frontend/playwright-report
 
       - name: Run Playwright portfolio smoke
         run: |
@@ -488,7 +522,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test, code-quality]
+    needs: [backend-test, frontend-test, code-quality, docker-publish-backend, docker-publish-frontend]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
 
     steps:
@@ -511,7 +545,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test, e2e-test, code-quality, security]
+    needs: [backend-test, frontend-test, e2e-test, code-quality, security, docker-publish-backend, docker-publish-frontend]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:
