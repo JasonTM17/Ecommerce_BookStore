@@ -2,6 +2,7 @@ package com.bookstore.integration;
 
 import com.bookstore.entity.Product;
 import com.bookstore.entity.User;
+import com.bookstore.repository.CartRepository;
 import com.bookstore.repository.ProductRepository;
 import com.bookstore.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -44,6 +45,9 @@ class CartIntegrationTest {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CartRepository cartRepository;
+
     private User customerUser;
     private Product testProduct;
 
@@ -51,6 +55,11 @@ class CartIntegrationTest {
     void setUp() {
         customerUser = userRepository.findByEmail("customer@example.com")
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        cartRepository.findByUserIdWithItems(customerUser.getId()).ifPresent(cart -> {
+            cart.clearItems();
+            cartRepository.saveAndFlush(cart);
+        });
 
         testProduct = productRepository.findAll().stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("No products found"));
