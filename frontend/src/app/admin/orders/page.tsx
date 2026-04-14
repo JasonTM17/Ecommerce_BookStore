@@ -26,8 +26,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn, formatCurrency } from "@/lib/utils";
 
 interface OrderItem {
@@ -160,7 +173,11 @@ const COPY = {
 
 export default function AdminOrdersPage() {
   const router = useRouter();
-  const { isAuthenticated, isAdmin, isLoading: isAuthLoading } = useAuth(true, true);
+  const {
+    isAuthenticated,
+    isAdmin,
+    isLoading: isAuthLoading,
+  } = useAuth(true, true);
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const [page, setPage] = useState(0);
@@ -207,9 +224,15 @@ export default function AdminOrdersPage() {
     { value: "CANCELLED", label: copy.statusLabels.CANCELLED },
   ];
 
-  const pendingCount = orders.filter((order) => order.status === "PENDING").length;
-  const shippedCount = orders.filter((order) => order.status === "SHIPPED").length;
-  const deliveredCount = orders.filter((order) => order.status === "DELIVERED").length;
+  const pendingCount = orders.filter(
+    (order) => order.status === "PENDING",
+  ).length;
+  const shippedCount = orders.filter(
+    (order) => order.status === "SHIPPED",
+  ).length;
+  const deliveredCount = orders.filter(
+    (order) => order.status === "DELIVERED",
+  ).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-gray-100 to-blue-50/30">
@@ -217,35 +240,60 @@ export default function AdminOrdersPage() {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/admin" className="hover:text-blue-600 transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-blue-600 transition-colors"
+            >
               {copy.breadcrumb}
             </Link>
             <span>/</span>
             <span className="font-medium text-gray-900">{copy.title}</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">{copy.title}</h1>
-          <p className="mt-2 text-gray-600">
-            {copy.subtitle}
-          </p>
+          <p className="mt-2 text-gray-600">{copy.subtitle}</p>
         </div>
 
         <div className="mb-8 grid gap-4 md:grid-cols-4">
           {[
-            { label: copy.totalOrders, value: totalElements, icon: ShoppingCart, tone: "bg-blue-100 text-blue-600" },
-            { label: copy.pending, value: pendingCount, icon: Clock, tone: "bg-yellow-100 text-yellow-600" },
-            { label: copy.shipping, value: shippedCount, icon: Truck, tone: "bg-orange-100 text-orange-600" },
-            { label: copy.delivered, value: deliveredCount, icon: CheckCircle, tone: "bg-green-100 text-green-600" },
+            {
+              label: copy.totalOrders,
+              value: totalElements,
+              icon: ShoppingCart,
+              tone: "bg-blue-100 text-blue-600",
+            },
+            {
+              label: copy.pending,
+              value: pendingCount,
+              icon: Clock,
+              tone: "bg-yellow-100 text-yellow-600",
+            },
+            {
+              label: copy.shipping,
+              value: shippedCount,
+              icon: Truck,
+              tone: "bg-orange-100 text-orange-600",
+            },
+            {
+              label: copy.delivered,
+              value: deliveredCount,
+              icon: CheckCircle,
+              tone: "bg-green-100 text-green-600",
+            },
           ].map((item) => {
             const Icon = item.icon;
             return (
               <Card key={item.label} className="rounded-2xl border-0 shadow-lg">
                 <CardContent className="flex items-center gap-4 p-5">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.tone}`}>
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.tone}`}
+                  >
                     <Icon className="h-6 w-6" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">{item.label}</p>
-                    <p className="text-2xl font-bold text-gray-900">{item.value}</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {item.value}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -270,10 +318,13 @@ export default function AdminOrdersPage() {
                     className="pl-9"
                   />
                 </div>
-                <Select value={status || "all"} onValueChange={(value) => {
-                  setStatus(value === "all" ? "" : value);
-                  setPage(0);
-                }}>
+                <Select
+                  value={status || "all"}
+                  onValueChange={(value) => {
+                    setStatus(value === "all" ? "" : value);
+                    setPage(0);
+                  }}
+                >
                   <SelectTrigger className="w-full md:w-52">
                     <SelectValue placeholder={copy.statusPlaceholder} />
                   </SelectTrigger>
@@ -304,65 +355,96 @@ export default function AdminOrdersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoading
-                    ? Array.from({ length: 6 }).map((_, index) => (
-                        <TableRow key={index}>
-                          {Array.from({ length: 8 }).map((__, cellIndex) => (
-                            <TableCell key={cellIndex}>
-                              <Skeleton className="h-5 w-full" />
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    : orders.length === 0
-                      ? (
-                          <TableRow>
-                            <TableCell colSpan={8} className="py-14 text-center text-gray-500">
-                              {copy.empty}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      : orders.map((order) => (
-                          <TableRow key={order.id} className="hover:bg-gray-50/50">
-                            <TableCell className="font-mono text-xs font-medium text-blue-600">{order.orderNumber}</TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium text-gray-900">{order.user.fullName}</p>
-                                <p className="text-xs text-gray-500">{order.user.email}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-sm text-gray-600">
-                              {new Date(order.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US")}
-                            </TableCell>
-                            <TableCell className="text-right font-medium text-gray-900">
-                              {formatCurrency(order.totalAmount)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={cn("font-medium", STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700")}>
-                                {copy.statusLabels[order.status as keyof typeof copy.statusLabels] ?? order.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={cn("font-medium", PAYMENT_STYLES[order.paymentStatus] || "bg-gray-100 text-gray-700")}>
-                                {copy.paymentLabels[order.paymentStatus as keyof typeof copy.paymentLabels] ?? order.paymentStatus}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-center text-sm text-gray-600">{order.orderItems.length}</TableCell>
-                            <TableCell>
-                              <div className="flex justify-end">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  aria-label={copy.view}
-                                  className="h-9 w-9"
-                                  onClick={() => router.push(`/admin/orders/${order.id}`)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                  {isLoading ? (
+                    Array.from({ length: 6 }).map((_, index) => (
+                      <TableRow key={index}>
+                        {Array.from({ length: 8 }).map((__, cellIndex) => (
+                          <TableCell key={cellIndex}>
+                            <Skeleton className="h-5 w-full" />
+                          </TableCell>
                         ))}
+                      </TableRow>
+                    ))
+                  ) : orders.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-14 text-center text-gray-500"
+                      >
+                        {copy.empty}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    orders.map((order) => (
+                      <TableRow key={order.id} className="hover:bg-gray-50/50">
+                        <TableCell className="font-mono text-xs font-medium text-blue-600">
+                          {order.orderNumber}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {order.user.fullName}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {order.user.email}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {new Date(order.createdAt).toLocaleDateString(
+                            locale === "vi" ? "vi-VN" : "en-US",
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-gray-900">
+                          {formatCurrency(order.totalAmount)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={cn(
+                              "font-medium",
+                              STATUS_STYLES[order.status] ||
+                                "bg-gray-100 text-gray-700",
+                            )}
+                          >
+                            {copy.statusLabels[
+                              order.status as keyof typeof copy.statusLabels
+                            ] ?? order.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={cn(
+                              "font-medium",
+                              PAYMENT_STYLES[order.paymentStatus] ||
+                                "bg-gray-100 text-gray-700",
+                            )}
+                          >
+                            {copy.paymentLabels[
+                              order.paymentStatus as keyof typeof copy.paymentLabels
+                            ] ?? order.paymentStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-gray-600">
+                          {order.orderItems.length}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={copy.view}
+                              className="h-9 w-9"
+                              onClick={() =>
+                                router.push(`/admin/orders/${order.id}`)
+                              }
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -370,10 +452,17 @@ export default function AdminOrdersPage() {
             {totalPages > 1 ? (
               <div className="flex items-center justify-between border-t px-6 py-4">
                 <p className="text-sm text-gray-500">
-                  {copy.page.replace("{current}", String(page + 1)).replace("{total}", String(totalPages))}
+                  {copy.page
+                    .replace("{current}", String(page + 1))
+                    .replace("{total}", String(totalPages))}
                 </p>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === 0}
+                    onClick={() => setPage((value) => Math.max(0, value - 1))}
+                  >
                     <ChevronLeft className="mr-1 h-4 w-4" />
                     {copy.prev}
                   </Button>
@@ -381,7 +470,9 @@ export default function AdminOrdersPage() {
                     variant="outline"
                     size="sm"
                     disabled={page >= totalPages - 1}
-                    onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))}
+                    onClick={() =>
+                      setPage((value) => Math.min(totalPages - 1, value + 1))
+                    }
                   >
                     {copy.next}
                     <ChevronRight className="ml-1 h-4 w-4" />

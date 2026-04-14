@@ -62,7 +62,9 @@ describe("useCartStore", () => {
   describe("setCart", () => {
     it("sets cart with items", () => {
       const { result } = renderHook(() => useCartStore());
-      const items = [createMockCartItem({ id: 1, quantity: 2, subtotal: 160000 })];
+      const items = [
+        createMockCartItem({ id: 1, quantity: 2, subtotal: 160000 }),
+      ];
 
       act(() => {
         result.current.setCart(items, 2, 160000);
@@ -99,7 +101,11 @@ describe("useCartStore", () => {
   describe("addItem", () => {
     it("adds new item to cart", () => {
       const { result } = renderHook(() => useCartStore());
-      const newItem = createMockCartItem({ id: 1, quantity: 1, subtotal: 80000 });
+      const newItem = createMockCartItem({
+        id: 1,
+        quantity: 1,
+        subtotal: 80000,
+      });
 
       act(() => {
         result.current.addItem(newItem);
@@ -112,8 +118,18 @@ describe("useCartStore", () => {
     it("increases quantity when adding existing item", () => {
       const { result } = renderHook(() => useCartStore());
       const product = { ...mockProduct, id: 1 };
-      const item1 = createMockCartItem({ id: 1, product, quantity: 1, subtotal: 80000 });
-      const item2 = createMockCartItem({ id: 1, product, quantity: 2, subtotal: 160000 });
+      const item1 = createMockCartItem({
+        id: 1,
+        product,
+        quantity: 1,
+        subtotal: 80000,
+      });
+      const item2 = createMockCartItem({
+        id: 1,
+        product,
+        quantity: 2,
+        subtotal: 160000,
+      });
 
       act(() => {
         result.current.addItem(item1);
@@ -133,8 +149,18 @@ describe("useCartStore", () => {
 
     it("adds multiple different items", () => {
       const { result } = renderHook(() => useCartStore());
-      const item1 = createMockCartItem({ id: 1, product: { ...mockProduct, id: 1 }, quantity: 1, subtotal: 80000 });
-      const item2 = createMockCartItem({ id: 2, product: { ...mockProduct, id: 2 }, quantity: 2, subtotal: 160000 });
+      const item1 = createMockCartItem({
+        id: 1,
+        product: { ...mockProduct, id: 1 },
+        quantity: 1,
+        subtotal: 80000,
+      });
+      const item2 = createMockCartItem({
+        id: 2,
+        product: { ...mockProduct, id: 2 },
+        quantity: 2,
+        subtotal: 160000,
+      });
 
       act(() => {
         result.current.addItem(item1);
@@ -188,7 +214,9 @@ describe("useCartStore", () => {
   describe("updateQuantity", () => {
     it("updates item quantity", () => {
       const { result } = renderHook(() => useCartStore());
-      const items = [createMockCartItem({ id: 1, quantity: 1, subtotal: 80000 })];
+      const items = [
+        createMockCartItem({ id: 1, quantity: 1, subtotal: 80000 }),
+      ];
 
       act(() => {
         result.current.setCart(items, 1, 80000);
@@ -204,7 +232,9 @@ describe("useCartStore", () => {
 
     it("removes item when quantity is 0 or less", () => {
       const { result } = renderHook(() => useCartStore());
-      const items = [createMockCartItem({ id: 1, quantity: 1, subtotal: 80000 })];
+      const items = [
+        createMockCartItem({ id: 1, quantity: 1, subtotal: 80000 }),
+      ];
 
       act(() => {
         result.current.setCart(items, 1, 80000);
@@ -219,7 +249,9 @@ describe("useCartStore", () => {
 
     it("respects minimum quantity of 1", () => {
       const { result } = renderHook(() => useCartStore());
-      const items = [createMockCartItem({ id: 1, quantity: 1, subtotal: 80000 })];
+      const items = [
+        createMockCartItem({ id: 1, quantity: 1, subtotal: 80000 }),
+      ];
 
       act(() => {
         result.current.setCart(items, 1, 80000);

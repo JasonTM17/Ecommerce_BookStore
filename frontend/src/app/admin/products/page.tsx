@@ -83,7 +83,11 @@ const COPY = {
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isLoading: isAuthLoading } = useAuth(true, true);
+  const {
+    isAuthenticated,
+    isAdmin,
+    isLoading: isAuthLoading,
+  } = useAuth(true, true);
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const [page, setPage] = useState(0);

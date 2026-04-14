@@ -27,7 +27,13 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toaster";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -175,7 +181,11 @@ export default function AdminOrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isLoading: isAuthLoading } = useAuth(true, true);
+  const {
+    isAuthenticated,
+    isAdmin,
+    isLoading: isAuthLoading,
+  } = useAuth(true, true);
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const orderId = String(params.id);
@@ -193,17 +203,27 @@ export default function AdminOrderDetailPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ status, paymentStatus }: { status?: string; paymentStatus?: string }) => {
+    mutationFn: async ({
+      status,
+      paymentStatus,
+    }: {
+      status?: string;
+      paymentStatus?: string;
+    }) => {
       if (status) {
         await api.put(`/admin/orders/${orderId}/status?status=${status}`);
       }
 
       if (paymentStatus) {
-        await api.put(`/admin/orders/${orderId}/payment?paymentStatus=${paymentStatus}`);
+        await api.put(
+          `/admin/orders/${orderId}/payment?paymentStatus=${paymentStatus}`,
+        );
       }
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-order", orderId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["admin-order", orderId],
+      });
       void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       toast.success(copy.updateSuccess);
       setNewStatus("");
@@ -223,7 +243,7 @@ export default function AdminOrderDetailPage() {
       { value: "DELIVERED", label: copy.statusLabels.DELIVERED },
       { value: "CANCELLED", label: copy.statusLabels.CANCELLED },
     ],
-    [copy]
+    [copy],
   );
 
   const paymentOptions = useMemo(
@@ -233,7 +253,7 @@ export default function AdminOrderDetailPage() {
       { value: "FAILED", label: copy.paymentLabels.FAILED },
       { value: "REFUNDED", label: copy.paymentLabels.REFUNDED },
     ],
-    [copy]
+    [copy],
   );
 
   if (isAuthLoading || !isAuthenticated || !isAdmin) {
@@ -246,11 +266,17 @@ export default function AdminOrderDetailPage() {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/admin" className="hover:text-blue-600 transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-blue-600 transition-colors"
+            >
               {copy.breadcrumb}
             </Link>
             <span>/</span>
-            <Link href="/admin/orders" className="hover:text-blue-600 transition-colors">
+            <Link
+              href="/admin/orders"
+              className="hover:text-blue-600 transition-colors"
+            >
               {copy.orders}
             </Link>
             <span>/</span>
@@ -266,18 +292,25 @@ export default function AdminOrderDetailPage() {
                 </>
               ) : order ? (
                 <>
-                  <h1 className="text-3xl font-bold text-gray-900">#{order.orderNumber}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    #{order.orderNumber}
+                  </h1>
                   <p className="mt-2 text-gray-600">
                     {copy.placedAt.replace(
                       "{date}",
-                      new Date(order.createdAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US")
+                      new Date(order.createdAt).toLocaleString(
+                        locale === "vi" ? "vi-VN" : "en-US",
+                      ),
                     )}
                   </p>
                 </>
               ) : null}
             </div>
 
-            <Button variant="outline" onClick={() => router.push("/admin/orders")}>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/admin/orders")}
+            >
               <ChevronLeft className="mr-2 h-4 w-4" />
               {copy.back}
             </Button>
@@ -303,7 +336,10 @@ export default function AdminOrderDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {order.orderItems.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 rounded-2xl border border-gray-100 p-4">
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-4 rounded-2xl border border-gray-100 p-4"
+                    >
                       <div className="flex h-20 w-16 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
                         {item.imageUrl ? (
                           <Image
@@ -319,13 +355,17 @@ export default function AdminOrderDetailPage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h2 className="font-medium text-gray-900">{item.productName}</h2>
+                        <h2 className="font-medium text-gray-900">
+                          {item.productName}
+                        </h2>
                         <p className="mt-1 text-sm text-gray-500">
                           {copy.quantity}: {item.quantity}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900">{formatCurrency(item.price * item.quantity)}</p>
+                        <p className="font-semibold text-gray-900">
+                          {formatCurrency(item.price * item.quantity)}
+                        </p>
                         <p className="text-sm text-gray-500">
                           {formatCurrency(item.price)} x {item.quantity}
                         </p>
@@ -345,25 +385,37 @@ export default function AdminOrderDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500">{copy.subtotal}</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(order.subtotal)}</span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(order.subtotal)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">{copy.shippingFee}</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(order.shippingFee)}</span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(order.shippingFee)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">{copy.tax}</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(order.taxAmount)}</span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(order.taxAmount)}
+                    </span>
                   </div>
                   {order.discountAmount > 0 ? (
                     <div className="flex justify-between text-green-600">
                       <span>{copy.discount}</span>
-                      <span className="font-medium">-{formatCurrency(order.discountAmount)}</span>
+                      <span className="font-medium">
+                        -{formatCurrency(order.discountAmount)}
+                      </span>
                     </div>
                   ) : null}
                   <div className="flex justify-between border-t pt-3">
-                    <span className="text-base font-semibold text-gray-900">{copy.total}</span>
-                    <span className="text-lg font-bold text-blue-600">{formatCurrency(order.totalAmount)}</span>
+                    <span className="text-base font-semibold text-gray-900">
+                      {copy.total}
+                    </span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {formatCurrency(order.totalAmount)}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -380,14 +432,30 @@ export default function AdminOrderDetailPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <p className="text-sm text-gray-500">{copy.status}</p>
-                    <Badge className={cn("font-medium", BADGE_STYLES[order.status] || "bg-gray-100 text-gray-700")}>
-                      {copy.statusLabels[order.status as keyof typeof copy.statusLabels] ?? order.status}
+                    <Badge
+                      className={cn(
+                        "font-medium",
+                        BADGE_STYLES[order.status] ||
+                          "bg-gray-100 text-gray-700",
+                      )}
+                    >
+                      {copy.statusLabels[
+                        order.status as keyof typeof copy.statusLabels
+                      ] ?? order.status}
                     </Badge>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm text-gray-500">{copy.payment}</p>
-                    <Badge className={cn("font-medium", BADGE_STYLES[order.paymentStatus] || "bg-gray-100 text-gray-700")}>
-                      {copy.paymentLabels[order.paymentStatus as keyof typeof copy.paymentLabels] ?? order.paymentStatus}
+                    <Badge
+                      className={cn(
+                        "font-medium",
+                        BADGE_STYLES[order.paymentStatus] ||
+                          "bg-gray-100 text-gray-700",
+                      )}
+                    >
+                      {copy.paymentLabels[
+                        order.paymentStatus as keyof typeof copy.paymentLabels
+                      ] ?? order.paymentStatus}
                     </Badge>
                   </div>
                   <div className="space-y-3 border-t pt-4">
@@ -404,7 +472,10 @@ export default function AdminOrderDetailPage() {
                       </SelectContent>
                     </Select>
 
-                    <Select value={newPaymentStatus} onValueChange={setNewPaymentStatus}>
+                    <Select
+                      value={newPaymentStatus}
+                      onValueChange={setNewPaymentStatus}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={copy.choosePayment} />
                       </SelectTrigger>
@@ -419,7 +490,10 @@ export default function AdminOrderDetailPage() {
 
                     <Button
                       className="w-full"
-                      disabled={(!newStatus && !newPaymentStatus) || updateMutation.isPending}
+                      disabled={
+                        (!newStatus && !newPaymentStatus) ||
+                        updateMutation.isPending
+                      }
                       onClick={() =>
                         updateMutation.mutate({
                           status: newStatus || undefined,
@@ -446,7 +520,9 @@ export default function AdminOrderDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <p className="font-semibold text-gray-900">{order.user.fullName}</p>
+                  <p className="font-semibold text-gray-900">
+                    {order.user.fullName}
+                  </p>
                   <p className="text-sm text-gray-600">{order.user.email}</p>
                   {order.user.phone ? (
                     <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -467,20 +543,28 @@ export default function AdminOrderDetailPage() {
                 <CardContent className="space-y-3 text-sm">
                   <div>
                     <p className="text-gray-500">{copy.receiver}</p>
-                    <p className="font-medium text-gray-900">{order.shippingReceiverName}</p>
+                    <p className="font-medium text-gray-900">
+                      {order.shippingReceiverName}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-500">{copy.phone}</p>
-                    <p className="font-medium text-gray-900">{order.shippingPhone}</p>
+                    <p className="font-medium text-gray-900">
+                      {order.shippingPhone}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-500">{copy.address}</p>
-                    <p className="font-medium text-gray-900">{order.shippingAddress}</p>
+                    <p className="font-medium text-gray-900">
+                      {order.shippingAddress}
+                    </p>
                   </div>
                   {order.shippingMethod ? (
                     <div>
                       <p className="text-gray-500">{copy.method}</p>
-                      <p className="font-medium text-gray-900">{order.shippingMethod}</p>
+                      <p className="font-medium text-gray-900">
+                        {order.shippingMethod}
+                      </p>
                     </div>
                   ) : null}
                   <div>
@@ -509,9 +593,15 @@ export default function AdminOrderDetailPage() {
           <Card className="rounded-2xl border-0 shadow-lg">
             <CardContent className="py-16 text-center">
               <Package className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-              <h2 className="text-xl font-semibold text-gray-900">{copy.emptyTitle}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {copy.emptyTitle}
+              </h2>
               <p className="mt-2 text-gray-600">{copy.emptyDesc}</p>
-              <Button className="mt-6" variant="outline" onClick={() => router.push("/admin/orders")}>
+              <Button
+                className="mt-6"
+                variant="outline"
+                onClick={() => router.push("/admin/orders")}
+              >
                 {copy.backToList}
               </Button>
             </CardContent>

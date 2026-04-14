@@ -25,12 +25,30 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
@@ -103,7 +121,8 @@ const COPY = {
   en: {
     breadcrumb: "Admin",
     title: "User management",
-    subtitle: "Review account roles, states, and customer profiles in the system.",
+    subtitle:
+      "Review account roles, states, and customer profiles in the system.",
     totalUsers: "Total users",
     active: "Active",
     inactive: "Inactive",
@@ -142,7 +161,11 @@ const COPY = {
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isLoading: isAuthLoading } = useAuth(true, true);
+  const {
+    isAuthenticated,
+    isAdmin,
+    isLoading: isAuthLoading,
+  } = useAuth(true, true);
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const [page, setPage] = useState(0);
@@ -228,7 +251,9 @@ export default function AdminUsersPage() {
 
   const activeCount = users.filter((user) => user.enabled).length;
   const inactiveCount = users.filter((user) => !user.enabled).length;
-  const adminCount = users.filter((user) => user.roles.includes("ADMIN")).length;
+  const adminCount = users.filter((user) =>
+    user.roles.includes("ADMIN"),
+  ).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-gray-100 to-blue-50/30">
@@ -236,7 +261,10 @@ export default function AdminUsersPage() {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/admin" className="hover:text-blue-600 transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-blue-600 transition-colors"
+            >
               {copy.breadcrumb}
             </Link>
             <span>/</span>
@@ -248,21 +276,45 @@ export default function AdminUsersPage() {
 
         <div className="mb-8 grid gap-4 md:grid-cols-4">
           {[
-            { label: copy.totalUsers, value: totalElements, icon: Users, tone: "bg-blue-100 text-blue-600" },
-            { label: copy.active, value: activeCount, icon: UserCheck, tone: "bg-green-100 text-green-600" },
-            { label: copy.inactive, value: inactiveCount, icon: UserX, tone: "bg-gray-100 text-gray-600" },
-            { label: copy.admins, value: adminCount, icon: Shield, tone: "bg-purple-100 text-purple-600" },
+            {
+              label: copy.totalUsers,
+              value: totalElements,
+              icon: Users,
+              tone: "bg-blue-100 text-blue-600",
+            },
+            {
+              label: copy.active,
+              value: activeCount,
+              icon: UserCheck,
+              tone: "bg-green-100 text-green-600",
+            },
+            {
+              label: copy.inactive,
+              value: inactiveCount,
+              icon: UserX,
+              tone: "bg-gray-100 text-gray-600",
+            },
+            {
+              label: copy.admins,
+              value: adminCount,
+              icon: Shield,
+              tone: "bg-purple-100 text-purple-600",
+            },
           ].map((item) => {
             const Icon = item.icon;
             return (
               <Card key={item.label} className="rounded-2xl border-0 shadow-lg">
                 <CardContent className="flex items-center gap-4 p-5">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.tone}`}>
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.tone}`}
+                  >
                     <Icon className="h-6 w-6" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">{item.label}</p>
-                    <p className="text-2xl font-bold text-gray-900">{item.value}</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {item.value}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -284,10 +336,13 @@ export default function AdminUsersPage() {
                 className="pl-9"
               />
             </div>
-            <Select value={roleFilter || "all"} onValueChange={(value) => {
-              setRoleFilter(value === "all" ? "" : value);
-              setPage(0);
-            }}>
+            <Select
+              value={roleFilter || "all"}
+              onValueChange={(value) => {
+                setRoleFilter(value === "all" ? "" : value);
+                setPage(0);
+              }}
+            >
               <SelectTrigger className="w-full md:w-52">
                 <SelectValue placeholder={copy.roleFilter} />
               </SelectTrigger>
@@ -299,10 +354,13 @@ export default function AdminUsersPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter || "all"} onValueChange={(value) => {
-              setStatusFilter(value === "all" ? "" : value);
-              setPage(0);
-            }}>
+            <Select
+              value={statusFilter || "all"}
+              onValueChange={(value) => {
+                setStatusFilter(value === "all" ? "" : value);
+                setPage(0);
+              }}
+            >
               <SelectTrigger className="w-full md:w-52">
                 <SelectValue placeholder={copy.statusFilter} />
               </SelectTrigger>
@@ -327,102 +385,139 @@ export default function AdminUsersPage() {
                   <TableHead>{copy.tableRole}</TableHead>
                   <TableHead>{copy.tableStatus}</TableHead>
                   <TableHead>{copy.tableJoined}</TableHead>
-                  <TableHead className="text-right">{copy.tableAction}</TableHead>
+                  <TableHead className="text-right">
+                    {copy.tableAction}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading
-                  ? Array.from({ length: 6 }).map((_, index) => (
-                      <TableRow key={index}>
-                        {Array.from({ length: 6 }).map((__, cellIndex) => (
-                          <TableCell key={cellIndex}>
-                            <Skeleton className="h-5 w-full" />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  : users.length === 0
-                    ? (
-                        <TableRow>
-                          <TableCell colSpan={6} className="py-14 text-center text-gray-500">
-                            {copy.empty}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    : users.map((user, index) => (
-                        <TableRow key={user.id} className="hover:bg-gray-50/50">
-                          <TableCell className="text-sm text-gray-500">{page * 10 + index + 1}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                                {user.fullName?.charAt(0)?.toUpperCase() || "U"}
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">{user.fullName}</p>
-                                <p className="text-sm text-gray-500">{user.email}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-2">
-                              {user.roles.map((role) => (
-                                <Badge key={role} className={cn("font-medium", ROLE_STYLES[role] || "bg-gray-100 text-gray-700")}>
-                                  {copy.roleLabels[role as keyof typeof copy.roleLabels] || role}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={user.enabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}>
-                              {user.enabled ? copy.activeStatus : copy.inactiveStatus}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-600">
-                            {new Date(user.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US")}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9"
-                                aria-label={copy.detailTitle}
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setDetailOpen(true);
-                                }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              {user.enabled ? (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-9 w-9 text-red-500 hover:text-red-600"
-                                  aria-label={copy.deactivate}
-                                  onClick={() => {
-                                    if (window.confirm(copy.disableConfirm.replace("{name}", user.fullName))) {
-                                      deactivateMutation.mutate(user.id);
-                                    }
-                                  }}
-                                >
-                                  <UserX className="h-4 w-4" />
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-9 w-9 text-green-600 hover:text-green-700"
-                                  aria-label={copy.activate}
-                                  onClick={() => activateMutation.mutate(user.id)}
-                                >
-                                  <UserCheck className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <TableRow key={index}>
+                      {Array.from({ length: 6 }).map((__, cellIndex) => (
+                        <TableCell key={cellIndex}>
+                          <Skeleton className="h-5 w-full" />
+                        </TableCell>
                       ))}
+                    </TableRow>
+                  ))
+                ) : users.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="py-14 text-center text-gray-500"
+                    >
+                      {copy.empty}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  users.map((user, index) => (
+                    <TableRow key={user.id} className="hover:bg-gray-50/50">
+                      <TableCell className="text-sm text-gray-500">
+                        {page * 10 + index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+                            {user.fullName?.charAt(0)?.toUpperCase() || "U"}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {user.fullName}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          {user.roles.map((role) => (
+                            <Badge
+                              key={role}
+                              className={cn(
+                                "font-medium",
+                                ROLE_STYLES[role] ||
+                                  "bg-gray-100 text-gray-700",
+                              )}
+                            >
+                              {copy.roleLabels[
+                                role as keyof typeof copy.roleLabels
+                              ] || role}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            user.enabled
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-700"
+                          }
+                        >
+                          {user.enabled
+                            ? copy.activeStatus
+                            : copy.inactiveStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {new Date(user.createdAt).toLocaleDateString(
+                          locale === "vi" ? "vi-VN" : "en-US",
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9"
+                            aria-label={copy.detailTitle}
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setDetailOpen(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {user.enabled ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-red-500 hover:text-red-600"
+                              aria-label={copy.deactivate}
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    copy.disableConfirm.replace(
+                                      "{name}",
+                                      user.fullName,
+                                    ),
+                                  )
+                                ) {
+                                  deactivateMutation.mutate(user.id);
+                                }
+                              }}
+                            >
+                              <UserX className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-green-600 hover:text-green-700"
+                              aria-label={copy.activate}
+                              onClick={() => activateMutation.mutate(user.id)}
+                            >
+                              <UserCheck className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -430,10 +525,17 @@ export default function AdminUsersPage() {
           {totalPages > 1 ? (
             <div className="flex items-center justify-between border-t px-6 py-4">
               <p className="text-sm text-gray-500">
-                {copy.page.replace("{current}", String(page + 1)).replace("{total}", String(totalPages))}
+                {copy.page
+                  .replace("{current}", String(page + 1))
+                  .replace("{total}", String(totalPages))}
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page === 0}
+                  onClick={() => setPage((value) => Math.max(0, value - 1))}
+                >
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   {copy.prev}
                 </Button>
@@ -441,7 +543,9 @@ export default function AdminUsersPage() {
                   variant="outline"
                   size="sm"
                   disabled={page >= totalPages - 1}
-                  onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))}
+                  onClick={() =>
+                    setPage((value) => Math.min(totalPages - 1, value + 1))
+                  }
                 >
                   {copy.next}
                   <ChevronRight className="ml-1 h-4 w-4" />
@@ -467,11 +571,21 @@ export default function AdminUsersPage() {
                   {selectedUser.fullName?.charAt(0)?.toUpperCase() || "U"}
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{selectedUser.fullName}</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {selectedUser.fullName}
+                  </h2>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {selectedUser.roles.map((role) => (
-                      <Badge key={role} className={cn("font-medium", ROLE_STYLES[role] || "bg-gray-100 text-gray-700")}>
-                        {copy.roleLabels[role as keyof typeof copy.roleLabels] || role}
+                      <Badge
+                        key={role}
+                        className={cn(
+                          "font-medium",
+                          ROLE_STYLES[role] || "bg-gray-100 text-gray-700",
+                        )}
+                      >
+                        {copy.roleLabels[
+                          role as keyof typeof copy.roleLabels
+                        ] || role}
                       </Badge>
                     ))}
                   </div>
@@ -491,10 +605,22 @@ export default function AdminUsersPage() {
                 ) : null}
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-gray-400" />
-                  <span>{new Date(selectedUser.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US")}</span>
+                  <span>
+                    {new Date(selectedUser.createdAt).toLocaleDateString(
+                      locale === "vi" ? "vi-VN" : "en-US",
+                    )}
+                  </span>
                 </div>
-                <Badge className={selectedUser.enabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}>
-                  {selectedUser.enabled ? copy.activeStatus : copy.inactiveStatus}
+                <Badge
+                  className={
+                    selectedUser.enabled
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-700"
+                  }
+                >
+                  {selectedUser.enabled
+                    ? copy.activeStatus
+                    : copy.inactiveStatus}
                 </Badge>
               </div>
 
