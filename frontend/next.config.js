@@ -1,18 +1,6 @@
-const apiProxyTarget = (process.env.API_PROXY_TARGET || "http://localhost:8080/api").replace(/\/+$/, "");
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-
-  // Proxy API requests to backend
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${apiProxyTarget}/:path*`,
-      },
-    ];
-  },
 
   // Image optimization
   images: {

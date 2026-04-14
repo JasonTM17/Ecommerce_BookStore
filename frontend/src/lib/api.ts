@@ -25,6 +25,7 @@ export function setGlobalErrorHandler(handler: ErrorHandler | null) {
 // Retry configuration
 const DEFAULT_RETRY_COUNT = 2;
 const DEFAULT_RETRY_DELAY = 1000;
+const DEFAULT_TIMEOUT_MS = 15000;
 
 function isRetryableError(error: AxiosError): boolean {
   if (!error.config) return false;
@@ -59,6 +60,7 @@ async function retryRequest(config: AxiosRequestConfig, retryCount: number): Pro
 // Public API instance (no auth headers)
 export const apiPublic = axios.create({
   baseURL: API_URL,
+  timeout: DEFAULT_TIMEOUT_MS,
   headers: {
     "Content-Type": "application/json",
   },
@@ -67,6 +69,7 @@ export const apiPublic = axios.create({
 // Authenticated API instance
 export const api = axios.create({
   baseURL: API_URL,
+  timeout: DEFAULT_TIMEOUT_MS,
   headers: {
     "Content-Type": "application/json",
   },

@@ -47,6 +47,6 @@ EXPOSE 8080
 USER appuser
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
-  CMD curl -f http://localhost:${PORT:-8080}/api/actuator/health || exit 1
+  CMD curl -f http://localhost:${PORT:-8080}/api/actuator/health/liveness || exit 1
 
-ENTRYPOINT ["dumb-init", "--", "sh", "-c", "mkdir -p /app/logs && java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]
+ENTRYPOINT ["dumb-init", "--", "sh", "-c", "mkdir -p /app/logs && if [ -n \"$DATABASE_URL\" ] && [ -z \"$SPRING_DATASOURCE_URL\" ]; then export SPRING_DATASOURCE_URL=$(printf '%s' \"$DATABASE_URL\" | sed -E 's#^postgres(ql)?://#jdbc:postgresql://#'); fi && java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]
