@@ -40,6 +40,7 @@ import {
   getCategoryPlaceholderImage,
   resolveProductImageSource,
 } from "@/lib/product-images";
+import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 import { notifyToast } from "@/lib/toast";
 import type { PageResponse, Product, Review } from "@/lib/types";
 import { buildLoginRedirect, cn, formatCurrency } from "@/lib/utils";
@@ -189,6 +190,7 @@ export default function ProductDetailPage() {
     isFetched,
     refetch: refetchProduct,
   } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["product", productId],
     enabled: idValid,
     queryFn: async () => {
@@ -198,6 +200,7 @@ export default function ProductDetailPage() {
   });
 
   const { data: relatedProducts } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["related-products", productId, product?.category?.id],
     enabled: idValid && Boolean(product?.category?.id),
     queryFn: async () => {
@@ -209,6 +212,7 @@ export default function ProductDetailPage() {
   });
 
   const { data: reviewsData } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["reviews", productId],
     enabled: idValid,
     queryFn: async () => {

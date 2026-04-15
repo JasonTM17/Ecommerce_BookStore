@@ -12,6 +12,7 @@ import com.bookstore.repository.ProductRepository;
 import com.bookstore.repository.ReviewRepository;
 import com.bookstore.repository.UserRepository;
 import com.bookstore.repository.WishlistRepository;
+import com.bookstore.service.FlashSaleTimeService;
 import com.bookstore.service.ProductImageNormalizationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,9 @@ class DataSeederTest {
 
     @Mock
     private ProductImageNormalizationService productImageNormalizationService;
+
+    @Mock
+    private FlashSaleTimeService flashSaleTimeService;
 
     @Mock
     private UserRepository userRepository;
@@ -76,7 +80,12 @@ class DataSeederTest {
         demoSeedProperties = new DemoSeedProperties();
         demoSeedProperties.setEnabled(true);
         demoSeedProperties.setDeferred(false);
-        dataSeeder = new DataSeeder(passwordEncoder, productImageNormalizationService, demoSeedProperties);
+        dataSeeder = new DataSeeder(
+                passwordEncoder,
+                productImageNormalizationService,
+                demoSeedProperties,
+                flashSaleTimeService
+        );
     }
 
     @Test

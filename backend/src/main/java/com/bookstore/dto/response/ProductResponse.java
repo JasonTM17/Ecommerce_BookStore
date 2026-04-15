@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -56,7 +56,7 @@ public class ProductResponse {
     @AllArgsConstructor
     public static class ActiveFlashSaleSummary {
         private Long id;
-        private LocalDateTime endTime;
+        private OffsetDateTime endTime;
         private Integer remainingStock;
         private Integer stockLimit;
         private Integer soldCount;

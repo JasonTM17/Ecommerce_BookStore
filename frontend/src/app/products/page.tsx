@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { apiPublic } from "@/lib/api";
 import type { Product, Category, Brand } from "@/lib/types";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -24,6 +24,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useLanguage } from "@/components/providers/language-provider";
+import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 
 interface PageResponse<T> {
   content: T[];
@@ -253,6 +254,7 @@ function ProductsContent() {
     isError: productsError,
     refetch: refetchProducts,
   } = useQuery<PageResponse<Product>>({
+    ...publicWarmupQueryOptions,
     queryKey: [
       "products",
       collectionMode,
@@ -263,14 +265,13 @@ function ProductsContent() {
       currentPage,
       pageSize,
     ],
-    retry: false,
     queryFn: async () => {
       if (collectionMode) {
         const endpoint =
           collectionMode === "featured"
             ? "/products/featured"
             : "/products/new";
-        const response = await api.get(endpoint);
+        const response = await apiPublic.get(endpoint);
         const collectionProducts = normalizeList<Product>(response.data);
         const filteredProducts = filterCollectionProducts(
           collectionProducts,
@@ -294,25 +295,25 @@ function ProductsContent() {
       params.append("sortBy", sortBy);
       params.append("page", currentPage.toString());
       params.append("size", pageSize.toString());
-      const response = await api.get(`/products?${params.toString()}`);
+      const response = await apiPublic.get(`/products?${params.toString()}`);
       return response.data;
     },
   });
 
   const { data: categoriesList = [] } = useQuery<Category[]>({
+    ...publicWarmupQueryOptions,
     queryKey: ["categories"],
-    retry: false,
     queryFn: async () => {
-      const response = await api.get("/categories");
+      const response = await apiPublic.get("/categories");
       return normalizeList<Category>(response.data);
     },
   });
 
   const { data: brandsList = [] } = useQuery<Brand[]>({
+    ...publicWarmupQueryOptions,
     queryKey: ["brands"],
-    retry: false,
     queryFn: async () => {
-      const response = await api.get("/brands");
+      const response = await apiPublic.get("/brands");
       return normalizeList<Brand>(response.data);
     },
   });

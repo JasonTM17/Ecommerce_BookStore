@@ -5,7 +5,6 @@ import com.bookstore.dto.response.FlashSaleResponse;
 import com.bookstore.dto.response.FlashSaleResponse.ProductInfo;
 import com.bookstore.entity.FlashSale;
 import com.bookstore.entity.Product;
-import com.bookstore.entity.User;
 import com.bookstore.exception.BadRequestException;
 import com.bookstore.exception.ResourceNotFoundException;
 import com.bookstore.repository.FlashSaleRepository;
@@ -29,6 +28,7 @@ public class FlashSaleService {
 
     private final FlashSaleRepository flashSaleRepository;
     private final ProductRepository productRepository;
+    private final FlashSaleTimeService flashSaleTimeService;
 
     @Transactional
     public FlashSaleResponse createFlashSale(FlashSaleRequest request) {
@@ -55,7 +55,7 @@ public class FlashSaleService {
                 .build());
 
         log.info("Flash sale created for product {}", product.getName());
-        return mapToFlashSaleResponse(flashSale);
+        return mapToFlashSaleResponse(flashSale, flashSaleTimeService.now());
     }
 
     @Transactional
@@ -70,27 +70,30 @@ public class FlashSaleService {
         if (request.getIsActive() != null) flashSale.setIsActive(request.getIsActive());
 
         flashSale = flashSaleRepository.save(flashSale);
-        return mapToFlashSaleResponse(flashSale);
+        return mapToFlashSaleResponse(flashSale, flashSaleTimeService.now());
     }
 
     @Transactional(readOnly = true)
     public List<FlashSaleResponse> getActiveFlashSales() {
-        return flashSaleRepository.findActiveFlashSales(LocalDateTime.now())
-                .stream().map(this::mapToFlashSaleResponse)
+        LocalDateTime referenceTime = flashSaleTimeService.now();
+        return flashSaleRepository.findActiveFlashSales(referenceTime)
+                .stream().map(flashSale -> mapToFlashSaleResponse(flashSale, referenceTime))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<FlashSaleResponse> getUpcomingFlashSales() {
-        return flashSaleRepository.findUpcomingFlashSales(LocalDateTime.now())
-                .stream().map(this::mapToFlashSaleResponse)
+        LocalDateTime referenceTime = flashSaleTimeService.now();
+        return flashSaleRepository.findUpcomingFlashSales(referenceTime)
+                .stream().map(flashSale -> mapToFlashSaleResponse(flashSale, referenceTime))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Page<FlashSaleResponse> getAllFlashSales(Pageable pageable) {
+        LocalDateTime referenceTime = flashSaleTimeService.now();
         return flashSaleRepository.findByIsActiveTrueOrderByStartTimeDesc(pageable)
-                .map(this::mapToFlashSaleResponse);
+                .map(flashSale -> mapToFlashSaleResponse(flashSale, referenceTime));
     }
 
     @Transactional(readOnly = true)
@@ -99,7 +102,7 @@ public class FlashSaleService {
         if (flashSale == null) {
             throw new ResourceNotFoundException("FlashSale", "id", id);
         }
-        return mapToFlashSaleResponse(flashSale);
+        return mapToFlashSaleResponse(flashSale, flashSaleTimeService.now());
     }
 
     @Transactional
@@ -107,7 +110,7 @@ public class FlashSaleService {
         FlashSale flashSale = flashSaleRepository.findById(flashSaleId)
                 .orElseThrow(() -> new ResourceNotFoundException("FlashSale", "id", flashSaleId));
 
-        if (!flashSale.isCurrentlyActive()) {
+        if (!flashSale.isCurrentlyActive(flashSaleTimeService.now())) {
             throw new BadRequestException("Flash sale không còn hoạt động");
         }
         if (quantity > flashSale.getRemainingStock()) {
@@ -123,7 +126,7 @@ public class FlashSaleService {
     @Transactional
     public void deactivateExpiredFlashSales() {
         List<FlashSale> allActive = flashSaleRepository.findByIsActiveTrueOrderByStartTimeDesc(Pageable.unpaged()).getContent();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = flashSaleTimeService.now();
         for (FlashSale fs : allActive) {
             if (fs.getEndTime().isBefore(now)) {
                 fs.setIsActive(false);
@@ -132,7 +135,7 @@ public class FlashSaleService {
         }
     }
 
-    private FlashSaleResponse mapToFlashSaleResponse(FlashSale fs) {
+    private FlashSaleResponse mapToFlashSaleResponse(FlashSale fs, LocalDateTime referenceTime) {
         Product p = fs.getProduct();
         ProductInfo productInfo = ProductInfo.builder()
                 .id(p.getId()).name(p.getName()).author(p.getAuthor()).imageUrl(p.getImageUrl()).build();
@@ -143,14 +146,15 @@ public class FlashSaleService {
                 .id(fs.getId()).product(productInfo)
                 .originalPrice(fs.getOriginalPrice()).salePrice(fs.getSalePrice())
                 .discountPercent(discountPercent)
-                .startTime(fs.getStartTime()).endTime(fs.getEndTime())
+                .startTime(flashSaleTimeService.toOffsetDateTime(fs.getStartTime()))
+                .endTime(flashSaleTimeService.toOffsetDateTime(fs.getEndTime()))
                 .stockLimit(fs.getStockLimit()).soldCount(fs.getSoldCount())
                 .remainingStock(fs.getRemainingStock())
                 .isActive(fs.getIsActive())
-                .isCurrentlyActive(fs.isCurrentlyActive())
-                .isUpcoming(fs.isUpcoming())
+                .isCurrentlyActive(fs.isCurrentlyActive(referenceTime))
+                .isUpcoming(fs.isUpcoming(referenceTime))
                 .maxPerUser(fs.getMaxPerUser())
-                .createdAt(fs.getCreatedAt())
+                .createdAt(flashSaleTimeService.toOffsetDateTime(fs.getCreatedAt()))
                 .build();
     }
 }

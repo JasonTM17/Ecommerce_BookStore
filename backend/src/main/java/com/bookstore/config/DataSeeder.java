@@ -27,6 +27,7 @@ import com.bookstore.repository.ProductRepository;
 import com.bookstore.repository.ReviewRepository;
 import com.bookstore.repository.UserRepository;
 import com.bookstore.repository.WishlistRepository;
+import com.bookstore.service.FlashSaleTimeService;
 import com.bookstore.service.ProductImageNormalizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +66,7 @@ public class DataSeeder {
     private final PasswordEncoder passwordEncoder;
     private final ProductImageNormalizationService productImageNormalizationService;
     private final DemoSeedProperties demoSeedProperties;
+    private final FlashSaleTimeService flashSaleTimeService;
     private final AtomicBoolean deferredSeedStarted = new AtomicBoolean(false);
 
     @Bean
@@ -731,7 +733,7 @@ public class DataSeeder {
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = flashSaleTimeService.now();
         deactivateExpiredFlashSales(flashSaleRepository, now);
 
         List<FlashSale> activeSales = flashSaleRepository.findActiveFlashSales(now);

@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,6 +59,9 @@ class ProductServiceTest {
 
     @Mock
     private EffectivePricingService effectivePricingService;
+
+    @Mock
+    private FlashSaleTimeService flashSaleTimeService;
 
     @InjectMocks
     private ProductService productService;
@@ -114,6 +118,8 @@ class ProductServiceTest {
 
         lenient().when(effectivePricingService.resolve(testProduct)).thenReturn(pricingFor(testProduct));
         lenient().when(effectivePricingService.resolveAll(any())).thenReturn(Map.of(testProduct.getId(), pricingFor(testProduct)));
+        lenient().when(flashSaleTimeService.toOffsetDateTime(any(LocalDateTime.class))).thenAnswer(invocation ->
+                ((LocalDateTime) invocation.getArgument(0)).atZone(ZoneId.of("Asia/Bangkok")).toOffsetDateTime());
     }
 
     @Test
@@ -185,7 +191,10 @@ class ProductServiceTest {
 
         assertNotNull(response.getActiveFlashSale());
         assertEquals(25L, response.getActiveFlashSale().getId());
-        assertEquals(flashSale.getEndTime(), response.getActiveFlashSale().getEndTime());
+        assertEquals(
+                flashSale.getEndTime().atZone(ZoneId.of("Asia/Bangkok")).toOffsetDateTime(),
+                response.getActiveFlashSale().getEndTime()
+        );
         assertEquals(flashSale.getRemainingStock(), response.getActiveFlashSale().getRemainingStock());
         assertEquals(flashSale.getStockLimit(), response.getActiveFlashSale().getStockLimit());
         assertEquals(flashSale.getSoldCount(), response.getActiveFlashSale().getSoldCount());

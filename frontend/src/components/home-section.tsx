@@ -10,6 +10,7 @@ import { ApiStatusCard } from "@/components/ui/api-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useLanguage } from "@/components/providers/language-provider";
+import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 import { ArrowRight } from "lucide-react";
 
 const CATEGORY_GRADIENTS = [
@@ -48,8 +49,8 @@ export function FeaturedProducts() {
     isError,
     refetch,
   } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["featured-products"],
-    retry: false,
     queryFn: async () => {
       const response = await apiPublic.get("/products/featured");
       return response.data as Product[];
@@ -142,8 +143,8 @@ export function NewProducts() {
     isError,
     refetch,
   } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["new-products"],
-    retry: false,
     queryFn: async () => {
       const response = await apiPublic.get("/products/new");
       return response.data as Product[];
@@ -235,8 +236,8 @@ export function CategorySection() {
     isError,
     refetch,
   } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["categories"],
-    retry: false,
     queryFn: async () => {
       const response = await apiPublic.get("/categories/root");
       return response.data as Category[];

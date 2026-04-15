@@ -21,6 +21,7 @@ import java.util.Objects;
 public class EffectivePricingService {
 
     private final FlashSaleRepository flashSaleRepository;
+    private final FlashSaleTimeService flashSaleTimeService;
 
     @Transactional(readOnly = true)
     public EffectiveProductPricing resolve(Product product) {
@@ -44,7 +45,7 @@ public class EffectivePricingService {
             return Map.of();
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = flashSaleTimeService.now();
         List<Long> productIds = candidates.stream()
                 .map(Product::getId)
                 .distinct()

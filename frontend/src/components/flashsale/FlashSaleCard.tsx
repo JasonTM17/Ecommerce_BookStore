@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Zap, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { flashSaleApi, FlashSale } from "@/lib/flashsale";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { getCategoryPlaceholderImage } from "@/lib/product-images";
 import { useLanguage } from "@/components/providers/language-provider";
+import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 
 const COPY = {
   vi: {
@@ -38,9 +39,10 @@ export function FlashSaleSection() {
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const { data: activeSales = [] } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["flash-sales-active"],
-    retry: false,
     queryFn: flashSaleApi.getActiveFlashSales,
+    refetchInterval: 60000,
   });
 
   if (activeSales.length === 0) {
@@ -83,18 +85,41 @@ export function FlashSaleSection() {
 }
 
 export function FlashSaleCard({ sale }: { sale: FlashSale }) {
+  const queryClient = useQueryClient();
   const { locale } = useLanguage();
   const copy = COPY[locale];
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(sale.endTime));
   const [mounted, setMounted] = useState(false);
+  const expireNotifiedRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
+    expireNotifiedRef.current = false;
+    setTimeLeft(calculateTimeLeft(sale.endTime));
+
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(sale.endTime));
+      const nextTimeLeft = calculateTimeLeft(sale.endTime);
+      setTimeLeft(nextTimeLeft);
+
+      if (
+        nextTimeLeft.hours === 0 &&
+        nextTimeLeft.minutes === 0 &&
+        nextTimeLeft.seconds === 0 &&
+        !expireNotifiedRef.current
+      ) {
+        expireNotifiedRef.current = true;
+        void queryClient.invalidateQueries({ queryKey: ["flash-sales-active"] });
+        void queryClient.invalidateQueries({
+          queryKey: ["flash-sale-page", "active"],
+        });
+        void queryClient.invalidateQueries({
+          queryKey: ["flash-sale-page", "upcoming"],
+        });
+        window.clearInterval(timer);
+      }
     }, 1000);
     return () => clearInterval(timer);
-  }, [sale.endTime]);
+  }, [queryClient, sale.endTime]);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {

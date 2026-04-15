@@ -26,11 +26,15 @@ class EffectivePricingServiceTest {
     @Mock
     private FlashSaleRepository flashSaleRepository;
 
+    @Mock
+    private FlashSaleTimeService flashSaleTimeService;
+
     @InjectMocks
     private EffectivePricingService effectivePricingService;
 
     @Test
     void resolve_returnsRegularPricingWhenNoActiveFlashSale() {
+        LocalDateTime businessNow = LocalDateTime.of(2026, 4, 15, 9, 0);
         Product product = Product.builder()
                 .id(1L)
                 .price(new BigDecimal("150000"))
@@ -39,6 +43,7 @@ class EffectivePricingServiceTest {
                 .stockQuantity(30)
                 .build();
 
+        when(flashSaleTimeService.now()).thenReturn(businessNow);
         when(flashSaleRepository.findActiveFlashSalesByProductIds(anyList(), any(LocalDateTime.class))).thenReturn(List.of());
 
         EffectiveProductPricing pricing = effectivePricingService.resolve(product);
@@ -51,6 +56,7 @@ class EffectivePricingServiceTest {
 
     @Test
     void resolve_returnsFlashSalePriceAndRemainingStockWhenCampaignIsActive() {
+        LocalDateTime businessNow = LocalDateTime.of(2026, 4, 15, 9, 0);
         Product product = Product.builder()
                 .id(1L)
                 .price(new BigDecimal("150000"))
@@ -69,6 +75,7 @@ class EffectivePricingServiceTest {
                 .isActive(true)
                 .build();
 
+        when(flashSaleTimeService.now()).thenReturn(businessNow);
         when(flashSaleRepository.findActiveFlashSalesByProductIds(anyList(), any(LocalDateTime.class))).thenReturn(List.of(flashSale));
 
         EffectiveProductPricing pricing = effectivePricingService.resolve(product);
@@ -77,5 +84,23 @@ class EffectivePricingServiceTest {
         assertEquals(new BigDecimal("99000"), pricing.currentPrice());
         assertEquals(18, pricing.stockQuantity());
         assertEquals(34, pricing.discountPercent());
+    }
+
+    @Test
+    void resolve_queriesRepositoryUsingBusinessTimezoneReference() {
+        LocalDateTime businessNow = LocalDateTime.of(2026, 4, 15, 9, 15);
+        Product product = Product.builder()
+                .id(8L)
+                .price(new BigDecimal("200000"))
+                .stockQuantity(10)
+                .build();
+
+        when(flashSaleTimeService.now()).thenReturn(businessNow);
+        when(flashSaleRepository.findActiveFlashSalesByProductIds(anyList(), any(LocalDateTime.class))).thenReturn(List.of());
+
+        effectivePricingService.resolve(product);
+
+        org.mockito.Mockito.verify(flashSaleRepository)
+                .findActiveFlashSalesByProductIds(anyList(), org.mockito.ArgumentMatchers.eq(businessNow));
     }
 }

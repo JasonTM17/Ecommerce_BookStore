@@ -1,9 +1,9 @@
 import type { ReactElement } from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CategoriesPage from "@/app/categories/page";
-import { api } from "@/lib/api";
+import { apiPublic } from "@/lib/api";
 
 vi.mock("@/components/layout/header", () => ({
   Header: () => <div>Header</div>,
@@ -14,7 +14,9 @@ vi.mock("@/components/layout/footer", () => ({
 }));
 
 vi.mock("@/components/product-card", () => ({
-  ProductCard: ({ product }: { product: { name: string } }) => <div>{product.name}</div>,
+  ProductCard: ({ product }: { product: { name: string } }) => (
+    <div>{product.name}</div>
+  ),
 }));
 
 vi.mock("@/hooks/useAddToCart", () => ({
@@ -47,14 +49,16 @@ function renderWithQueryClient(ui: ReactElement) {
     },
   });
 
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  );
 }
 
 describe("CategoriesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(api.get).mockImplementation(async (url: string) => {
+    vi.mocked(apiPublic.get).mockImplementation(async (url: string) => {
       if (url === "/categories") {
         return {
           data: [

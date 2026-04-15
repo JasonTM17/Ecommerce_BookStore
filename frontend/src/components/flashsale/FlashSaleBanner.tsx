@@ -1,19 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { flashSaleApi, FlashSale } from "@/lib/flashsale";
 import { Zap, Clock } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { getCategoryPlaceholderImage } from "@/lib/product-images";
+import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 
 export function FlashSaleBanner() {
   const { data: flashSales = [], isLoading } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["flash-sales-active"],
     queryFn: flashSaleApi.getActiveFlashSales,
     refetchInterval: 60000,
-    retry: false,
   });
 
   if (isLoading || flashSales.length === 0) {
@@ -40,14 +41,32 @@ export function FlashSaleBanner() {
 }
 
 function FlashSaleQuickView({ sale }: { sale: FlashSale }) {
+  const queryClient = useQueryClient();
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(sale.endTime));
+  const expireNotifiedRef = useRef(false);
 
   useEffect(() => {
+    expireNotifiedRef.current = false;
+    setTimeLeft(calculateTimeLeft(sale.endTime));
+
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(sale.endTime));
+      const nextTimeLeft = calculateTimeLeft(sale.endTime);
+      setTimeLeft(nextTimeLeft);
+
+      if (
+        nextTimeLeft.hours === 0 &&
+        nextTimeLeft.minutes === 0 &&
+        nextTimeLeft.seconds === 0 &&
+        !expireNotifiedRef.current
+      ) {
+        expireNotifiedRef.current = true;
+        void queryClient.invalidateQueries({ queryKey: ["flash-sales-active"] });
+        window.clearInterval(timer);
+      }
     }, 1000);
+
     return () => clearInterval(timer);
-  }, [sale.endTime]);
+  }, [queryClient, sale.endTime]);
 
   return (
     <Link

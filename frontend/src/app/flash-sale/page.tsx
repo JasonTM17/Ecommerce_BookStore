@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/components/providers/language-provider";
 import { flashSaleApi } from "@/lib/flashsale";
+import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 
 const COPY = {
   vi: {
@@ -106,8 +107,8 @@ export default function FlashSalePage() {
     isError: activeError,
     refetch: refetchActiveSales,
   } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["flash-sale-page", "active"],
-    retry: false,
     queryFn: flashSaleApi.getActiveFlashSales,
   });
 
@@ -117,8 +118,8 @@ export default function FlashSalePage() {
     isError: upcomingError,
     refetch: refetchUpcomingSales,
   } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["flash-sale-page", "upcoming"],
-    retry: false,
     queryFn: flashSaleApi.getUpcomingFlashSales,
   });
 

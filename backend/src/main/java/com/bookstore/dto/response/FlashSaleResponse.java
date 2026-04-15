@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -21,8 +21,8 @@ public class FlashSaleResponse {
     private BigDecimal originalPrice;
     private BigDecimal salePrice;
     private BigDecimal discountPercent;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private OffsetDateTime startTime;
+    private OffsetDateTime endTime;
     private Integer stockLimit;
     private Integer soldCount;
     private Integer remainingStock;
@@ -30,7 +30,7 @@ public class FlashSaleResponse {
     private Boolean isCurrentlyActive;
     private Boolean isUpcoming;
     private Integer maxPerUser;
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Data
     @Builder

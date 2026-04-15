@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -71,8 +73,8 @@ class FlashSaleControllerTest {
                 .stockLimit(50)
                 .soldCount(10)
                 .remainingStock(40)
-                .startTime(LocalDateTime.now())
-                .endTime(LocalDateTime.now().plusHours(12))
+                .startTime(OffsetDateTime.of(2026, 4, 15, 9, 0, 0, 0, ZoneOffset.ofHours(7)))
+                .endTime(OffsetDateTime.of(2026, 4, 15, 21, 0, 0, 0, ZoneOffset.ofHours(7)))
                 .isActive(true)
                 .isCurrentlyActive(true)
                 .isUpcoming(false)
@@ -88,7 +90,8 @@ class FlashSaleControllerTest {
         mockMvc.perform(get("/flash-sales/active"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value(1))
-                .andExpect(jsonPath("$.data[0].discountPercent").value(20));
+                .andExpect(jsonPath("$.data[0].discountPercent").value(20))
+                .andExpect(jsonPath("$.data[0].endTime").value("2026-04-15T21:00:00+07:00"));
     }
 
     @Test

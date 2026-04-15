@@ -37,6 +37,7 @@ public class ProductService {
     private final BrandRepository brandRepository;
     private final ReviewRepository reviewRepository;
     private final EffectivePricingService effectivePricingService;
+    private final FlashSaleTimeService flashSaleTimeService;
 
     @Transactional
     @Caching(evict = {
@@ -422,7 +423,7 @@ public class ProductService {
         var flashSale = pricing.activeFlashSale();
         return ProductResponse.ActiveFlashSaleSummary.builder()
                 .id(flashSale.getId())
-                .endTime(flashSale.getEndTime())
+                .endTime(flashSaleTimeService.toOffsetDateTime(flashSale.getEndTime()))
                 .remainingStock(flashSale.getRemainingStock())
                 .stockLimit(flashSale.getStockLimit())
                 .soldCount(flashSale.getSoldCount())

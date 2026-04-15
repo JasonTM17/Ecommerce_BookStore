@@ -58,13 +58,31 @@ public class FlashSale {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    public boolean isCurrentlyActive(LocalDateTime referenceTime) {
+        if (referenceTime == null || startTime == null || endTime == null) {
+            return false;
+        }
+
+        return Boolean.TRUE.equals(isActive)
+                && !referenceTime.isBefore(startTime)
+                && referenceTime.isBefore(endTime)
+                && getRemainingStock() > 0;
+    }
+
     public boolean isCurrentlyActive() {
-        LocalDateTime now = LocalDateTime.now();
-        return isActive && now.isAfter(startTime) && now.isBefore(endTime) && soldCount < stockLimit;
+        return isCurrentlyActive(LocalDateTime.now());
+    }
+
+    public boolean isUpcoming(LocalDateTime referenceTime) {
+        if (referenceTime == null || startTime == null) {
+            return false;
+        }
+
+        return Boolean.TRUE.equals(isActive) && referenceTime.isBefore(startTime);
     }
 
     public boolean isUpcoming() {
-        return isActive && LocalDateTime.now().isBefore(startTime);
+        return isUpcoming(LocalDateTime.now());
     }
 
     public int getRemainingStock() {

@@ -17,6 +17,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CategorySection, FeaturedProducts, NewProducts } from "@/components/home-section";
 import { apiPublic } from "@/lib/api";
+import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 import { useLanguage } from "@/components/providers/language-provider";
 import type { Category } from "@/lib/types";
 
@@ -82,6 +83,7 @@ export default function HomePage() {
   const { t, locale } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const { data: categories = [] } = useQuery({
+    ...publicWarmupQueryOptions,
     queryKey: ["home-showcase-categories"],
     queryFn: async () => {
       const response = await apiPublic.get("/categories");
