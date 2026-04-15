@@ -435,6 +435,7 @@ export default function ProductDetailPage() {
                   fallbackSrc={fallbackSrc}
                   alt={product.name || copy.noImage}
                   fill
+                  sizes="(min-width: 1280px) 42vw, (min-width: 768px) 50vw, 100vw"
                   className="object-cover"
                   priority
                 />
@@ -472,6 +473,7 @@ export default function ProductDetailPage() {
                         fallbackSrc={fallbackSrc}
                         alt=""
                         fill
+                        sizes="80px"
                         className="object-cover"
                       />
                     </button>

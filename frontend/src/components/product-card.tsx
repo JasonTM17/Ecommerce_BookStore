@@ -19,12 +19,19 @@ interface ProductCardProps {
   product: Product;
   onAddToCart?: (product: Product) => void;
   isAddingToCart?: boolean;
+  imagePriority?: boolean;
+  imageSizes?: string;
 }
+
+const DEFAULT_PRODUCT_CARD_IMAGE_SIZES =
+  "(min-width: 1536px) 16vw, (min-width: 1280px) 18vw, (min-width: 1024px) 22vw, (min-width: 768px) 25vw, 50vw";
 
 export function ProductCard({
   product,
   onAddToCart,
   isAddingToCart = false,
+  imagePriority = false,
+  imageSizes = DEFAULT_PRODUCT_CARD_IMAGE_SIZES,
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -82,6 +89,8 @@ export function ProductCard({
               fallbackSrc={fallbackSrc}
               alt={product.name}
               fill
+              sizes={imageSizes}
+              priority={imagePriority}
               className={cn(
                 "object-cover transition-all duration-700",
                 isHovered ? "scale-110" : "scale-100",

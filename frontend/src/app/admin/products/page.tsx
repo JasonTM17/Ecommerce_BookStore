@@ -234,6 +234,7 @@ export default function AdminProductsPage() {
                               alt={product.name}
                               width={48}
                               height={64}
+                              sizes="48px"
                               className="h-full w-full object-cover"
                             />
                           </div>

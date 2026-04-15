@@ -14,15 +14,17 @@ vi.mock("next/image", () => ({
     className?: string;
     onLoad?: () => void;
     priority?: boolean;
+    unoptimized?: boolean;
     [key: string]: unknown;
   }) => {
+    const { priority: _priority, unoptimized: _unoptimized, ...rest } = props;
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        data-testid={props["data-testid"]}
-        src={typeof props.src === "string" ? props.src : ""}
-        alt={props.alt}
-        className={props.className}
+        data-testid={rest["data-testid"]}
+        src={typeof rest.src === "string" ? rest.src : ""}
+        alt={String(rest.alt ?? "")}
+        className={typeof rest.className === "string" ? rest.className : undefined}
       />
     );
   },

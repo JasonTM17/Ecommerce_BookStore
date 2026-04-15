@@ -119,12 +119,13 @@ export function FeaturedProducts() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {products.slice(0, 8).map((product) => (
+          {products.slice(0, 8).map((product, index) => (
             <ProductCard
               key={product.id}
               product={product}
               onAddToCart={addToCart}
               isAddingToCart={isAddingToCart}
+              imagePriority={index < 2}
             />
           ))}
         </div>
@@ -213,12 +214,13 @@ export function NewProducts() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {products.slice(0, 8).map((product) => (
+          {products.slice(0, 8).map((product, index) => (
             <ProductCard
               key={product.id}
               product={product}
               onAddToCart={addToCart}
               isAddingToCart={isAddingToCart}
+              imagePriority={index < 2}
             />
           ))}
         </div>

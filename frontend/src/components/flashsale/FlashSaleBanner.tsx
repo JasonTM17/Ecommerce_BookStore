@@ -30,8 +30,12 @@ export function FlashSaleBanner() {
             <span className="font-bold tracking-wide">FLASH SALE</span>
           </div>
           <div className="flex gap-4 overflow-x-auto">
-            {flashSales.slice(0, 5).map((sale) => (
-              <FlashSaleQuickView key={sale.id} sale={sale} />
+            {flashSales.slice(0, 5).map((sale, index) => (
+              <FlashSaleQuickView
+                key={sale.id}
+                sale={sale}
+                imagePriority={index === 0}
+              />
             ))}
           </div>
         </div>
@@ -40,7 +44,13 @@ export function FlashSaleBanner() {
   );
 }
 
-function FlashSaleQuickView({ sale }: { sale: FlashSale }) {
+function FlashSaleQuickView({
+  sale,
+  imagePriority = false,
+}: {
+  sale: FlashSale;
+  imagePriority?: boolean;
+}) {
   const queryClient = useQueryClient();
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(sale.endTime));
   const expireNotifiedRef = useRef(false);
@@ -82,6 +92,8 @@ function FlashSaleQuickView({ sale }: { sale: FlashSale }) {
           fallbackSrc={getCategoryPlaceholderImage()}
           alt={sale.product.name}
           fill
+          sizes="40px"
+          priority={imagePriority}
           className="object-cover"
         />
       </div>

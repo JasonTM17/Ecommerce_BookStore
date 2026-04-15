@@ -228,6 +228,7 @@ export default function OrdersPage() {
                               )}
                               alt={item.product.name}
                               fill
+                              sizes="64px"
                               className="object-cover"
                             />
                           </div>

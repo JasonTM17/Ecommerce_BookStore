@@ -1,13 +1,14 @@
 "use client";
 
 import { MessageCircle, ThumbsUp, ThumbsDown, BookOpen, Star, Loader2 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { ChatMessage as ChatMessageType, BookSuggestion, QuickAction, chatbotApi } from "@/lib/chatbot";
 import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ProductImage } from "@/components/ui/ProductImage";
+import { getCategoryPlaceholderImage } from "@/lib/product-images";
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -23,7 +24,14 @@ function BookSuggestionCard({ book }: { book: BookSuggestion }) {
     >
       {book.imageUrl ? (
         <div className="w-12 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
-          <Image src={book.imageUrl} alt={book.title} fill className="object-cover" sizes="48px" />
+          <ProductImage
+            src={book.imageUrl}
+            fallbackSrc={getCategoryPlaceholderImage()}
+            alt={book.title}
+            fill
+            sizes="48px"
+            className="object-cover"
+          />
         </div>
       ) : (
         <div className="w-12 h-16 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">

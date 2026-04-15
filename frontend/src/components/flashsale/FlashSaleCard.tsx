@@ -75,8 +75,8 @@ export function FlashSaleSection() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {activeSales.slice(0, 8).map((sale) => (
-            <FlashSaleCard key={sale.id} sale={sale} />
+          {activeSales.slice(0, 8).map((sale, index) => (
+            <FlashSaleCard key={sale.id} sale={sale} imagePriority={index < 2} />
           ))}
         </div>
       </div>
@@ -84,7 +84,13 @@ export function FlashSaleSection() {
   );
 }
 
-export function FlashSaleCard({ sale }: { sale: FlashSale }) {
+export function FlashSaleCard({
+  sale,
+  imagePriority = false,
+}: {
+  sale: FlashSale;
+  imagePriority?: boolean;
+}) {
   const queryClient = useQueryClient();
   const { locale } = useLanguage();
   const copy = COPY[locale];
@@ -145,6 +151,8 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
           fallbackSrc={getCategoryPlaceholderImage()}
           alt={sale.product.name}
           fill
+          sizes="(min-width: 1280px) 18vw, (min-width: 640px) 35vw, 90vw"
+          priority={imagePriority}
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
 

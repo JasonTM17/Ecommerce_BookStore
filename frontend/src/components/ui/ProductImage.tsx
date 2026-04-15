@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ComponentProps } from "react";
 import Image from "next/image";
+import { isLocalBookAssetPath } from "@/lib/product-images";
 
 type ProductImageProps = Omit<ComponentProps<typeof Image>, "src"> & {
   src?: string | null;
@@ -12,10 +13,15 @@ export function ProductImage({
   src,
   fallbackSrc,
   alt,
+  unoptimized,
   ...props
 }: ProductImageProps) {
   const [currentSrc, setCurrentSrc] = useState(src || fallbackSrc);
   const isSvgSource = currentSrc?.toLowerCase().endsWith(".svg");
+  const shouldSkipOptimization =
+    typeof unoptimized === "boolean"
+      ? unoptimized
+      : isSvgSource || isLocalBookAssetPath(currentSrc);
 
   useEffect(() => {
     setCurrentSrc(src || fallbackSrc);
@@ -26,7 +32,8 @@ export function ProductImage({
       {...props}
       src={currentSrc}
       alt={alt}
-      unoptimized={isSvgSource || undefined}
+      decoding="async"
+      unoptimized={shouldSkipOptimization || undefined}
       onError={() => {
         if (currentSrc !== fallbackSrc) {
           setCurrentSrc(fallbackSrc);

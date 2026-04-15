@@ -857,6 +857,7 @@ export default function CheckoutPage() {
                               )}
                               alt={item.product.name}
                               fill
+                              sizes="64px"
                               className="object-cover"
                             />
                           </div>
@@ -923,6 +924,7 @@ export default function CheckoutPage() {
                         )}
                         alt={item.product.name}
                         fill
+                        sizes="48px"
                         className="object-cover"
                       />
                     </div>

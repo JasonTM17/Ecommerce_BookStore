@@ -75,6 +75,7 @@ vi.mock("next/image", () => ({
   default: ({
     fill: _fill,
     priority: _priority,
+    unoptimized: _unoptimized,
     ...props
   }: Record<string, unknown>) => (
     <img {...props} alt={String(props.alt ?? "")} />

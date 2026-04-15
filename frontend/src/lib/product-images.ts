@@ -1,5 +1,7 @@
 import type { Product } from "@/lib/types";
 
+const LOCAL_BOOK_ASSET_PREFIX = "/images/books/";
+
 const PLACEHOLDER_BY_CATEGORY: Record<string, string> = {
   "sach-van-hoc": "/images/books/placeholders/literature.svg",
   "tieu-thuyet": "/images/books/placeholders/literature.svg",
@@ -61,6 +63,10 @@ export function getCategoryPlaceholderImage(
   return (
     PLACEHOLDER_BY_CATEGORY[key] || "/images/books/placeholders/default.svg"
   );
+}
+
+export function isLocalBookAssetPath(src?: string | null): boolean {
+  return Boolean(src && src.startsWith(LOCAL_BOOK_ASSET_PREFIX));
 }
 
 export function resolveProductImageSource(product?: ProductLike): string {

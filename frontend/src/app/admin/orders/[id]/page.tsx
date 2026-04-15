@@ -4,7 +4,6 @@ export const dynamic = "force-dynamic";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -36,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toaster";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { cn, formatCurrency } from "@/lib/utils";
 
 interface OrderItem {
@@ -340,17 +340,18 @@ export default function AdminOrderDetailPage() {
                       key={item.id}
                       className="flex items-center gap-4 rounded-2xl border border-gray-100 p-4"
                     >
-                      <div className="flex h-20 w-16 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
-                        {item.imageUrl ? (
-                          <Image
-                            src={item.imageUrl}
-                            alt={item.productName}
-                            width={64}
-                            height={80}
-                            unoptimized
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
+                        <div className="flex h-20 w-16 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
+                          {item.imageUrl ? (
+                            <ProductImage
+                              src={item.imageUrl}
+                              fallbackSrc="/images/books/placeholders/default.svg"
+                              alt={item.productName}
+                              width={64}
+                              height={80}
+                              sizes="64px"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
                           <span className="text-lg text-gray-400">B</span>
                         )}
                       </div>

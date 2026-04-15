@@ -235,8 +235,12 @@ export default function FlashSalePage() {
 
                 {activeSales.length > 0 ? (
                   <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                    {activeSales.map((sale) => (
-                      <FlashSaleCard key={sale.id} sale={sale} />
+                    {activeSales.map((sale, index) => (
+                      <FlashSaleCard
+                        key={sale.id}
+                        sale={sale}
+                        imagePriority={index < 2}
+                      />
                     ))}
                   </div>
                 ) : (
