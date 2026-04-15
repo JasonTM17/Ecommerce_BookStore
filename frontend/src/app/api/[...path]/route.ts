@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveProxyTarget } from "@/lib/server/api-proxy";
+import { resolveProxyTargets } from "@/lib/server/api-proxy";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.API_PROXY_TIMEOUT_MS || "65000");
+const INTERNAL_PROXY_TIMEOUT_MS = Math.min(
+  REQUEST_TIMEOUT_MS,
+  Number(process.env.API_PROXY_INTERNAL_TIMEOUT_MS || "8000"),
+);
 
-function buildTargetUrl(request: NextRequest, pathSegments: string[]) {
-  const baseUrl = resolveProxyTarget(process.env);
+function buildTargetUrl(
+  request: NextRequest,
+  pathSegments: string[],
+  baseUrl: string,
+) {
   const joinedPath = pathSegments.join("/");
   const search = request.nextUrl.search || "";
   return `${baseUrl}/${joinedPath}${search}`;
@@ -19,36 +26,65 @@ function copyRequestHeaders(request: NextRequest) {
 }
 
 async function proxyRequest(request: NextRequest, pathSegments: string[]) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const body =
     request.method === "GET" || request.method === "HEAD"
       ? undefined
       : await request.arrayBuffer();
+  const targets = resolveProxyTargets(process.env);
+  let timeoutFailure = false;
+  let lastError: unknown;
 
   try {
-    const response = await fetch(buildTargetUrl(request, pathSegments), {
-      method: request.method,
-      headers: copyRequestHeaders(request),
-      body,
-      cache: "no-store",
-      redirect: "manual",
-      signal: controller.signal,
-    });
+    for (let index = 0; index < targets.length; index += 1) {
+      const target = targets[index];
+      const controller = new AbortController();
+      const timeoutMs =
+        index === 0 && targets.length > 1
+          ? INTERNAL_PROXY_TIMEOUT_MS
+          : REQUEST_TIMEOUT_MS;
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    const headers = new Headers(response.headers);
-    headers.delete("content-encoding");
-    headers.delete("content-length");
-    headers.delete("transfer-encoding");
+      try {
+        const response = await fetch(
+          buildTargetUrl(request, pathSegments, target),
+          {
+            method: request.method,
+            headers: copyRequestHeaders(request),
+            body,
+            cache: "no-store",
+            redirect: "manual",
+            signal: controller.signal,
+          },
+        );
 
-    return new NextResponse(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
+        const headers = new Headers(response.headers);
+        headers.delete("content-encoding");
+        headers.delete("content-length");
+        headers.delete("transfer-encoding");
+
+        return new NextResponse(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+      } catch (error) {
+        lastError = error;
+        timeoutFailure =
+          timeoutFailure ||
+          (error instanceof Error && error.name === "AbortError");
+
+        if (index === targets.length - 1) {
+          throw error;
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
   } catch (error) {
+    lastError = error;
     const message =
-      error instanceof Error && error.name === "AbortError"
+      timeoutFailure ||
+      (lastError instanceof Error && lastError.name === "AbortError")
         ? "Backend request timed out"
         : "Backend service is unavailable";
 
@@ -60,8 +96,6 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
       },
       { status: 502 },
     );
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
