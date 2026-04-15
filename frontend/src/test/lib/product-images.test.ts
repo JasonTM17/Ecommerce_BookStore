@@ -7,15 +7,15 @@ import {
 
 describe("product image helpers", () => {
   it("detects local book assets for direct delivery", () => {
-    expect(isLocalBookAssetPath("/images/books/covers/9780735211292-L.jpg")).toBe(
-      true,
-    );
+    expect(
+      isLocalBookAssetPath("/images/books/covers/9780735211292-L.jpg"),
+    ).toBe(true);
     expect(isLocalBookAssetPath("/images/books/placeholders/default.svg")).toBe(
       true,
     );
-    expect(isLocalBookAssetPath("https://covers.openlibrary.org/b/id/1-L.jpg")).toBe(
-      false,
-    );
+    expect(
+      isLocalBookAssetPath("https://covers.openlibrary.org/b/id/1-L.jpg"),
+    ).toBe(false);
     expect(isLocalBookAssetPath(undefined)).toBe(false);
   });
 

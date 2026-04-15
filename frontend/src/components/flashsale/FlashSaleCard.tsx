@@ -76,7 +76,11 @@ export function FlashSaleSection() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {activeSales.slice(0, 8).map((sale, index) => (
-            <FlashSaleCard key={sale.id} sale={sale} imagePriority={index < 2} />
+            <FlashSaleCard
+              key={sale.id}
+              sale={sale}
+              imagePriority={index < 2}
+            />
           ))}
         </div>
       </div>

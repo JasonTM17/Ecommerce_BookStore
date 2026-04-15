@@ -24,7 +24,9 @@ vi.mock("next/image", () => ({
         data-testid={rest["data-testid"]}
         src={typeof rest.src === "string" ? rest.src : ""}
         alt={String(rest.alt ?? "")}
-        className={typeof rest.className === "string" ? rest.className : undefined}
+        className={
+          typeof rest.className === "string" ? rest.className : undefined
+        }
       />
     );
   },

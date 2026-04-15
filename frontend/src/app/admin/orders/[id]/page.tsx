@@ -340,18 +340,18 @@ export default function AdminOrderDetailPage() {
                       key={item.id}
                       className="flex items-center gap-4 rounded-2xl border border-gray-100 p-4"
                     >
-                        <div className="flex h-20 w-16 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
-                          {item.imageUrl ? (
-                            <ProductImage
-                              src={item.imageUrl}
-                              fallbackSrc="/images/books/placeholders/default.svg"
-                              alt={item.productName}
-                              width={64}
-                              height={80}
-                              sizes="64px"
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
+                      <div className="flex h-20 w-16 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
+                        {item.imageUrl ? (
+                          <ProductImage
+                            src={item.imageUrl}
+                            fallbackSrc="/images/books/placeholders/default.svg"
+                            alt={item.productName}
+                            width={64}
+                            height={80}
+                            sizes="64px"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
                           <span className="text-lg text-gray-400">B</span>
                         )}
                       </div>
