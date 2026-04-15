@@ -58,7 +58,8 @@ const COPY = {
     pageDescription: (count: number) => `${count} sản phẩm trong danh mục`,
     emptyCatalog: "Khám phá hơn 1000 cuốn sách từ mọi thể loại",
     chooseCategory: "Chọn danh mục để xem sản phẩm",
-    chooseCategoryDescription: "Nhấp vào một danh mục bên trái để xem các sản phẩm",
+    chooseCategoryDescription:
+      "Nhấp vào một danh mục bên trái để xem các sản phẩm",
     noProducts: "Không có sản phẩm",
     noProductsDescription: "Danh mục này chưa có sản phẩm nào",
     viewAll: "Xem tất cả sách",
@@ -76,7 +77,8 @@ const COPY = {
     pageDescription: (count: number) => `${count} products in this category`,
     emptyCatalog: "Discover more than 1000 books across every genre",
     chooseCategory: "Choose a category to view products",
-    chooseCategoryDescription: "Click a category on the left to see its products",
+    chooseCategoryDescription:
+      "Click a category on the left to see its products",
     noProducts: "No products found",
     noProductsDescription: "This category does not have any products yet",
     viewAll: "View all books",
@@ -112,20 +114,21 @@ function CategoriesContent() {
   const router = useRouter();
   const { addToCart, isAddingToCart } = useAddToCart("/categories");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    searchParams.get("id") || null
+    searchParams.get("id") || null,
   );
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 12;
 
-  const { data: categoriesData = [], isLoading: categoriesLoading } =
-    useQuery<Category[]>({
-      ...publicWarmupQueryOptions,
-      queryKey: ["categories-all"],
-      queryFn: async () => {
-        const response = await apiPublic.get("/categories");
-        return normalizeList<Category>(response.data);
-      },
-    });
+  const { data: categoriesData = [], isLoading: categoriesLoading } = useQuery<
+    Category[]
+  >({
+    ...publicWarmupQueryOptions,
+    queryKey: ["categories-all"],
+    queryFn: async () => {
+      const response = await apiPublic.get("/categories");
+      return normalizeList<Category>(response.data);
+    },
+  });
 
   const { data: productsData, isLoading: productsLoading } = useQuery<
     PageResponse<Product>
@@ -145,7 +148,7 @@ function CategoriesContent() {
       }
 
       const response = await apiPublic.get(
-        `/products/category/${selectedCategoryId}?page=${currentPage}&size=${pageSize}`
+        `/products/category/${selectedCategoryId}?page=${currentPage}&size=${pageSize}`,
       );
       return response.data;
     },
@@ -153,12 +156,14 @@ function CategoriesContent() {
   });
 
   const selectedCategory = categoriesData.find(
-    (category) => category.id.toString() === selectedCategoryId
+    (category) => category.id.toString() === selectedCategoryId,
   );
   const products = productsData?.content || [];
   const totalPages = productsData?.totalPages || 0;
   const totalElements = productsData?.totalElements || 0;
-  const rootCategories = categoriesData.filter((category) => !category.parentId);
+  const rootCategories = categoriesData.filter(
+    (category) => !category.parentId,
+  );
 
   const handleCategoryClick = (categoryId: number) => {
     setSelectedCategoryId(categoryId.toString());
@@ -186,7 +191,9 @@ function CategoriesContent() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
                   <BookOpen className="h-5 w-5 text-white" />
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">{copy.title}</h2>
+                <h2 className="text-lg font-bold text-gray-900">
+                  {copy.title}
+                </h2>
               </div>
 
               {categoriesLoading ? (
@@ -206,7 +213,7 @@ function CategoriesContent() {
                       "flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300",
                       !selectedCategoryId
                         ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
-                        : "text-gray-700 hover:bg-gray-50"
+                        : "text-gray-700 hover:bg-gray-50",
                     )}
                   >
                     <BookOpen className="h-5 w-5" />
@@ -221,7 +228,7 @@ function CategoriesContent() {
                           "flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300",
                           selectedCategoryId === category.id.toString()
                             ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
-                            : "text-gray-700 hover:bg-gray-50"
+                            : "text-gray-700 hover:bg-gray-50",
                         )}
                       >
                         {(() => {
@@ -239,7 +246,9 @@ function CategoriesContent() {
                           return <Icon className="h-5 w-5" />;
                         })()}
                         <div className="flex-1 text-left">
-                          <span className="block font-medium">{category.name}</span>
+                          <span className="block font-medium">
+                            {category.name}
+                          </span>
                           {typeof category.productCount === "number" &&
                             category.productCount > 0 && (
                               <span
@@ -247,7 +256,7 @@ function CategoriesContent() {
                                   "text-xs",
                                   selectedCategoryId === category.id.toString()
                                     ? "text-white/70"
-                                    : "text-gray-400"
+                                    : "text-gray-400",
                                 )}
                               >
                                 {category.productCount} {copy.productUnit}
@@ -262,13 +271,15 @@ function CategoriesContent() {
                             {category.subcategories.map((subcategory) => (
                               <button
                                 key={subcategory.id}
-                                onClick={() => handleCategoryClick(subcategory.id)}
+                                onClick={() =>
+                                  handleCategoryClick(subcategory.id)
+                                }
                                 className={cn(
                                   "flex w-full items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm transition-all duration-300",
                                   selectedCategoryId ===
                                     subcategory.id.toString()
                                     ? "bg-blue-100 font-medium text-blue-700"
-                                    : "text-gray-600 hover:bg-gray-50"
+                                    : "text-gray-600 hover:bg-gray-50",
                                 )}
                               >
                                 <span className="flex min-w-0 items-center gap-2">
@@ -285,7 +296,7 @@ function CategoriesContent() {
                                         selectedCategoryId ===
                                           subcategory.id.toString()
                                           ? "bg-blue-200 text-blue-700"
-                                          : "bg-gray-100 text-gray-500"
+                                          : "bg-gray-100 text-gray-500",
                                       )}
                                     >
                                       {subcategory.productCount} {copy.bookUnit}
@@ -439,13 +450,13 @@ function CategoriesContent() {
                                   className={cn(
                                     "h-10 w-10 rounded-xl",
                                     currentPage === pageNumber &&
-                                      "shadow-lg shadow-blue-500/30"
+                                      "shadow-lg shadow-blue-500/30",
                                   )}
                                 >
                                   {pageNumber + 1}
                                 </Button>
                               );
-                            }
+                            },
                           )}
                         </div>
 
@@ -468,7 +479,9 @@ function CategoriesContent() {
                 <h3 className="mb-2 text-xl font-semibold text-gray-900">
                   {copy.chooseCategory}
                 </h3>
-                <p className="text-gray-500">{copy.chooseCategoryDescription}</p>
+                <p className="text-gray-500">
+                  {copy.chooseCategoryDescription}
+                </p>
               </div>
             )}
           </div>

@@ -108,7 +108,9 @@ export function FlashSaleCard({ sale }: { sale: FlashSale }) {
         !expireNotifiedRef.current
       ) {
         expireNotifiedRef.current = true;
-        void queryClient.invalidateQueries({ queryKey: ["flash-sales-active"] });
+        void queryClient.invalidateQueries({
+          queryKey: ["flash-sales-active"],
+        });
         void queryClient.invalidateQueries({
           queryKey: ["flash-sale-page", "active"],
         });

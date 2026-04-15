@@ -15,13 +15,23 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { CategorySection, FeaturedProducts, NewProducts } from "@/components/home-section";
+import {
+  CategorySection,
+  FeaturedProducts,
+  NewProducts,
+} from "@/components/home-section";
 import { apiPublic } from "@/lib/api";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 import { useLanguage } from "@/components/providers/language-provider";
 import type { Category } from "@/lib/types";
 
-const floatingBookSizes = ["w-16 h-16", "w-20 h-20", "w-24 h-24", "w-28 h-28", "w-32 h-32"];
+const floatingBookSizes = [
+  "w-16 h-16",
+  "w-20 h-20",
+  "w-24 h-24",
+  "w-28 h-28",
+  "w-32 h-32",
+];
 
 type ShowcaseGenre = {
   key: string;
@@ -75,7 +85,9 @@ function normalizeKey(value?: string | null) {
 function flattenCategories(categories: Category[]): Category[] {
   return categories.flatMap((category) => [
     category,
-    ...(category.subcategories ? flattenCategories(category.subcategories) : []),
+    ...(category.subcategories
+      ? flattenCategories(category.subcategories)
+      : []),
   ]);
 }
 
@@ -98,15 +110,18 @@ export default function HomePage() {
   const flattenedCategories = flattenCategories(categories);
   const showcaseCards = showcaseGenres.map((genre) => {
     const matchedCategory = flattenedCategories.find((category) =>
-      genre.aliases.includes(normalizeKey(category.name))
+      genre.aliases.includes(normalizeKey(category.name)),
     );
 
     return {
       ...genre,
       label: t(genre.labelKey),
-      href: matchedCategory ? `/categories?id=${matchedCategory.id}` : "/categories",
+      href: matchedCategory
+        ? `/categories?id=${matchedCategory.id}`
+        : "/categories",
       countLabel:
-        typeof matchedCategory?.productCount === "number" && matchedCategory.productCount > 0
+        typeof matchedCategory?.productCount === "number" &&
+        matchedCategory.productCount > 0
           ? `${matchedCategory.productCount.toLocaleString(locale === "vi" ? "vi-VN" : "en-US")} ${
               locale === "vi" ? "cuốn" : "titles"
             }`
@@ -179,12 +194,16 @@ export default function HomePage() {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div
                 className={`text-white transition-all duration-1000 ${
-                  mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                  mounted
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-10"
                 }`}
               >
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm mb-6">
                   <Sparkles className="h-4 w-4 text-yellow-400" />
-                  <span className="text-sm font-medium">{t("home.libraryBadge")}</span>
+                  <span className="text-sm font-medium">
+                    {t("home.libraryBadge")}
+                  </span>
                 </div>
 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
@@ -193,10 +212,14 @@ export default function HomePage() {
                     {t("home.heroTitleAccent")}
                   </span>
                   <br />
-                  <span className="text-3xl md:text-4xl lg:text-5xl">{t("home.heroTitleTail")}</span>
+                  <span className="text-3xl md:text-4xl lg:text-5xl">
+                    {t("home.heroTitleTail")}
+                  </span>
                 </h1>
 
-                <p className="text-lg md:text-xl text-blue-100/90 mb-8 max-w-lg">{t("home.heroDescription")}</p>
+                <p className="text-lg md:text-xl text-blue-100/90 mb-8 max-w-lg">
+                  {t("home.heroDescription")}
+                </p>
 
                 <div className="flex flex-wrap gap-4">
                   <Link
@@ -218,18 +241,24 @@ export default function HomePage() {
                 <div className="mt-10 flex items-center gap-6 border-t border-white/10 pt-10">
                   <div className="flex items-center gap-2">
                     <Shield className="h-5 w-5 text-green-400" />
-                    <span className="text-sm text-blue-100/80">{t("home.authenticBooks")}</span>
+                    <span className="text-sm text-blue-100/80">
+                      {t("home.authenticBooks")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Truck className="h-5 w-5 text-green-400" />
-                    <span className="text-sm text-blue-100/80">{t("home.nationwideDelivery")}</span>
+                    <span className="text-sm text-blue-100/80">
+                      {t("home.nationwideDelivery")}
+                    </span>
                   </div>
                 </div>
               </div>
 
               <div
                 className={`hidden md:flex items-center justify-center transition-all duration-1000 delay-300 ${
-                  mounted ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"
+                  mounted
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 translate-x-10"
                 }`}
               >
                 <div className="relative">
@@ -249,9 +278,15 @@ export default function HomePage() {
                           className="group rounded-2xl bg-white/10 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20"
                           style={{ animationDelay: `${index * 0.1}s` }}
                         >
-                          <BookOpen className={`${genre.iconClassName} text-yellow-300 mb-2`} />
-                          <p className="text-sm font-semibold text-white">{genre.label}</p>
-                          <p className="text-xs text-blue-100/75">{genre.countLabel}</p>
+                          <BookOpen
+                            className={`${genre.iconClassName} text-yellow-300 mb-2`}
+                          />
+                          <p className="text-sm font-semibold text-white">
+                            {genre.label}
+                          </p>
+                          <p className="text-xs text-blue-100/75">
+                            {genre.countLabel}
+                          </p>
                         </Link>
                       ))}
                     </div>
@@ -259,7 +294,9 @@ export default function HomePage() {
                     <div className="absolute -top-4 -right-4 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 px-4 py-2 text-gray-900 shadow-lg">
                       <div className="flex items-center gap-2">
                         <Heart className="h-4 w-4" />
-                        <span className="text-sm font-bold">{t("home.showcaseLikes")}</span>
+                        <span className="text-sm font-bold">
+                          {t("home.showcaseLikes")}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -281,10 +318,14 @@ export default function HomePage() {
                   <div
                     className={`flex h-14 w-14 items-center justify-center rounded-2xl ${feature.iconWrapperClassName} shadow-sm transition-all duration-300`}
                   >
-                    <feature.icon className={`h-7 w-7 ${feature.iconClassName}`} />
+                    <feature.icon
+                      className={`h-7 w-7 ${feature.iconClassName}`}
+                    />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{feature.title}</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      {feature.title}
+                    </h3>
                     <p className="text-sm text-gray-500">{feature.subtitle}</p>
                   </div>
                 </div>
@@ -306,7 +347,9 @@ export default function HomePage() {
           <div className="container mx-auto px-4 text-center relative z-10">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm mb-6">
               <Sparkles className="h-4 w-4 text-yellow-400" />
-              <span className="text-sm font-medium text-white/90">{t("home.newMemberBadge")}</span>
+              <span className="text-sm font-medium text-white/90">
+                {t("home.newMemberBadge")}
+              </span>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
@@ -317,7 +360,9 @@ export default function HomePage() {
               </span>
             </h2>
 
-            <p className="mx-auto mb-10 max-w-2xl text-xl text-blue-100/90">{t("home.ctaDescription")}</p>
+            <p className="mx-auto mb-10 max-w-2xl text-xl text-blue-100/90">
+              {t("home.ctaDescription")}
+            </p>
 
             <Link
               href="/register"

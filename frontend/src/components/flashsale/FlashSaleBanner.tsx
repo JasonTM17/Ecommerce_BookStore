@@ -60,7 +60,9 @@ function FlashSaleQuickView({ sale }: { sale: FlashSale }) {
         !expireNotifiedRef.current
       ) {
         expireNotifiedRef.current = true;
-        void queryClient.invalidateQueries({ queryKey: ["flash-sales-active"] });
+        void queryClient.invalidateQueries({
+          queryKey: ["flash-sales-active"],
+        });
         window.clearInterval(timer);
       }
     }, 1000);

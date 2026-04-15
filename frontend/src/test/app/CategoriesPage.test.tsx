@@ -50,7 +50,7 @@ function renderWithQueryClient(ui: ReactElement) {
   });
 
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
   );
 }
 

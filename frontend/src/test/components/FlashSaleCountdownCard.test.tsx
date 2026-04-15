@@ -23,9 +23,9 @@ describe("FlashSaleCountdownCard", () => {
       />,
     );
 
-    expect(screen.getByTestId("flash-sale-countdown-seconds")).toHaveTextContent(
-      "02",
-    );
+    expect(
+      screen.getByTestId("flash-sale-countdown-seconds"),
+    ).toHaveTextContent("02");
 
     act(() => {
       vi.advanceTimersByTime(2100);
