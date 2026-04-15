@@ -69,10 +69,12 @@ services:
         generateValue: true
       # CORS - will be updated after frontend deploys
       - key: CORS_ORIGINS
-        value: https://bookstore-web.onrender.com
+        value: https://bookstore-web-dr1k.onrender.com
       # App
       - key: APP_BASE_URL
-        value: https://bookstore-web.onrender.com
+        value: https://bookstore-web-dr1k.onrender.com
+      - key: BACKEND_PUBLIC_URL
+        value: https://bookstore-api-a1xl.onrender.com
       - key: APP_DEMO_SEED_ENABLED
         value: "true"
       - key: APP_DEMO_SEED_DEFERRED
@@ -114,7 +116,7 @@ services:
           property: hostport
       # API proxy to backend
       - key: API_PROXY_TARGET
-        value: https://bookstore-api.onrender.com/api
+        value: https://bookstore-api-a1xl.onrender.com/api
       - key: API_PROXY_TIMEOUT_MS
         value: "65000"
       - key: NEXT_PUBLIC_API_URL
