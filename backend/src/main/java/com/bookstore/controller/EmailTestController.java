@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ import java.util.*;
 @RequestMapping("/email")
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(name = "app.email.test-endpoint-enabled", havingValue = "true")
 public class EmailTestController {
 
     private final EmailService emailService;

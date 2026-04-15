@@ -85,10 +85,13 @@ public class RenderDataSourceConfig {
                 dataSource.setPassword(password);
                 dataSource.setDriverClassName("org.postgresql.Driver");
                 dataSource.setMaximumPoolSize(5);
-                dataSource.setMinimumIdle(2);
+                dataSource.setMinimumIdle(0);
                 dataSource.setConnectionTimeout(30000);
                 dataSource.setIdleTimeout(600000);
                 dataSource.setMaxLifetime(1800000);
+                dataSource.setInitializationFailTimeout(1);
+
+                log.info("Render startup milestone: datasource configured and ready for pool initialization");
 
                 return dataSource;
             } catch (Exception exception) {
