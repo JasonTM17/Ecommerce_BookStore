@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { normalizeProxyTarget, resolveProxyTarget } from "@/lib/server/api-proxy";
+import {
+  normalizeProxyTarget,
+  resolveProxyTarget,
+} from "@/lib/server/api-proxy";
 
 describe("api proxy target resolution", () => {
   it("prefers Render internal hostport when available", () => {

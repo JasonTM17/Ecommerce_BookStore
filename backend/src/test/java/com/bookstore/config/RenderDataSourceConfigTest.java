@@ -46,4 +46,20 @@ class RenderDataSourceConfigTest {
         assertEquals("dbpass", hikari.getPassword());
         hikari.close();
     }
+
+    @Test
+    void dataSource_usesDbHostAsConnectionStringWhenItContainsFullUrl() {
+        MockEnvironment environment = new MockEnvironment()
+                .withProperty("DB_HOST", "postgresql://bookstore:bookpass@render-host:5432/bookstore_db");
+        RenderDataSourceConfig config = new RenderDataSourceConfig(environment);
+        DataSourceProperties properties = new DataSourceProperties();
+
+        DataSource dataSource = config.dataSource(properties);
+        HikariDataSource hikari = assertInstanceOf(HikariDataSource.class, dataSource);
+
+        assertEquals("jdbc:postgresql://render-host:5432/bookstore_db?sslmode=prefer", hikari.getJdbcUrl());
+        assertEquals("bookstore", hikari.getUsername());
+        assertEquals("bookpass", hikari.getPassword());
+        hikari.close();
+    }
 }

@@ -40,6 +40,14 @@ public class RenderDataSourceConfig {
     @ConfigurationProperties("spring.datasource.hikari")
     public DataSource dataSource(DataSourceProperties properties) {
         String databaseUrl = environment.getProperty("DATABASE_URL");
+        String hostFallback = environment.getProperty("DB_HOST");
+
+        // Failsafe: If the user didn't sync the blueprint and pasted the full URL into DB_HOST,
+        // we catch it and treat it as the connection string.
+        if ((databaseUrl == null || databaseUrl.isBlank()) && hostFallback != null && hostFallback.contains("@")) {
+            log.warn("Detected full connection string inside DB_HOST! This is a common misconfiguration. Auto-correcting...");
+            databaseUrl = hostFallback.startsWith("postgres") ? hostFallback : "postgresql://" + hostFallback;
+        }
 
         if (databaseUrl != null && !databaseUrl.isBlank()) {
             log.info("Detected DATABASE_URL env var - parsing for JDBC DataSource...");
