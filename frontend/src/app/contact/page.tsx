@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Clock3, Mail, MapPin, MessageSquareText, Phone } from "lucide-react";
+import {
+  ArrowRight,
+  Clock3,
+  Mail,
+  MapPin,
+  MessageSquareText,
+  Phone,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StaticInfoPageShell } from "@/components/static-info-page";
 import { getRequestLocale } from "@/lib/i18n/server";
@@ -11,12 +18,14 @@ const copy = {
   vi: {
     metadata: {
       title: "Liên hệ BookStore",
-      description: "Kênh liên hệ chính thức của BookStore cho đơn hàng, tài khoản và hỗ trợ chung.",
+      description:
+        "Kênh liên hệ chính thức của BookStore cho đơn hàng, tài khoản và hỗ trợ chung.",
     },
     shell: {
       badgeText: "Hỗ trợ",
       breadcrumbs: [{ label: "Liên hệ" }],
-      description: "Cần hỗ trợ về đơn hàng, thanh toán hoặc tài khoản? Đây là các kênh liên hệ nhanh nhất.",
+      description:
+        "Cần hỗ trợ về đơn hàng, thanh toán hoặc tài khoản? Đây là các kênh liên hệ nhanh nhất.",
       title: "Liên hệ BookStore",
     },
     contactItems: [
@@ -54,12 +63,14 @@ const copy = {
   en: {
     metadata: {
       title: "Contact BookStore",
-      description: "BookStore's official contact page for orders, account help, and general support.",
+      description:
+        "BookStore's official contact page for orders, account help, and general support.",
     },
     shell: {
       badgeText: "Support",
       breadcrumbs: [{ label: "Contact" }],
-      description: "Need help with orders, payments, or your account? These are the quickest support channels.",
+      description:
+        "Need help with orders, payments, or your account? These are the quickest support channels.",
       title: "Contact BookStore",
     },
     contactItems: [
@@ -96,12 +107,13 @@ const copy = {
   },
 } satisfies Record<Locale, any>;
 
-export function generateMetadata(): Metadata {
-  return copy[getRequestLocale()].metadata;
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  return copy[locale].metadata;
 }
 
-export default function ContactPage() {
-  const locale = getRequestLocale();
+export default async function ContactPage() {
+  const locale = await getRequestLocale();
   const page = copy[locale];
 
   return (
@@ -121,10 +133,20 @@ export default function ContactPage() {
               className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                {item.label === "Hotline" ? <Phone className="h-6 w-6" /> : item.label === "Email" ? <Mail className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
+                {item.label === "Hotline" ? (
+                  <Phone className="h-6 w-6" />
+                ) : item.label === "Email" ? (
+                  <Mail className="h-6 w-6" />
+                ) : (
+                  <MapPin className="h-6 w-6" />
+                )}
               </div>
-              <h2 className="text-lg font-semibold text-gray-900">{item.label}</h2>
-              <p className="mt-2 text-base font-medium text-gray-800">{item.value}</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {item.label}
+              </h2>
+              <p className="mt-2 text-base font-medium text-gray-800">
+                {item.value}
+              </p>
               <p className="mt-2 leading-7 text-gray-600">{item.note}</p>
               <a
                 href={item.href}
@@ -152,7 +174,10 @@ export default function ContactPage() {
             </h2>
             <ul className="mt-4 space-y-3 text-gray-600">
               {page.supportHours.map((item) => (
-                <li key={item} className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+                <li
+                  key={item}
+                  className="rounded-2xl bg-white px-4 py-3 shadow-sm"
+                >
                   {item}
                 </li>
               ))}
@@ -160,7 +185,9 @@ export default function ContactPage() {
           </div>
 
           <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900">{page.quickHeading}</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {page.quickHeading}
+            </h2>
             <p className="mt-4 leading-7 text-gray-600">{page.quickBody}</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/orders">
@@ -174,7 +201,10 @@ export default function ContactPage() {
             </div>
             <p className="mt-6 text-sm text-gray-500">
               {locale === "en" ? "Or return to the " : "Hoặc quay lại "}
-              <Link href="/products" className="font-semibold text-emerald-700 hover:text-emerald-800">
+              <Link
+                href="/products"
+                className="font-semibold text-emerald-700 hover:text-emerald-800"
+              >
                 {locale === "en" ? "product catalog" : "catalog sản phẩm"}
               </Link>
               {locale === "en" ? " to keep shopping." : " để tiếp tục mua sắm."}

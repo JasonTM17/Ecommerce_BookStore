@@ -21,8 +21,7 @@ const copy = {
     sections: [
       {
         title: "1. Giới thiệu",
-        body:
-          "Chào mừng bạn đến với BookStore. Khi truy cập hoặc sử dụng dịch vụ của chúng tôi, bạn đồng ý tuân thủ các điều khoản được nêu trong trang này.",
+        body: "Chào mừng bạn đến với BookStore. Khi truy cập hoặc sử dụng dịch vụ của chúng tôi, bạn đồng ý tuân thủ các điều khoản được nêu trong trang này.",
       },
       {
         title: "2. Tài khoản người dùng",
@@ -42,8 +41,7 @@ const copy = {
       },
       {
         title: "4. Thanh toán và giá cả",
-        body:
-          "BookStore hỗ trợ thẻ, ví điện tử, chuyển khoản và thanh toán khi nhận hàng. Giá trên website đã bao gồm VAT, và có thể thay đổi theo từng thời điểm.",
+        body: "BookStore hỗ trợ thẻ, ví điện tử, chuyển khoản và thanh toán khi nhận hàng. Giá trên website đã bao gồm VAT, và có thể thay đổi theo từng thời điểm.",
       },
       {
         title: "5. Vận chuyển và giao hàng",
@@ -63,13 +61,11 @@ const copy = {
       },
       {
         title: "7. Quyền sở hữu trí tuệ",
-        body:
-          "Toàn bộ nội dung trên BookStore, bao gồm văn bản, hình ảnh, logo và thiết kế, thuộc quyền sở hữu của BookStore hoặc nhà cung cấp nội dung của chúng tôi.",
+        body: "Toàn bộ nội dung trên BookStore, bao gồm văn bản, hình ảnh, logo và thiết kế, thuộc quyền sở hữu của BookStore hoặc nhà cung cấp nội dung của chúng tôi.",
       },
       {
         title: "8. Giới hạn trách nhiệm",
-        body:
-          "BookStore không chịu trách nhiệm cho các thiệt hại gián tiếp, đặc biệt, ngẫu nhiên hoặc do hậu quả phát sinh từ việc sử dụng website hoặc dịch vụ.",
+        body: "BookStore không chịu trách nhiệm cho các thiệt hại gián tiếp, đặc biệt, ngẫu nhiên hoặc do hậu quả phát sinh từ việc sử dụng website hoặc dịch vụ.",
       },
     ],
     contactTitle: "Liên hệ hỗ trợ",
@@ -79,19 +75,20 @@ const copy = {
   en: {
     metadata: {
       title: "Terms of use",
-      description: "The terms and conditions that apply when you use BookStore.",
+      description:
+        "The terms and conditions that apply when you use BookStore.",
     },
     shell: {
       badgeText: "Terms",
       breadcrumbs: [{ label: "Terms of use" }],
-      description: "By using BookStore, you agree to follow the terms and conditions below.",
+      description:
+        "By using BookStore, you agree to follow the terms and conditions below.",
       title: "Terms of use",
     },
     sections: [
       {
         title: "1. Introduction",
-        body:
-          "Welcome to BookStore. By accessing or using our service, you agree to the terms described on this page.",
+        body: "Welcome to BookStore. By accessing or using our service, you agree to the terms described on this page.",
       },
       {
         title: "2. User accounts",
@@ -111,8 +108,7 @@ const copy = {
       },
       {
         title: "4. Payment and pricing",
-        body:
-          "BookStore supports cards, e-wallets, bank transfers, and cash on delivery. Prices shown on the site include VAT and may change over time.",
+        body: "BookStore supports cards, e-wallets, bank transfers, and cash on delivery. Prices shown on the site include VAT and may change over time.",
       },
       {
         title: "5. Shipping and delivery",
@@ -132,13 +128,11 @@ const copy = {
       },
       {
         title: "7. Intellectual property",
-        body:
-          "All content on BookStore, including text, images, logos, and design, belongs to BookStore or our content providers.",
+        body: "All content on BookStore, including text, images, logos, and design, belongs to BookStore or our content providers.",
       },
       {
         title: "8. Limitation of liability",
-        body:
-          "BookStore is not liable for indirect, special, incidental, or consequential damages arising from the use of the website or service.",
+        body: "BookStore is not liable for indirect, special, incidental, or consequential damages arising from the use of the website or service.",
       },
     ],
     contactTitle: "Support contact",
@@ -147,12 +141,13 @@ const copy = {
   },
 } satisfies Record<Locale, any>;
 
-export function generateMetadata(): Metadata {
-  return copy[getRequestLocale()].metadata;
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  return copy[locale].metadata;
 }
 
-export default function TermsPage() {
-  const locale = getRequestLocale();
+export default async function TermsPage() {
+  const locale = await getRequestLocale();
   const page = copy[locale];
 
   return (
@@ -166,14 +161,19 @@ export default function TermsPage() {
     >
       <div className="space-y-6">
         {page.sections.map((entry) => (
-          <section key={entry.title} className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+          <section
+            key={entry.title}
+            className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm"
+          >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
                 <Scale className="h-5 w-5" />
               </div>
               <h2 className="text-xl font-bold text-gray-900">{entry.title}</h2>
             </div>
-            {entry.body ? <p className="mt-4 leading-7 text-gray-600">{entry.body}</p> : null}
+            {entry.body ? (
+              <p className="mt-4 leading-7 text-gray-600">{entry.body}</p>
+            ) : null}
             {entry.items ? (
               <ul className="mt-4 list-disc space-y-2 pl-6 text-gray-600">
                 {entry.items.map((item: string) => (
@@ -188,7 +188,9 @@ export default function TermsPage() {
           <div className="flex items-start gap-4">
             <AlertCircle className="mt-0.5 h-6 w-6 shrink-0 text-blue-600" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{page.contactTitle}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {page.contactTitle}
+              </h2>
               <p className="mt-2 leading-7 text-gray-600">{page.contactBody}</p>
             </div>
           </div>

@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { AlertCircle, Eye, FileText, Lock, Shield, UserCheck } from "lucide-react";
+import {
+  AlertCircle,
+  Eye,
+  FileText,
+  Lock,
+  Shield,
+  UserCheck,
+} from "lucide-react";
 import { StaticInfoPageShell } from "@/components/static-info-page";
 import { getRequestLocale } from "@/lib/i18n/server";
 
@@ -9,7 +16,8 @@ const copy = {
   vi: {
     metadata: {
       title: "Chính sách bảo mật",
-      description: "Cách BookStore thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn.",
+      description:
+        "Cách BookStore thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn.",
     },
     shell: {
       badgeText: "Bảo mật",
@@ -27,12 +35,22 @@ const copy = {
       {
         title: "2. Mục đích sử dụng thông tin",
         icon: Eye,
-        items: ["Xử lý đơn hàng", "Hỗ trợ khách hàng", "Cải thiện dịch vụ", "Bảo mật và chống gian lận"],
+        items: [
+          "Xử lý đơn hàng",
+          "Hỗ trợ khách hàng",
+          "Cải thiện dịch vụ",
+          "Bảo mật và chống gian lận",
+        ],
       },
       {
         title: "3. Bảo mật thông tin",
         icon: Lock,
-        items: ["Mã hóa SSL", "Tường lửa và giám sát", "Mã hóa mật khẩu", "Sao lưu dữ liệu định kỳ"],
+        items: [
+          "Mã hóa SSL",
+          "Tường lửa và giám sát",
+          "Mã hóa mật khẩu",
+          "Sao lưu dữ liệu định kỳ",
+        ],
       },
       {
         title: "4. Chia sẻ thông tin",
@@ -57,7 +75,8 @@ const copy = {
   en: {
     metadata: {
       title: "Privacy policy",
-      description: "How BookStore collects, uses, and protects your personal information.",
+      description:
+        "How BookStore collects, uses, and protects your personal information.",
     },
     shell: {
       badgeText: "Privacy",
@@ -75,12 +94,22 @@ const copy = {
       {
         title: "2. How we use information",
         icon: Eye,
-        items: ["Order processing", "Customer support", "Service improvement", "Security and fraud prevention"],
+        items: [
+          "Order processing",
+          "Customer support",
+          "Service improvement",
+          "Security and fraud prevention",
+        ],
       },
       {
         title: "3. Protecting information",
         icon: Lock,
-        items: ["SSL encryption", "Firewalls and monitoring", "Password hashing", "Regular backups"],
+        items: [
+          "SSL encryption",
+          "Firewalls and monitoring",
+          "Password hashing",
+          "Regular backups",
+        ],
       },
       {
         title: "4. Sharing information",
@@ -104,12 +133,13 @@ const copy = {
   },
 } satisfies Record<Locale, any>;
 
-export function generateMetadata(): Metadata {
-  return copy[getRequestLocale()].metadata;
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  return copy[locale].metadata;
 }
 
-export default function PrivacyPage() {
-  const locale = getRequestLocale();
+export default async function PrivacyPage() {
+  const locale = await getRequestLocale();
   const page = copy[locale];
 
   return (
@@ -123,14 +153,19 @@ export default function PrivacyPage() {
     >
       <div className="space-y-6">
         {page.sections.map((entry) => (
-          <section key={entry.title} className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+          <section
+            key={entry.title}
+            className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm"
+          >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-600">
                 <entry.icon className="h-5 w-5" />
               </div>
               <h2 className="text-xl font-bold text-gray-900">{entry.title}</h2>
             </div>
-            {entry.body ? <p className="mt-4 leading-7 text-gray-600">{entry.body}</p> : null}
+            {entry.body ? (
+              <p className="mt-4 leading-7 text-gray-600">{entry.body}</p>
+            ) : null}
             {entry.items ? (
               <ul className="mt-4 list-disc space-y-2 pl-6 text-gray-600">
                 {entry.items.map((item: string) => (
@@ -145,7 +180,9 @@ export default function PrivacyPage() {
           <div className="flex items-start gap-4">
             <AlertCircle className="mt-0.5 h-6 w-6 shrink-0 text-blue-600" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{page.contactTitle}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {page.contactTitle}
+              </h2>
               <p className="mt-2 leading-7 text-gray-600">{page.contactBody}</p>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <div className="rounded-xl bg-white p-4 shadow-sm">

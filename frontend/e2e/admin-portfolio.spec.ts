@@ -37,36 +37,19 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
 async function assertNoMojibake(page: Page) {
   const bodyText = await page.locator("body").innerText();
   const suspiciousSequences = [
-    "Ä‘",
-    "Äƒ",
-    "Ä",
-    "Ã¡",
-    "Ã ",
-    "Ã¢",
-    "Ã£",
-    "Ã¨",
-    "Ã©",
-    "Ãª",
-    "Ã¬",
-    "Ã­",
-    "Ã²",
-    "Ã³",
-    "Ã´",
-    "Ãµ",
-    "Ã¹",
-    "Ãº",
-    "Ã½",
-    "Æ°",
-    "Æ¡",
-    "á»",
-    "áº",
+    "\u00c3",
+    "\u00c2",
+    "\u00c6",
+    "\u00c4",
+    "\u00e1\u00ba",
+    "\u00e1\u00bb",
   ];
 
   for (const sequence of suspiciousSequences) {
     expect(bodyText).not.toContain(sequence);
   }
 
-  expect(bodyText).not.toContain("�");
+  expect(bodyText).not.toContain("\ufffd");
 }
 
 async function login(page: Page, email: string, password: string) {

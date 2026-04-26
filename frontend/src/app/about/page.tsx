@@ -119,13 +119,13 @@ const copy = {
   },
 } satisfies Record<Locale, any>;
 
-export function generateMetadata(): Metadata {
-  const locale = getRequestLocale();
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
   return copy[locale].metadata;
 }
 
-export default function AboutPage() {
-  const locale = getRequestLocale();
+export default async function AboutPage() {
+  const locale = await getRequestLocale();
   const page = copy[locale];
 
   return (

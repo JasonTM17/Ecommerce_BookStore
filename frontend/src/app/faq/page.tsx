@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CircleHelp, PackageCheck, RefreshCcw, ShieldCheck, Truck } from "lucide-react";
+import {
+  ArrowRight,
+  CircleHelp,
+  PackageCheck,
+  RefreshCcw,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StaticInfoPageShell } from "@/components/static-info-page";
 import { getRequestLocale } from "@/lib/i18n/server";
@@ -11,19 +18,37 @@ const copy = {
   vi: {
     metadata: {
       title: "Câu hỏi thường gặp",
-      description: "Các câu trả lời ngắn gọn cho những câu hỏi phổ biến nhất về BookStore.",
+      description:
+        "Các câu trả lời ngắn gọn cho những câu hỏi phổ biến nhất về BookStore.",
     },
     shell: {
       badgeText: "Hỗ trợ nhanh",
       breadcrumbs: [{ label: "FAQ" }],
-      description: "Những câu trả lời ngắn gọn cho các câu hỏi phổ biến nhất về mua sắm, thanh toán và giao hàng.",
+      description:
+        "Những câu trả lời ngắn gọn cho các câu hỏi phổ biến nhất về mua sắm, thanh toán và giao hàng.",
       title: "Câu hỏi thường gặp",
     },
     serviceCards: [
-      { icon: Truck, title: "Giao hàng", desc: "Xem thời gian giao, phí vận chuyển và hướng dẫn theo dõi đơn." },
-      { icon: PackageCheck, title: "Đặt hàng", desc: "Giỏ hàng và checkout được giữ đơn giản, dễ theo dõi." },
-      { icon: RefreshCcw, title: "Đổi trả", desc: "Điều kiện đổi trả được liệt kê rõ trước khi bạn cần liên hệ hỗ trợ." },
-      { icon: ShieldCheck, title: "Riêng tư", desc: "Thông tin tài khoản và đơn hàng nằm trong các khu vực riêng tư, rõ ràng." },
+      {
+        icon: Truck,
+        title: "Giao hàng",
+        desc: "Xem thời gian giao, phí vận chuyển và hướng dẫn theo dõi đơn.",
+      },
+      {
+        icon: PackageCheck,
+        title: "Đặt hàng",
+        desc: "Giỏ hàng và checkout được giữ đơn giản, dễ theo dõi.",
+      },
+      {
+        icon: RefreshCcw,
+        title: "Đổi trả",
+        desc: "Điều kiện đổi trả được liệt kê rõ trước khi bạn cần liên hệ hỗ trợ.",
+      },
+      {
+        icon: ShieldCheck,
+        title: "Riêng tư",
+        desc: "Thông tin tài khoản và đơn hàng nằm trong các khu vực riêng tư, rõ ràng.",
+      },
     ],
     faqs: [
       {
@@ -58,7 +83,8 @@ const copy = {
       },
     ],
     ctaHeading: "Cần hỗ trợ thêm?",
-    ctaTitle: "Nếu chưa thấy câu trả lời phù hợp, hãy liên hệ hỗ trợ trực tiếp.",
+    ctaTitle:
+      "Nếu chưa thấy câu trả lời phù hợp, hãy liên hệ hỗ trợ trực tiếp.",
     ctaBody:
       "FAQ được tạo ra để giảm các câu hỏi lặp lại. Nếu bạn cần phản hồi trực tiếp, Liên hệ là bước tiếp theo nhanh nhất.",
     ctaContact: "Liên hệ ngay",
@@ -67,19 +93,37 @@ const copy = {
   en: {
     metadata: {
       title: "Frequently Asked Questions",
-      description: "Short answers to the most common BookStore shopping questions.",
+      description:
+        "Short answers to the most common BookStore shopping questions.",
     },
     shell: {
       badgeText: "Quick help",
       breadcrumbs: [{ label: "FAQ" }],
-      description: "Short answers to the most common questions about shopping, payment, and shipping.",
+      description:
+        "Short answers to the most common questions about shopping, payment, and shipping.",
       title: "Frequently Asked Questions",
     },
     serviceCards: [
-      { icon: Truck, title: "Shipping", desc: "See delivery times, shipping fees, and tracking guidance." },
-      { icon: PackageCheck, title: "Orders", desc: "Cart and checkout stay simple and easy to follow." },
-      { icon: RefreshCcw, title: "Returns", desc: "Return conditions are listed clearly before you need support." },
-      { icon: ShieldCheck, title: "Privacy", desc: "Account and order details stay in clearly separated private areas." },
+      {
+        icon: Truck,
+        title: "Shipping",
+        desc: "See delivery times, shipping fees, and tracking guidance.",
+      },
+      {
+        icon: PackageCheck,
+        title: "Orders",
+        desc: "Cart and checkout stay simple and easy to follow.",
+      },
+      {
+        icon: RefreshCcw,
+        title: "Returns",
+        desc: "Return conditions are listed clearly before you need support.",
+      },
+      {
+        icon: ShieldCheck,
+        title: "Privacy",
+        desc: "Account and order details stay in clearly separated private areas.",
+      },
     ],
     faqs: [
       {
@@ -114,7 +158,8 @@ const copy = {
       },
     ],
     ctaHeading: "Need more help?",
-    ctaTitle: "If you still do not see the right answer, contact support directly.",
+    ctaTitle:
+      "If you still do not see the right answer, contact support directly.",
     ctaBody:
       "FAQ exists to reduce repeat questions. If you need a direct response, Contact is the quickest next step.",
     ctaContact: "Contact now",
@@ -122,12 +167,13 @@ const copy = {
   },
 } satisfies Record<Locale, any>;
 
-export function generateMetadata(): Metadata {
-  return copy[getRequestLocale()].metadata;
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  return copy[locale].metadata;
 }
 
-export default function FaqPage() {
-  const locale = getRequestLocale();
+export default async function FaqPage() {
+  const locale = await getRequestLocale();
   const page = copy[locale];
 
   return (
@@ -142,11 +188,16 @@ export default function FaqPage() {
       <div className="space-y-8">
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {page.serviceCards.map((card) => (
-            <article key={card.title} className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <article
+              key={card.title}
+              className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
+            >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
                 <card.icon className="h-6 w-6" />
               </div>
-              <h2 className="text-lg font-semibold text-gray-900">{card.title}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {card.title}
+              </h2>
               <p className="mt-3 leading-7 text-gray-600">{card.desc}</p>
             </article>
           ))}
@@ -154,9 +205,16 @@ export default function FaqPage() {
 
         <section className="space-y-4">
           {page.faqs.map((item) => (
-            <details key={item.question} className="group rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-              <summary className="cursor-pointer list-none text-lg font-semibold text-gray-900">{item.question}</summary>
-              <p className="mt-4 max-w-4xl leading-7 text-gray-600">{item.answer}</p>
+            <details
+              key={item.question}
+              className="group rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
+            >
+              <summary className="cursor-pointer list-none text-lg font-semibold text-gray-900">
+                {item.question}
+              </summary>
+              <p className="mt-4 max-w-4xl leading-7 text-gray-600">
+                {item.answer}
+              </p>
             </details>
           ))}
         </section>
@@ -164,8 +222,12 @@ export default function FaqPage() {
         <section className="rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">{page.ctaHeading}</p>
-              <h2 className="mt-2 text-2xl font-bold text-gray-900">{page.ctaTitle}</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+                {page.ctaHeading}
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900">
+                {page.ctaTitle}
+              </h2>
               <p className="mt-3 leading-7 text-gray-600">{page.ctaBody}</p>
             </div>
             <div className="flex flex-wrap gap-3">

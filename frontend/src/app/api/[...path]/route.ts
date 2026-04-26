@@ -19,6 +19,10 @@ const STRIPPED_PROXY_RESPONSE_HEADERS = [
   "x-xss-protection",
 ];
 
+type ApiRouteContext = {
+  params: Promise<{ path: string[] }>;
+};
+
 function buildTargetUrl(
   request: NextRequest,
   pathSegments: string[],
@@ -114,58 +118,37 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(
-  request: NextRequest,
-  context: { params: { path: string[] } },
-) {
-  const { path } = context.params;
+export async function GET(request: NextRequest, context: ApiRouteContext) {
+  const { path } = await context.params;
   return proxyRequest(request, path);
 }
 
-export async function HEAD(
-  request: NextRequest,
-  context: { params: { path: string[] } },
-) {
-  const { path } = context.params;
+export async function HEAD(request: NextRequest, context: ApiRouteContext) {
+  const { path } = await context.params;
   return proxyRequest(request, path);
 }
 
-export async function POST(
-  request: NextRequest,
-  context: { params: { path: string[] } },
-) {
-  const { path } = context.params;
+export async function POST(request: NextRequest, context: ApiRouteContext) {
+  const { path } = await context.params;
   return proxyRequest(request, path);
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: { path: string[] } },
-) {
-  const { path } = context.params;
+export async function PUT(request: NextRequest, context: ApiRouteContext) {
+  const { path } = await context.params;
   return proxyRequest(request, path);
 }
 
-export async function PATCH(
-  request: NextRequest,
-  context: { params: { path: string[] } },
-) {
-  const { path } = context.params;
+export async function PATCH(request: NextRequest, context: ApiRouteContext) {
+  const { path } = await context.params;
   return proxyRequest(request, path);
 }
 
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { path: string[] } },
-) {
-  const { path } = context.params;
+export async function DELETE(request: NextRequest, context: ApiRouteContext) {
+  const { path } = await context.params;
   return proxyRequest(request, path);
 }
 
-export async function OPTIONS(
-  request: NextRequest,
-  context: { params: { path: string[] } },
-) {
-  const { path } = context.params;
+export async function OPTIONS(request: NextRequest, context: ApiRouteContext) {
+  const { path } = await context.params;
   return proxyRequest(request, path);
 }

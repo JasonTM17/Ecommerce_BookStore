@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import dynamic from "next/dynamic";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -7,25 +6,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { WebVitals } from "@/components/seo/WebVitals";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/JsonLd";
 import { SkipLink } from "@/components/a11y/SkipLink";
+import { ClientChrome } from "@/components/layout/client-chrome";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { getRequestLocale } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n";
-
-const ChatbotWidget = dynamic(
-  () => import("@/components/chatbot").then((m) => ({ default: m.ChatbotWidget })),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
-
-const FlashSaleBanner = dynamic(
-  () => import("@/components/flashsale").then((m) => ({ default: m.FlashSaleBanner })),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -34,7 +18,8 @@ const beVietnamPro = Be_Vietnam_Pro({
   weight: ["400", "500", "600", "700", "800"],
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
 
 function getLayoutMeta(locale: Locale) {
   if (locale === "en") {
@@ -70,8 +55,8 @@ function getLayoutMeta(locale: Locale) {
   };
 }
 
-export function generateMetadata(): Metadata {
-  const locale = getRequestLocale();
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
   const meta = getLayoutMeta(locale);
 
   return {
@@ -142,12 +127,12 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = getRequestLocale();
+  const locale = await getRequestLocale();
   const meta = getLayoutMeta(locale);
 
   return (
@@ -159,11 +144,10 @@ export default function RootLayout({
         <WebVitals />
         <ServiceWorkerRegistration />
         <Providers initialLocale={locale}>
-          <FlashSaleBanner />
           <main id="main-content" role="main" aria-label={meta.mainAriaLabel}>
             {children}
           </main>
-          <ChatbotWidget />
+          <ClientChrome />
           <Toaster position="top-right" closeButton />
         </Providers>
       </body>

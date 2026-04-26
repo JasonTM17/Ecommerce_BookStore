@@ -25,20 +25,25 @@ This project is a portfolio/demo bookstore, but the public deployment should sti
 - Hardened upload storage path resolution and delete handling so files must remain under the configured upload root.
 - Reduced outbound chatbot fragility by shortening shared `RestTemplate` timeouts and recording Grok fallback responses separately from provider-backed responses.
 - Updated `follow-redirects` in frontend and mobile lockfiles to `1.16.0`.
+- Upgraded the frontend runtime/tooling from Next.js 14/React 18/ESLint 8/Vitest 2 to Next.js 16/React 19/ESLint 9/Vitest 4 and migrated the removed `next lint`/middleware conventions.
+- Added a frontend `postcss` override to keep Next's internal PostCSS dependency on the patched `8.5.10` line.
+- Upgraded the mobile app from Expo SDK 50/React Native 0.73/React 18 to Expo SDK 55/React Native 0.83/React 19.2 and installed the Reanimated 4 `react-native-worklets` peer dependency.
+- Added mobile dependency overrides for `postcss` and `uuid` so Expo's config/prebuild tooling resolves to patched versions without downgrading Expo.
+- Removed the unused legacy `expo-barcode-scanner` dependency after confirming there are no app imports.
 
-## Residual dependency advisories
+## Dependency audit status
 
 ### Frontend
 
-`npm audit --omit=dev` still reports advisories tied to the current Next.js 14 line, including image optimizer and RSC/rewrites DoS advisories. The available npm fix proposes a major upgrade to Next.js 16, which is intentionally out of scope for this safe hardening pass.
+Current status: `npm audit --omit=dev` and full `npm audit` report 0 known vulnerabilities after the Next.js 16 upgrade and PostCSS override.
 
-Recommended follow-up: create a dedicated Next.js upgrade branch, move from Next 14 to the current supported major, and rerun the full frontend unit, production build, Playwright portfolio smoke, and deployment checks.
+Validation run: `npm run lint`, `npm run test:run`, and `npm run build` pass locally.
 
 ### Mobile
 
-`npm audit --omit=dev` still reports transitive Expo/React Native advisories around XML serialization/parsing, tar extraction, semver ReDoS, PostCSS, and related CLI tooling. The available npm fixes propose major Expo/React Native changes and may require app config/native compatibility work.
+Current status: `npm audit --omit=dev` and full `npm audit` report 0 known vulnerabilities after the Expo SDK 55 upgrade and dependency overrides.
 
-Recommended follow-up: create a dedicated Expo SDK upgrade branch, upgrade Expo/React Native together, and validate Android/iOS/web startup plus `npm run typecheck`.
+Validation run: `npm run typecheck` and `npx expo-doctor` pass locally. A real Android/iOS EAS build should still be run before treating the mobile upgrade as store-release ready.
 
 ## Operational recommendations
 

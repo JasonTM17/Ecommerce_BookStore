@@ -21,7 +21,7 @@ interface StaticInfoPageShellProps {
   children: ReactNode;
 }
 
-export function StaticInfoPageShell({
+export async function StaticInfoPageShell({
   accentClassName,
   badgeText,
   breadcrumbs = [],
@@ -31,7 +31,7 @@ export function StaticInfoPageShell({
   title,
   children,
 }: StaticInfoPageShellProps) {
-  const locale = getRequestLocale();
+  const locale = await getRequestLocale();
   const homeLabel = locale === "en" ? "Home" : "Trang chủ";
   const breadcrumbLabel = locale === "en" ? "Breadcrumb" : "Điều hướng trang";
   const isLight = tone === "light";

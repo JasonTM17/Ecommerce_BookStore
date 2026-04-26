@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 const locales = ["vi", "en"] as const;
 const localeCookieMaxAge = 60 * 60 * 24 * 365;
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith("/api") || pathname.startsWith("/_next")) {
@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   }
 
   const matchedLocale = locales.find(
-    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`,
   );
 
   if (!matchedLocale) {

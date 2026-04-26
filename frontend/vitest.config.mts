@@ -13,11 +13,6 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.tsx"],
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     pool: "forks",
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
     fileParallelism: false,
     coverage: {
       provider: "v8",
@@ -33,7 +28,7 @@ export default defineConfig({
         "**/*.d.ts",
         "**/*.config.*",
         "playwright.config.ts",
-        "**/middleware.ts",
+        "**/proxy.ts",
       ],
     },
     reporters: ["default", "verbose"],
