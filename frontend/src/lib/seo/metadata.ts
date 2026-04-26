@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 const SITE_NAME = "BookStore Vietnam";
 const DEFAULT_DESCRIPTION =
   "Mua sách trực tuyến với giá tốt nhất. Hơn 10.000 đầu sách từ nhiều thể loại: văn học, khoa học, kỹ năng sống, sách ngoại văn.";

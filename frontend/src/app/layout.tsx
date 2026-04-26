@@ -19,7 +19,7 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
+  process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 
 function getLayoutMeta(locale: Locale) {
   if (locale === "en") {

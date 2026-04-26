@@ -30,8 +30,8 @@ export function OrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "BookStore Vietnam",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com",
-    logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com"}/logo.svg`,
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com",
+    logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com"}/logo.svg`,
     description: "Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại.",
     contactPoint: {
       "@type": "ContactPoint",
@@ -82,7 +82,7 @@ export function ProductSchema({
     category?: string;
   };
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 
   const schema = {
     "@context": "https://schema.org",
@@ -146,7 +146,7 @@ export function BookSchema({
     currentPrice: number;
   };
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 
   const schema = {
     "@context": "https://schema.org",
@@ -171,7 +171,7 @@ export function BookSchema({
 }
 
 export function WebSiteSchema() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore.example.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 
   const schema = {
     "@context": "https://schema.org",

@@ -131,6 +131,8 @@ services:
         value: BookStore
       - key: NEXT_PUBLIC_APP_DESCRIPTION
         value: "Professional Vietnamese E-Commerce BookStore Platform"
+      - key: NEXT_PUBLIC_BASE_URL
+        value: https://bookstore-web-dr1k.onrender.com
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
       - key: NODE_ENV

@@ -24,6 +24,15 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 const localeCookieMaxAge = 60 * 60 * 24 * 365;
 
+function localeCookieValue(locale: Locale) {
+  const secure =
+    typeof window !== "undefined" && window.location.protocol === "https:"
+      ? "; secure"
+      : "";
+
+  return `NEXT_LOCALE=${locale}; path=/; max-age=${localeCookieMaxAge}; samesite=lax${secure}`;
+}
+
 export function LanguageProvider({
   children,
   initialLocale = "vi",
@@ -43,7 +52,7 @@ export function LanguageProvider({
       setLocaleState(nextLocale);
     }
     localStorage.setItem("locale", nextLocale);
-    document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=${localeCookieMaxAge}`;
+    document.cookie = localeCookieValue(nextLocale);
   }, [locale]);
 
   const setLocale = useCallback((newLocale: Locale) => {
@@ -52,7 +61,7 @@ export function LanguageProvider({
     }
 
     localStorage.setItem("locale", newLocale);
-    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=${localeCookieMaxAge}`;
+    document.cookie = localeCookieValue(newLocale);
     setLocaleState(newLocale);
     setIsLoading(true);
 

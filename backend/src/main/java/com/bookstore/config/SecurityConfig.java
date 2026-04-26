@@ -128,10 +128,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .filter(origin -> !origin.isBlank())
-                .toList());
+        configuration.setAllowedOriginPatterns(parseAllowedOriginPatterns(allowedOrigins));
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(Arrays.asList(
@@ -156,6 +153,23 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    static List<String> parseAllowedOriginPatterns(String configuredOrigins) {
+        List<String> origins = Arrays.stream((configuredOrigins == null ? "" : configuredOrigins).split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .toList();
+
+        if (origins.isEmpty()) {
+            throw new IllegalStateException("CORS allowed origins must be configured.");
+        }
+
+        if (origins.stream().anyMatch(origin -> origin.contains("${") || "*".equals(origin))) {
+            throw new IllegalStateException("CORS allowed origins must not use unresolved placeholders or wildcard origins.");
+        }
+
+        return origins;
     }
 
     @Bean
