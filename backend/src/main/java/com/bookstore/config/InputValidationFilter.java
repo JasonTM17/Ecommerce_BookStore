@@ -95,7 +95,7 @@ public class InputValidationFilter implements Filter {
         String method = request.getMethod();
 
         if (containsPathTraversal(requestUri)) {
-            log.warn("⚠️ Path traversal attempt detected from IP: {} on URI: {}", getClientIP(request), requestUri);
+            log.warn("WARNING: Path traversal attempt detected from IP: {} on URI: {}", getClientIP(request), requestUri);
             sendError(response, HttpStatus.BAD_REQUEST, "Invalid path detected.");
             return;
         }
@@ -134,14 +134,14 @@ public class InputValidationFilter implements Filter {
         if (bodyContent != null && !bodyContent.isEmpty()) {
             // Check for XSS
             if (blockXss && containsXSS(bodyContent)) {
-                log.warn("⚠️ XSS attack detected from IP: {} on URI: {}", getClientIP(request), requestUri);
+            log.warn("WARNING: XSS attack detected from IP: {} on URI: {}", getClientIP(request), requestUri);
                 sendError(response, HttpStatus.BAD_REQUEST, "Invalid input detected. Potential XSS attack blocked.");
                 return;
             }
             
             // Check for SQL Injection
             if (blockSqlInjection && containsSQLInjection(bodyContent)) {
-                log.warn("⚠️ SQL Injection attempt detected from IP: {} on URI: {}", getClientIP(request), requestUri);
+            log.warn("WARNING: SQL Injection attempt detected from IP: {} on URI: {}", getClientIP(request), requestUri);
                 sendError(response, HttpStatus.BAD_REQUEST, "Invalid input detected. Potential SQL injection blocked.");
                 return;
             }
@@ -210,7 +210,7 @@ public class InputValidationFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) {
-        log.info("🔍 Input Validation Filter initialized");
+        log.info("Input Validation Filter initialized");
         log.info("   - XSS detection: " + (blockXss ? "enabled" : "disabled"));
         log.info("   - SQL Injection detection: " + (blockSqlInjection ? "enabled" : "disabled"));
         log.info("   - Max body size: " + maxBodySize + " bytes");
@@ -218,7 +218,7 @@ public class InputValidationFilter implements Filter {
 
     @Override
     public void destroy() {
-        log.info("🔍 Input Validation Filter destroyed");
+        log.info("Input Validation Filter destroyed");
     }
 
     /**

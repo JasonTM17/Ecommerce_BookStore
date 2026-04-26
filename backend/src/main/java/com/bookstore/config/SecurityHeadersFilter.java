@@ -10,16 +10,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * Security Headers Filter - Thêm các HTTP Security Headers vào mọi response.
- * 
- * Headers được thêm:
- * - X-Content-Type-Options: nosniff
- * - X-Frame-Options: DENY
- * - X-XSS-Protection: 1; mode=block
- * - Strict-Transport-Security: max-age=31536000; includeSubDomains
- * - Content-Security-Policy: restrict scripts, styles, frames
- * - Referrer-Policy: strict-origin-when-cross-origin
- * - Permissions-Policy: restrict camera, microphone, geolocation
+ * Adds baseline HTTP security headers to every response.
  */
 @Component
 @Order(2)
@@ -54,9 +45,7 @@ public class SecurityHeadersFilter implements Filter {
         response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
         
         // Permissions Policy - Restrict browser features
-        response.setHeader("Permissions-Policy", 
-            "accelerometer=(), camera=(), geolocation=(), gyroscope=(), " +
-            "magnetometer=(), microphone=(), payment=(), usb=()");
+        response.setHeader("Permissions-Policy", SecurityConfig.PERMISSIONS_POLICY);
         
         // Cache Control - Prevent sensitive data caching
         if (isSensitiveEndpoint(request.getRequestURI())) {
@@ -76,39 +65,7 @@ public class SecurityHeadersFilter implements Filter {
     }
     
     private String buildContentSecurityPolicy() {
-        StringBuilder csp = new StringBuilder();
-        
-        // Default source - only same origin
-        csp.append("default-src 'self';");
-        
-        // Script sources - self + trusted domains
-        csp.append(" script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;");
-        
-        // Style sources - self + inline + trusted domains
-        csp.append(" style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;");
-        
-        // Image sources - self + data URIs + trusted domains
-        csp.append(" img-src 'self' data: https: blob:;");
-        
-        // Font sources
-        csp.append(" font-src 'self' https://fonts.gstatic.com;");
-        
-        // Connect sources - self + API
-        csp.append(" connect-src 'self' https://api.bookstore.com;");
-        
-        // Frame sources - DENY
-        csp.append(" frame-ancestors 'none';");
-        
-        // Form action - self only
-        csp.append(" form-action 'self';");
-        
-        // Base URI - restrict
-        csp.append(" base-uri 'self';");
-        
-        // Upgrade insecure requests in production
-        // csp.append(" upgrade-insecure-requests;");
-        
-        return csp.toString();
+        return SecurityConfig.CONTENT_SECURITY_POLICY;
     }
     
     private boolean isSensitiveEndpoint(String uri) {
@@ -121,7 +78,7 @@ public class SecurityHeadersFilter implements Filter {
     
     @Override
     public void init(FilterConfig filterConfig) {
-        log.info("🔒 Security Headers Filter initialized");
+        log.info("Security Headers Filter initialized");
         log.info("   - X-Content-Type-Options: nosniff");
         log.info("   - X-Frame-Options: DENY");
         log.info("   - Strict-Transport-Security: max-age=31536000");
@@ -131,6 +88,6 @@ public class SecurityHeadersFilter implements Filter {
     
     @Override
     public void destroy() {
-        log.info("🔒 Security Headers Filter destroyed");
+        log.info("Security Headers Filter destroyed");
     }
 }

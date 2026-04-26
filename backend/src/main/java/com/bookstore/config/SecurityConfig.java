@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -37,6 +38,18 @@ public class SecurityConfig {
 
     private static final String DEFAULT_ALLOWED_ORIGINS =
             "http://localhost:3000,http://localhost:3001,http://localhost:5173";
+    static final String CONTENT_SECURITY_POLICY = String.join(" ",
+            "default-src 'self';",
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;",
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;",
+            "img-src 'self' data: https: blob:;",
+            "font-src 'self' https://fonts.gstatic.com;",
+            "connect-src 'self';",
+            "frame-ancestors 'none';",
+            "form-action 'self';",
+            "base-uri 'self';");
+    static final String PERMISSIONS_POLICY =
+            "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -58,17 +71,11 @@ public class SecurityConfig {
                 // Security headers
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.deny())
-                        .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; " +
-                                        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
-                                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
-                                        "img-src 'self' data: https: http: blob:; " + // Allow http: for local dev images
-                                        "font-src 'self' https://fonts.gstatic.com; " +
-                                        "connect-src 'self' http://localhost:8080 http://localhost:8081; " + // Allow internal connections
-                                        "frame-ancestors 'none';"))
+                        .xssProtection(xss -> xss.headerValue(
+                                XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
                         .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                        .permissionsPolicy(permissions -> permissions
-                                .policy("accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=()"))
+                        .permissionsPolicy(permissions -> permissions.policy(PERMISSIONS_POLICY))
                 )
                 
                 // Exception handling

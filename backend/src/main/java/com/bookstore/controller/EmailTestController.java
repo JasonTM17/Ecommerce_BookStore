@@ -62,7 +62,7 @@ public class EmailTestController {
         checkTestEndpointEnabled();
         validateRecipient(request.getTo());
 
-        log.info("🧪 Test email requested: type={}, to={}", request.getType(), request.getTo());
+        log.info("Test email requested: type={}, to={}", request.getType(), request.getTo());
 
         switch (request.getType().toLowerCase()) {
             case "welcome" -> emailService.sendWelcomeEmail(
@@ -98,7 +98,7 @@ public class EmailTestController {
         checkTestEndpointEnabled();
         validateRecipient(to);
 
-        log.info("🧪 Sending all email types to: {}", to);
+        log.info("Sending all email types to: {}", to);
 
         Map<String, String> results = new LinkedHashMap<>();
 
@@ -145,7 +145,7 @@ public class EmailTestController {
     public ResponseEntity<ApiResponse<String>> triggerWeeklyNewsletter() {
         checkTestEndpointEnabled();
 
-        log.info("🧪 Triggering weekly newsletter manually");
+        log.info("Triggering weekly newsletter manually");
 
         try {
             scheduledEmailService.sendWeeklyNewsletter();

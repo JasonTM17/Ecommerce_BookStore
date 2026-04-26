@@ -68,13 +68,13 @@ public class EmailService {
             message.setHeader("X-Priority", "3");
             
             mailSender.send(message);
-            log.info("✅ HTML email sent successfully to: {}", maskEmail(to));
+            log.info("SUCCESS: HTML email sent successfully to: {}", maskEmail(to));
         } catch (MessagingException e) {
-            log.error("❌ Failed to send HTML email to {}: Messaging error - {}", maskEmail(to), e.getMessage());
+            log.error("ERROR: Failed to send HTML email to {}: Messaging error - {}", maskEmail(to), e.getMessage());
         } catch (MailSendException e) {
-            log.error("❌ Failed to send HTML email to {}: Mail server error - {}", maskEmail(to), e.getMessage());
+            log.error("ERROR: Failed to send HTML email to {}: Mail server error - {}", maskEmail(to), e.getMessage());
         } catch (Exception e) {
-            log.error("❌ Failed to send HTML email to {}: {}", maskEmail(to), e.getMessage());
+            log.error("ERROR: Failed to send HTML email to {}: {}", maskEmail(to), e.getMessage());
         }
     }
 
@@ -106,12 +106,12 @@ public class EmailService {
         try {
             String html = emailTemplateEngine.process(template, context);
             if (html == null || html.trim().isEmpty()) {
-                log.warn("⚠️ Template {} returned empty content, using fallback", template);
+            log.warn("WARNING: Template {} returned empty content, using fallback", template);
                 return buildFallbackContent(template, variables);
             }
             return html;
         } catch (Exception e) {
-            log.warn("⚠️ Template {} not found, using fallback content. Error: {}", template, e.getMessage());
+            log.warn("WARNING: Template {} not found, using fallback content. Error: {}", template, e.getMessage());
             return buildFallbackContent(template, variables);
         }
     }
@@ -212,7 +212,7 @@ public class EmailService {
     public void sendSimpleEmail(String to, String subject, String text) {
         try {
             if (!isValidEmail(to)) {
-                log.error("❌ Invalid email address: {}", to);
+            log.error("ERROR: Invalid email address: {}", to);
                 return;
             }
             
@@ -222,9 +222,9 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(text);
             mailSender.send(message);
-            log.info("✅ Simple email sent successfully to: {}", maskEmail(to));
+            log.info("SUCCESS: Simple email sent successfully to: {}", maskEmail(to));
         } catch (Exception e) {
-            log.error("❌ Failed to send email to {}: {}", maskEmail(to), e.getMessage());
+            log.error("ERROR: Failed to send email to {}: {}", maskEmail(to), e.getMessage());
         }
     }
 

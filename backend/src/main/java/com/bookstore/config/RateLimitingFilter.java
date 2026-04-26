@@ -73,7 +73,7 @@ public class RateLimitingFilter implements Filter {
         RateLimitEntry entry = rateLimitMap.computeIfAbsent(key, k -> new RateLimitEntry(config.limit, config.windowMs));
         
         if (!entry.tryConsume()) {
-            log.warn("⚠️ Rate limit exceeded for IP: {} on endpoint: {}", clientIp, requestUri);
+            log.warn("WARNING: Rate limit exceeded for IP: {} on endpoint: {}", clientIp, requestUri);
             
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType("application/json");
@@ -121,7 +121,7 @@ public class RateLimitingFilter implements Filter {
     
     @Override
     public void init(FilterConfig filterConfig) {
-        log.info("🛡️ Rate Limiting Filter initialized");
+        log.info("Rate Limiting Filter initialized");
         log.info("   - Auth endpoints: {} requests/{}ms", authLimit, authWindowMs);
         log.info("   - API endpoints: {} requests/{}ms", apiLimit, apiWindowMs);
         log.info("   - Public endpoints: {} requests/{}ms", publicLimit, publicWindowMs);
@@ -130,7 +130,7 @@ public class RateLimitingFilter implements Filter {
     @Override
     public void destroy() {
         rateLimitMap.clear();
-        log.info("🛡️ Rate Limiting Filter destroyed");
+        log.info("Rate Limiting Filter destroyed");
     }
     
     private static class RateLimitConfig {
