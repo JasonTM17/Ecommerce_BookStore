@@ -3,9 +3,11 @@ import path from "node:path";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bookstore.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin123!";
+const ADMIN_PASSWORD =
+  process.env.ADMIN_PASSWORD || "E2ETestDemoAdminPasswordForBookStore123!";
 const MANAGER_EMAIL = process.env.MANAGER_EMAIL || "manager@bookstore.com";
-const MANAGER_PASSWORD = process.env.MANAGER_PASSWORD || "Manager123!";
+const MANAGER_PASSWORD =
+  process.env.MANAGER_PASSWORD || "E2ETestDemoManagerPasswordForBookStore123!";
 
 async function setVietnameseLocale(page: Page) {
   await page.addInitScript(() => {

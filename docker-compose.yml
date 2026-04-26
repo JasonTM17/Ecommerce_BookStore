@@ -66,7 +66,7 @@ services:
       POSTGRES_DB: bookstore
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: postgres123
-      JWT_SECRET: YourSuperSecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong!
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to a non-public value with at least 32 bytes}
       CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://frontend:3000
       JPA_DDL_AUTO: update
       APP_BASE_URL: http://localhost:8080
@@ -108,6 +108,10 @@ services:
       MAIL_FROM: ${MAIL_FROM:-noreply@bookstore.com}
       APP_EMAIL_TEST_ENABLED: ${APP_EMAIL_TEST_ENABLED:-false}
       APP_EMAIL_ALLOWED_RECIPIENTS: ${APP_EMAIL_ALLOWED_RECIPIENTS:-}
+      APP_DEMO_SEED_ENABLED: ${APP_DEMO_SEED_ENABLED:-false}
+      APP_DEMO_ADMIN_PASSWORD: ${APP_DEMO_ADMIN_PASSWORD:-}
+      APP_DEMO_MANAGER_PASSWORD: ${APP_DEMO_MANAGER_PASSWORD:-}
+      APP_DEMO_CUSTOMER_PASSWORD: ${APP_DEMO_CUSTOMER_PASSWORD:-}
     ports:
       - "8080:8080"
     volumes:

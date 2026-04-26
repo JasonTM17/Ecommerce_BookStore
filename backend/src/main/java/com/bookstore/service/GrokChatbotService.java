@@ -62,10 +62,10 @@ public class GrokChatbotService extends AbstractChatbotService {
     }
 
     @Override
-    protected String generateReply(List<Map<String, String>> messages, User user) {
+    protected GeneratedReply generateReply(List<Map<String, String>> messages, User user) {
         if (grokApiKey == null || grokApiKey.isBlank()) {
             log.warn("Grok is enabled but GROK_API_KEY is blank, using fallback response");
-            return getFallbackResponse();
+            return new GeneratedReply(getFallbackResponse(), false);
         }
 
         try {
@@ -90,18 +90,24 @@ public class GrokChatbotService extends AbstractChatbotService {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode choices = root.path("choices");
                 if (choices.isArray() && !choices.isEmpty()) {
+                    String content = choices.get(0).path("message").path("content").asText("");
+                    if (content.isBlank()) {
+                        log.error("Grok API returned an empty message content");
+                        markFailure("Grok API returned empty message content");
+                        return new GeneratedReply(getFallbackResponse(), false);
+                    }
                     markSuccess();
-                    return choices.get(0).path("message").path("content").asText(getFallbackResponse());
+                    return new GeneratedReply(content, true);
                 }
             }
 
             log.error("Grok API returned unexpected response: {}", response.getStatusCode());
             markFailure("Grok API returned " + response.getStatusCode());
-            return getFallbackResponse();
+            return new GeneratedReply(getFallbackResponse(), false);
         } catch (Exception e) {
             log.error("Error calling Grok API: {}", e.getMessage());
             markFailure(e.getMessage());
-            return getFallbackResponse();
+            return new GeneratedReply(getFallbackResponse(), false);
         }
     }
 

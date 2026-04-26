@@ -206,7 +206,7 @@ function resolveHealthMeta(
     return {
       kind: "checking",
       badgeLabel: copy.checkingBadge,
-      badgeClassName: "border-amber-400/30 bg-amber-400/10 text-amber-100",
+      badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
       headline: copy.checkingHeadline,
       message: copy.checkingMessage,
       inputPlaceholder: copy.checkingPlaceholder,
@@ -217,7 +217,7 @@ function resolveHealthMeta(
     return {
       kind: "degraded",
       badgeLabel: copy.degradedBadge,
-      badgeClassName: "border-amber-400/30 bg-amber-400/10 text-amber-100",
+      badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
       headline: copy.degradedHeadline,
       message: copy.degradedMessage,
       inputPlaceholder: copy.degradedPlaceholder,
@@ -229,7 +229,7 @@ function resolveHealthMeta(
       return {
         kind: "disabled",
         badgeLabel: copy.disabledBadge,
-        badgeClassName: "border-slate-300/30 bg-slate-500/10 text-slate-100",
+        badgeClassName: "border-stone-200 bg-stone-50 text-stone-600",
         headline: copy.disabledHeadline,
         message: copy.disabledMessage,
         inputPlaceholder: copy.disabledPlaceholder,
@@ -238,7 +238,7 @@ function resolveHealthMeta(
       return {
         kind: "degraded",
         badgeLabel: copy.degradedBadge,
-        badgeClassName: "border-orange-400/30 bg-orange-400/10 text-orange-100",
+        badgeClassName: "border-orange-200 bg-orange-50 text-orange-700",
         headline: copy.degradedHeadline,
         message: copy.degradedMessage,
         inputPlaceholder: copy.degradedPlaceholder,
@@ -247,7 +247,7 @@ function resolveHealthMeta(
       return {
         kind: "ready",
         badgeLabel: copy.readyBadge(health?.model || "grok-3"),
-        badgeClassName: "border-emerald-400/30 bg-emerald-400/10 text-emerald-100",
+        badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
         headline: copy.readyHeadline,
         message: copy.readyMessage,
         inputPlaceholder: copy.readyPlaceholder,
@@ -425,8 +425,8 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           setIsMinimized(false);
         }}
         className={cn(
-          "fixed bottom-5 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-all duration-300 active:scale-95 sm:bottom-6 sm:right-6",
-          "bg-gradient-to-br from-slate-950 via-blue-800 to-blue-600 hover:scale-105 hover:shadow-blue-500/30"
+          "fixed bottom-5 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] transition-all duration-300 active:scale-95 sm:bottom-6 sm:right-6",
+          "hover:scale-105 hover:bg-black/85"
         )}
         aria-label={isOpen ? copy.closeAriaLabel : copy.openAriaLabel}
       >
@@ -452,7 +452,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
       <div
         data-testid="chatbot-panel"
         className={cn(
-          "fixed bottom-24 left-2 right-2 z-50 flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[28px] border border-slate-200/70 bg-white shadow-2xl shadow-slate-900/20 transition-all duration-300 ease-out sm:left-auto sm:right-6 sm:w-[420px]",
+          "fixed bottom-24 left-2 right-2 z-50 flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[24px] bg-white shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px,rgba(0,0,0,0.04)_0px_2px_4px] transition-all duration-300 ease-out sm:left-auto sm:right-6 sm:w-[420px]",
           isOpen && !isMinimized
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none translate-y-4 scale-95 opacity-0"
@@ -480,8 +480,8 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
               />
             ) : null}
 
-            <div className="flex flex-1 flex-col bg-slate-50/80">
-              <div className="border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur">
+            <div className="flex flex-1 flex-col bg-[#f5f5f5]">
+              <div className="border-b border-black/[0.05] bg-white px-4 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -492,9 +492,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                       ) : (
                         <Sparkles className="h-4 w-4 text-amber-500" />
                       )}
-                      <p className="text-sm font-semibold text-slate-900">{healthMeta.headline}</p>
+                      <p className="text-sm font-semibold text-black">{healthMeta.headline}</p>
                     </div>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">{healthMeta.message}</p>
+                    <p className="mt-1 text-xs leading-5 tracking-[0.14px] text-[#777169]">{healthMeta.message}</p>
                   </div>
 
                   <Button
@@ -502,7 +502,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => void loadHealth()}
-                    className="shrink-0 text-xs text-slate-500 hover:text-slate-900"
+                    className="shrink-0 rounded-full bg-[rgba(245,242,239,0.8)] text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] hover:bg-[#eee8e2]"
                   >
                     {locale === "vi" ? "Kiểm tra lại" : "Check again"}
                   </Button>
@@ -516,15 +516,15 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                 aria-label={locale === "vi" ? "Tin nhắn chatbot" : "Chatbot messages"}
               >
                 {!isAuthenticated ? (
-                  <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center shadow-sm">
+                  <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] bg-white p-6 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
                     <div>
-                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
-                        <MessageCircle className="h-8 w-8 text-white" />
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
+                        <MessageCircle className="h-8 w-8 text-black" />
                       </div>
                       <h3 className="mb-2 flex items-center justify-center gap-2 text-lg font-semibold text-slate-900">
                         {copy.guestTitle} <Hand className="h-4 w-4 text-blue-500" />
                       </h3>
-                      <p className="text-sm leading-6 text-slate-500">{copy.guestDescription}</p>
+                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">{copy.guestDescription}</p>
                     </div>
 
                     <div className="space-y-3">
@@ -534,9 +534,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                             key={action.path}
                             type="button"
                             onClick={() => handleGuestAction(action.path)}
-                            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-left transition-colors hover:border-blue-200 hover:bg-blue-50"
+                            className="rounded-[18px] bg-[#f5f5f5] px-3 py-3 text-left shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-colors hover:bg-[#f5f2ef]"
                           >
-                            <action.icon className="mb-2 h-4 w-4 text-blue-600" />
+                            <action.icon className="mb-2 h-4 w-4 text-black" />
                             <span className="block text-sm font-medium text-slate-800">{action.label}</span>
                           </button>
                         ))}
@@ -546,7 +546,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                         type="button"
                         data-testid="chatbot-login-cta"
                         onClick={goToLogin}
-                        className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 py-6 text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-blue-800"
+                        className="w-full rounded-full bg-black py-6 text-white shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] hover:bg-black/85"
                       >
                         <LogIn className="mr-2 h-4 w-4" />
                         {copy.guestLoginCta}
@@ -554,13 +554,13 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                     </div>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] border border-slate-200 bg-white p-6 text-center shadow-sm">
+                  <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] bg-white p-6 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
                     <div>
-                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-950 via-blue-800 to-blue-600 shadow-lg shadow-blue-500/25">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]">
                         <MessageCircle className="h-8 w-8 text-white" />
                       </div>
                       <h3 className="mb-2 text-lg font-semibold text-slate-900">{copy.startConversationTitle}</h3>
-                      <p className="text-sm leading-6 text-slate-500">{copy.startConversationDescription}</p>
+                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">{copy.startConversationDescription}</p>
                     </div>
 
                     <div className="space-y-3">
@@ -582,14 +582,14 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
 
                                 void handleSendMessage(suggestion);
                               }}
-                              className="rounded-full border border-blue-200 bg-white px-3 py-1.5 text-xs text-blue-600 transition-colors hover:bg-blue-50"
+                              className="rounded-full bg-[rgba(245,242,239,0.8)] px-3 py-1.5 text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] transition-colors hover:bg-[#eee8e2]"
                             >
                               {suggestion}
                             </button>
                           ))}
                       </div>
 
-                      <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
+                      <div className="flex items-center justify-center gap-2 text-xs text-[#777169]">
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>{health?.service || copy.serviceLabel}</span>
                       </div>
@@ -603,10 +603,10 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
 
                     {isTyping ? (
                       <div className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]">
                           <MessageCircle className="h-4 w-4 text-white" />
                         </div>
-                        <div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 shadow-sm">
+                        <div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
                           <div className="flex gap-1">
                             <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:0ms]" />
                             <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:150ms]" />

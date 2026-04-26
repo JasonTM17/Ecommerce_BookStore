@@ -96,7 +96,8 @@ public abstract class AbstractChatbotService implements ChatbotService {
 
         List<ChatMessage> history = getConversationHistory(conversation);
         List<Map<String, String>> messages = buildMessages(history, request.getMessage(), user);
-        String reply = generateReply(messages, user);
+        GeneratedReply generatedReply = generateReply(messages, user);
+        String reply = generatedReply.content();
         long latency = System.currentTimeMillis() - startTime;
 
         messageRepository.save(ChatMessage.builder()
@@ -110,7 +111,7 @@ public abstract class AbstractChatbotService implements ChatbotService {
                 .conversation(conversation)
                 .role(MessageRole.ASSISTANT)
                 .content(reply)
-                .isFromGrok(isProviderEnabled())
+                .isFromGrok(generatedReply.providerResponse())
                 .modelUsed(getModelName())
                 .latencyMs(latency)
                 .build());
@@ -122,7 +123,10 @@ public abstract class AbstractChatbotService implements ChatbotService {
         return buildResponse(conversation, aiMessage);
     }
 
-    protected abstract String generateReply(List<Map<String, String>> messages, User user);
+    protected record GeneratedReply(String content, boolean providerResponse) {
+    }
+
+    protected abstract GeneratedReply generateReply(List<Map<String, String>> messages, User user);
 
     protected abstract String getServiceName();
 

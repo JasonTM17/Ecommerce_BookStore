@@ -1,5 +1,9 @@
 package com.bookstore.integration;
 
+import com.bookstore.entity.Role;
+import com.bookstore.entity.User;
+import com.bookstore.repository.UserRepository;
+import com.bookstore.security.JwtTokenProvider;
 import com.bookstore.service.EmailService;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,15 +16,19 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,6 +54,15 @@ class EmailIntegrationTest {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     @Value("${app.email.test-endpoint-enabled:false}")
     private boolean testEndpointEnabled;
 
@@ -60,6 +77,7 @@ class EmailIntegrationTest {
 
     private String baseUrl;
     private String allowedRecipients;
+    private String adminToken;
 
     @BeforeEach
     void setUp() {
@@ -81,14 +99,56 @@ class EmailIntegrationTest {
         );
     }
 
+    private HttpHeaders adminHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(adminToken());
+        return headers;
+    }
+
+    private HttpHeaders adminJsonHeaders() {
+        HttpHeaders headers = adminHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
+    private String adminToken() {
+        if (adminToken == null) {
+            User admin = userRepository.findByEmail("email-test-admin@bookstore.com")
+                    .orElseGet(() -> userRepository.save(User.builder()
+                            .email("email-test-admin@bookstore.com")
+                            .password(passwordEncoder.encode("Admin123!"))
+                            .firstName("Email")
+                            .lastName("Admin")
+                            .isActive(true)
+                            .isEmailVerified(true)
+                            .roles(Set.of(Role.ADMIN))
+                            .build()));
+
+            UserDetails userDetails = org.springframework.security.core.userdetails.User
+                    .withUsername(admin.getEmail())
+                    .password(admin.getPassword())
+                    .roles("ADMIN")
+                    .build();
+            adminToken = jwtTokenProvider.generateToken(userDetails);
+        }
+        return adminToken;
+    }
+
     @Test
-    @DisplayName("Email health check endpoint should return status")
+    @DisplayName("Email health check endpoint should require admin auth")
     void emailHealthCheck() {
         String url = baseUrl + "/email/health";
 
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        ResponseEntity<String> anonymousResponse = restTemplate.getForEntity(url, String.class);
+        assertEquals(HttpStatus.UNAUTHORIZED, anonymousResponse.getStatusCode());
 
         if (testEndpointEnabled) {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(adminHeaders()),
+                    String.class
+            );
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertTrue(response.getBody().contains("testEndpointEnabled"));
         }
@@ -106,15 +166,12 @@ class EmailIntegrationTest {
 
         String url = baseUrl + "/email/test/send";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         Map<String, Object> request = new HashMap<>();
         request.put("to", allowedRecipients);
         request.put("type", "welcome");
         request.put("firstName", "Integration Test");
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, adminJsonHeaders());
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -131,7 +188,7 @@ class EmailIntegrationTest {
         assumeRealEmailIntegrationConfigured();
 
         String url = baseUrl + "/email/test/send-all?to=" + allowedRecipients;
-        HttpEntity<String> entity = new HttpEntity<>(new HttpHeaders());
+        HttpEntity<String> entity = new HttpEntity<>(adminHeaders());
 
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
@@ -148,14 +205,11 @@ class EmailIntegrationTest {
 
         String url = baseUrl + "/email/test/send";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         Map<String, Object> request = new HashMap<>();
         request.put("to", allowedRecipients);
         request.put("type", "unknown-type");
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, adminJsonHeaders());
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());

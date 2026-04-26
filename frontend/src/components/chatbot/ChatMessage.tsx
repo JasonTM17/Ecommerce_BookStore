@@ -7,6 +7,10 @@ import {
   BookOpen,
   Star,
   Loader2,
+  Package,
+  Search,
+  ShoppingCart,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -32,7 +36,7 @@ function BookSuggestionCard({ book }: { book: BookSuggestion }) {
   return (
     <Link
       href={`/products/${book.productId}`}
-      className="flex items-center gap-3 p-2 bg-white rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all"
+      className="flex items-center gap-3 rounded-[18px] bg-white p-2 shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px] transition-all hover:bg-[#f5f2ef]"
     >
       {book.imageUrl ? (
         <div className="w-12 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
@@ -56,7 +60,7 @@ function BookSuggestionCard({ book }: { book: BookSuggestion }) {
         </p>
         <p className="text-xs text-gray-500 truncate">{book.author}</p>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-sm font-semibold text-blue-600">
+          <span className="text-sm font-semibold text-black">
             {book.price?.toLocaleString("vi-VN")}đ
           </span>
           {book.averageRating && book.averageRating > 0 && (
@@ -81,72 +85,16 @@ function QuickActionButton({
   onClick: (action: QuickAction) => void;
 }) {
   const iconMap: Record<string, React.ReactNode> = {
-    search: (
-      <svg
-        className="h-4 w-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-        />
-      </svg>
-    ),
-    track_order: (
-      <svg
-        className="h-4 w-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-        />
-      </svg>
-    ),
-    view_cart: (
-      <svg
-        className="h-4 w-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-        />
-      </svg>
-    ),
-    view_promotions: (
-      <svg
-        className="h-4 w-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-        />
-      </svg>
-    ),
+    search: <Search className="h-4 w-4" />,
+    track_order: <Package className="h-4 w-4" />,
+    view_cart: <ShoppingCart className="h-4 w-4" />,
+    view_promotions: <Tag className="h-4 w-4" />,
   };
 
   return (
     <button
       onClick={() => onClick(action)}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white border border-blue-200 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(245,242,239,0.8)] px-3 py-1.5 text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] transition-colors hover:bg-[#eee8e2]"
     >
       {iconMap[action.action] || <MessageCircle className="h-4 w-4" />}
       {action.label}
@@ -242,12 +190,12 @@ export function ChatMessage({
   return (
     <div className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}>
       {isUser ? (
-        <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center shadow-md shrink-0">
+        <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] shrink-0">
           <span className="text-white text-xs font-medium">B</span>
         </div>
       ) : (
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md shrink-0">
-          <MessageCircle className="h-4 w-4 text-white" />
+        <div className="w-8 h-8 rounded-full bg-[rgba(245,242,239,0.8)] flex items-center justify-center shadow-[rgba(78,50,23,0.04)_0px_6px_16px] shrink-0">
+          <MessageCircle className="h-4 w-4 text-black" />
         </div>
       )}
 
@@ -256,10 +204,10 @@ export function ChatMessage({
       >
         <div
           className={cn(
-            "px-4 py-3 rounded-2xl shadow-sm",
+            "px-4 py-3 rounded-2xl tracking-[0.14px]",
             isUser
-              ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-tr-md"
-              : "bg-white text-gray-800 rounded-tl-md border border-gray-100",
+              ? "bg-black text-white rounded-tr-md shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]"
+              : "bg-white text-[#4e4e4e] rounded-tl-md shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]",
           )}
         >
           <p className="text-sm leading-relaxed whitespace-pre-wrap">

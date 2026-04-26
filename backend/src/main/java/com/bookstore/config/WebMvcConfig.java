@@ -17,11 +17,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${app.upload.dir}")
     private String uploadDir;
 
+    @Value("${app.http.connect-timeout-ms:5000}")
+    private long connectTimeoutMs;
+
+    @Value("${app.http.read-timeout-ms:20000}")
+    private long readTimeoutMs;
+
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofSeconds(30))
-                .setReadTimeout(Duration.ofSeconds(60))
+                .setConnectTimeout(Duration.ofMillis(connectTimeoutMs))
+                .setReadTimeout(Duration.ofMillis(readTimeoutMs))
                 .build();
     }
 

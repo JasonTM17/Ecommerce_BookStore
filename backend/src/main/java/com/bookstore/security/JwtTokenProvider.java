@@ -1,21 +1,34 @@
 package com.bookstore.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
 @Component
 public class JwtTokenProvider {
+
+    private static final List<String> REJECTED_SECRET_FRAGMENTS = List.of(
+            "yoursupersecretkeyforjwttokengeneration",
+            "secret_key_here",
+            "replace-with",
+            "changeme",
+            "please-change",
+            "placeholder",
+            "example-secret"
+    );
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -25,6 +38,20 @@ public class JwtTokenProvider {
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
+
+    @PostConstruct
+    void validateConfiguration() {
+        if (jwtSecret == null || jwtSecret.isBlank() || jwtSecret.contains("${")) {
+            throw new IllegalStateException("JWT secret must be configured from a real secret value.");
+        }
+        String normalizedSecret = jwtSecret.trim().toLowerCase(Locale.ROOT);
+        if (REJECTED_SECRET_FRAGMENTS.stream().anyMatch(normalizedSecret::contains)) {
+            throw new IllegalStateException("JWT secret must not use a public placeholder value.");
+        }
+        if (jwtSecret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT secret must be at least 32 bytes for HS256 signing.");
+        }
+    }
 
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -96,7 +123,7 @@ public class JwtTokenProvider {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(java.util.Base64.getEncoder().encodeToString(jwtSecret.getBytes()));
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

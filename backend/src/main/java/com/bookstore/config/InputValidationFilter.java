@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -93,21 +94,39 @@ public class InputValidationFilter implements Filter {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
+        if (containsPathTraversal(requestUri)) {
+            log.warn("⚠️ Path traversal attempt detected from IP: {} on URI: {}", getClientIP(request), requestUri);
+            sendError(response, HttpStatus.BAD_REQUEST, "Invalid path detected.");
+            return;
+        }
+
         // Skip for GET requests and static resources
         if ("GET".equalsIgnoreCase(method) || isStaticResource(requestUri)) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
 
+        // Multipart bodies are binary/form-data and are validated by the upload service.
+        if (isMultipartRequest(request)) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+
         // Check Content-Length
-        int contentLength = request.getContentLength();
+        long contentLength = request.getContentLengthLong();
         if (contentLength > maxBodySize) {
-            sendError(response, HttpStatus.BAD_REQUEST, "Request body too large. Maximum size: " + maxBodySize + " bytes");
+            sendError(response, HttpStatus.PAYLOAD_TOO_LARGE, "Request body too large. Maximum size: " + maxBodySize + " bytes");
             return;
         }
 
         // Wrap request to allow multiple reads of body
-        CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest(request, maxBodySize);
+        CachedBodyHttpServletRequest cachedRequest;
+        try {
+            cachedRequest = new CachedBodyHttpServletRequest(request, maxBodySize);
+        } catch (RequestBodyTooLargeException e) {
+            sendError(response, HttpStatus.PAYLOAD_TOO_LARGE, e.getMessage());
+            return;
+        }
 
         // Get body content for validation
         String bodyContent = cachedRequest.getCachedBody();
@@ -126,13 +145,6 @@ public class InputValidationFilter implements Filter {
                 sendError(response, HttpStatus.BAD_REQUEST, "Invalid input detected. Potential SQL injection blocked.");
                 return;
             }
-        }
-
-        // Validate URL parameters
-        if (containsPathTraversal(requestUri)) {
-            log.warn("⚠️ Path traversal attempt detected from IP: {} on URI: {}", getClientIP(request), requestUri);
-            sendError(response, HttpStatus.BAD_REQUEST, "Invalid path detected.");
-            return;
         }
 
         filterChain.doFilter(cachedRequest, servletResponse);
@@ -177,6 +189,11 @@ public class InputValidationFilter implements Filter {
                uri.endsWith(".eot");
     }
 
+    private boolean isMultipartRequest(HttpServletRequest request) {
+        String contentType = request.getContentType();
+        return contentType != null && contentType.toLowerCase(Locale.ROOT).startsWith("multipart/");
+    }
+
     private String getClientIP(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
@@ -219,7 +236,10 @@ public class InputValidationFilter implements Filter {
             int read;
             int totalRead = 0;
             
-            while ((read = is.read(buffer)) != -1 && totalRead < maxSize) {
+            while ((read = is.read(buffer)) != -1) {
+                if (totalRead + read > maxSize) {
+                    throw new RequestBodyTooLargeException(maxSize);
+                }
                 baos.write(buffer, 0, read);
                 totalRead += read;
             }
@@ -239,6 +259,12 @@ public class InputValidationFilter implements Filter {
 
         public String getCachedBody() {
             return new String(cachedBody, StandardCharsets.UTF_8);
+        }
+    }
+
+    private static class RequestBodyTooLargeException extends IOException {
+        RequestBodyTooLargeException(int maxSize) {
+            super("Request body too large. Maximum size: " + maxSize + " bytes");
         }
     }
 

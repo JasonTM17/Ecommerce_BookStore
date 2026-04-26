@@ -140,34 +140,24 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   devtools(
-    persist(
-      (set) => ({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        setUser: (user) =>
-          set({
-            user,
-            isAuthenticated: !!user,
-            isLoading: false,
-          }),
-        setLoading: (isLoading) => set({ isLoading }),
-        logout: () =>
-          set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-          }),
-      }),
-      {
-        name: "auth-storage",
-        storage: createJSONStorage(() => localStorage),
-        partialize: (state) => ({
-          user: state.user,
-          isAuthenticated: state.isAuthenticated,
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      setUser: (user) =>
+        set({
+          user,
+          isAuthenticated: !!user,
+          isLoading: false,
         }),
-      }
-    ),
+      setLoading: (isLoading) => set({ isLoading }),
+      logout: () =>
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        }),
+    }),
     { name: "auth-store" }
   )
 );

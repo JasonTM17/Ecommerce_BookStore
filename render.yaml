@@ -79,6 +79,12 @@ services:
         value: "true"
       - key: APP_DEMO_SEED_DEFERRED
         value: "true"
+      - key: APP_DEMO_ADMIN_PASSWORD
+        generateValue: true
+      - key: APP_DEMO_MANAGER_PASSWORD
+        generateValue: true
+      - key: APP_DEMO_CUSTOMER_PASSWORD
+        generateValue: true
       - key: UPLOAD_DIR
         value: /app/uploads
       # Rate Limiting

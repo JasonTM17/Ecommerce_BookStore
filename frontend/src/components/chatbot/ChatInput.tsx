@@ -39,7 +39,7 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white p-3">
+    <form onSubmit={handleSubmit} className="border-t border-black/[0.05] bg-white p-3">
       <div className="flex items-end gap-2">
         <div className="relative flex-1">
           <textarea
@@ -50,9 +50,9 @@ export function ChatInput({
             disabled={disabled || isTyping}
             rows={1}
             className={cn(
-              "w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm transition-all duration-200",
-              "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/15",
-              "placeholder:text-slate-400",
+              "w-full resize-none rounded-[24px] border border-transparent bg-[#f5f5f5] px-4 py-3 pr-12 text-sm tracking-[0.14px] text-black shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-all duration-200",
+              "focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-300/50",
+              "placeholder:text-[#777169]",
               "disabled:cursor-not-allowed disabled:opacity-60"
             )}
             style={{
@@ -72,8 +72,8 @@ export function ChatInput({
           size="icon"
           disabled={!message.trim() || isTyping || disabled}
           className={cn(
-            "h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/25 transition-all duration-200",
-            "hover:from-blue-700 hover:to-blue-800",
+            "h-12 w-12 shrink-0 rounded-full bg-black text-white shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] transition-all duration-200",
+            "hover:bg-black/85",
             (!message.trim() || isTyping || disabled) && "cursor-not-allowed opacity-50"
           )}
         >
@@ -81,7 +81,7 @@ export function ChatInput({
         </Button>
       </div>
 
-      <p className="mt-2 text-center text-[10px] text-slate-400">{helperText}</p>
+      <p className="mt-2 text-center text-[10px] leading-4 text-[#777169]">{helperText}</p>
     </form>
   );
 }

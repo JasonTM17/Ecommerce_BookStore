@@ -26,8 +26,8 @@ public class DisabledChatbotService extends AbstractChatbotService {
     }
 
     @Override
-    protected String generateReply(List<Map<String, String>> messages, User user) {
-        return getDisabledResponse();
+    protected GeneratedReply generateReply(List<Map<String, String>> messages, User user) {
+        return new GeneratedReply(getDisabledResponse(), false);
     }
 
     @Override

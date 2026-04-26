@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -97,11 +98,17 @@ public class DataSeeder {
             }
 
             log.info("Ensuring portfolio demo data...");
+            String adminPassword = requireConfiguredDemoPassword(
+                    demoSeedProperties.getAdminPassword(), "admin");
+            String managerPassword = requireConfiguredDemoPassword(
+                    demoSeedProperties.getManagerPassword(), "manager");
+            String customerPassword = requireConfiguredDemoPassword(
+                    demoSeedProperties.getCustomerPassword(), "customer");
 
             User admin = ensureUser(
                     userRepository,
                     "admin@bookstore.com",
-                    "Admin123!",
+                    adminPassword,
                     "Nguyễn",
                     "Sơn",
                     "0901234567",
@@ -110,13 +117,13 @@ public class DataSeeder {
             User manager = ensureUser(
                     userRepository,
                     "manager@bookstore.com",
-                    "Manager123!",
+                    managerPassword,
                     "Trần",
                     "Minh",
                     "0902345678",
                     Set.of(Role.MANAGER));
 
-            List<User> customers = ensureCustomerUsers(userRepository);
+            List<User> customers = ensureCustomerUsers(userRepository, customerPassword);
             List<Product> products = ensureCatalog(categoryRepository, brandRepository, productRepository);
             List<Product> prioritizedProducts = ShowcaseBookCatalog.prioritizeProducts(products);
 
@@ -128,17 +135,12 @@ public class DataSeeder {
             ensureCoupons(couponRepository, admin);
             ensureFlashSales(flashSaleRepository, prioritizedProducts);
 
-            log.info("========================================");
-            log.info("Portfolio demo data is ready");
-            log.info("========================================");
-            log.info("Admin: admin@bookstore.com / Admin123!");
-            log.info("Manager: manager@bookstore.com / Manager123!");
-            log.info("Customer: customer@example.com / Customer123!");
-            log.info("Customers: {}", customers.size());
-            log.info("Products: {}", products.size());
-            log.info("Coupons: {}", couponRepository.count());
-            log.info("Flash sales: {}", flashSaleRepository.count());
-            log.info("========================================");
+            logDemoSeedSummary(
+                    "Portfolio demo data is ready",
+                    customers,
+                    products,
+                    couponRepository,
+                    flashSaleRepository);
         };
     }
 
@@ -206,26 +208,32 @@ public class DataSeeder {
             FlashSaleRepository flashSaleRepository) {
 
         log.info("Ensuring portfolio demo data (deferred)...");
+        String adminPassword = requireConfiguredDemoPassword(
+                demoSeedProperties.getAdminPassword(), "admin");
+        String managerPassword = requireConfiguredDemoPassword(
+                demoSeedProperties.getManagerPassword(), "manager");
+        String customerPassword = requireConfiguredDemoPassword(
+                demoSeedProperties.getCustomerPassword(), "customer");
 
         User admin = ensureUser(
                 userRepository,
                 "admin@bookstore.com",
-                "Admin123!",
-                "Nguyá»…n",
-                "SÆ¡n",
+                adminPassword,
+                "Nguyễn",
+                "Sơn",
                 "0901234567",
                 Set.of(Role.ADMIN));
 
         User manager = ensureUser(
                 userRepository,
                 "manager@bookstore.com",
-                "Manager123!",
-                "Tráº§n",
+                managerPassword,
+                "Trần",
                 "Minh",
                 "0902345678",
                 Set.of(Role.MANAGER));
 
-        List<User> customers = ensureCustomerUsers(userRepository);
+        List<User> customers = ensureCustomerUsers(userRepository, customerPassword);
         List<Product> products = ensureCatalog(categoryRepository, brandRepository, productRepository);
         List<Product> prioritizedProducts = ShowcaseBookCatalog.prioritizeProducts(products);
 
@@ -237,17 +245,12 @@ public class DataSeeder {
         ensureCoupons(couponRepository, admin);
         ensureFlashSales(flashSaleRepository, prioritizedProducts);
 
-        log.info("========================================");
-        log.info("Portfolio demo data is ready (deferred)");
-        log.info("========================================");
-        log.info("Admin: admin@bookstore.com / Admin123!");
-        log.info("Manager: manager@bookstore.com / Manager123!");
-        log.info("Customer: customer@example.com / Customer123!");
-        log.info("Customers: {}", customers.size());
-        log.info("Products: {}", products.size());
-        log.info("Coupons: {}", couponRepository.count());
-        log.info("Flash sales: {}", flashSaleRepository.count());
-        log.info("========================================");
+        logDemoSeedSummary(
+                "Portfolio demo data is ready (deferred)",
+                customers,
+                products,
+                couponRepository,
+                flashSaleRepository);
     }
 
     private User ensureUser(
@@ -281,18 +284,24 @@ public class DataSeeder {
         return saved;
     }
 
-    private List<User> ensureCustomerUsers(UserRepository userRepository) {
+    private List<User> ensureCustomerUsers(UserRepository userRepository, String customerPassword) {
         User demoCustomer = ensureUser(
                 userRepository,
                 DEMO_CUSTOMER_EMAIL,
-                "Customer123!",
+                customerPassword,
                 "Nguyễn",
                 "Khách",
                 "0903456789",
                 Set.of(Role.CUSTOMER));
 
-        String[] firstNames = {"Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Phan", "Trương", "Võ", "Đinh", "Lý"};
-        String[] lastNames = {"Minh", "Huyền", "Anh", "Thảo", "Lan", "Hương", "Ngọc", "Trang", "Hà", "Linh", "Phương", "Tú", "Quỳnh", "Mai", "Yến"};
+        String[] firstNames = {
+                "Trần", "Lê", "Phạm", "Hoàng", "Vũ", "Đặng", "Bùi", "Đỗ",
+                "Hồ", "Ngô", "Phan", "Trương", "Võ", "Đinh", "Lý"
+        };
+        String[] lastNames = {
+                "Minh", "Huyền", "Anh", "Thảo", "Lan", "Hương", "Ngọc", "Trang",
+                "Hà", "Linh", "Phương", "Tú", "Quỳnh", "Mai", "Yến"
+        };
         String[] domains = {"gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "email.com"};
 
         List<User> existingCustomers = userRepository.findByRolesContaining(Role.CUSTOMER);
@@ -317,7 +326,7 @@ public class DataSeeder {
             ensureUser(
                     userRepository,
                     email,
-                    "Customer123!",
+                    customerPassword,
                     firstName,
                     lastName,
                     "09" + String.format("%08d", 10000000 + index),
@@ -334,6 +343,44 @@ public class DataSeeder {
                 .forEach(customers::add);
 
         return customers;
+    }
+
+    private String requireConfiguredDemoPassword(String rawPassword, String accountName) {
+        if (rawPassword == null || rawPassword.isBlank() || isPlaceholderDemoPassword(rawPassword)) {
+            throw new IllegalStateException("app.demo-seed." + accountName
+                    + "-password must be configured with a non-public value when demo seeding is enabled.");
+        }
+        return rawPassword;
+    }
+
+    private boolean isPlaceholderDemoPassword(String rawPassword) {
+        String normalized = rawPassword.trim().toLowerCase(Locale.ROOT);
+        return normalized.contains("replace-with")
+                || normalized.contains("changeme")
+                || normalized.contains("placeholder")
+                || normalized.contains("example-password")
+                || normalized.contains("admin123")
+                || normalized.contains("manager123")
+                || normalized.contains("customer123");
+    }
+
+    private void logDemoSeedSummary(
+            String status,
+            List<User> customers,
+            List<Product> products,
+            CouponRepository couponRepository,
+            FlashSaleRepository flashSaleRepository) {
+        log.info("========================================");
+        log.info(status);
+        log.info("========================================");
+        log.info(
+                "Demo accounts are present; passwords are configured through environment variables "
+                        + "and are not logged.");
+        log.info("Customers: {}", customers.size());
+        log.info("Products: {}", products.size());
+        log.info("Coupons: {}", couponRepository.count());
+        log.info("Flash sales: {}", flashSaleRepository.count());
+        log.info("========================================");
     }
 
     private List<Product> ensureCatalog(

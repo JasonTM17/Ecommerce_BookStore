@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -86,7 +87,7 @@ class ChatbotServiceHealthTest {
         user.setEmail("customer@example.com");
         user.setFirstName("Nguyễn Khách");
 
-        String reply = ReflectionTestUtils.invokeMethod(
+        AbstractChatbotService.GeneratedReply generatedReply = ReflectionTestUtils.invokeMethod(
                 service,
                 "generateReply",
                 List.of(Map.of("role", "user", "content", "Tư vấn giúp tôi một cuốn sách kinh doanh")),
@@ -95,13 +96,44 @@ class ChatbotServiceHealthTest {
 
         Map<String, String> health = service.getHealthStatus();
 
-        assertThat(reply)
+        assertThat(generatedReply.content())
                 .contains("support@bookstore.com")
                 .contains("1900-xxxx");
+        assertThat(generatedReply.providerResponse()).isFalse();
         assertThat(health)
                 .containsEntry("status", "DEGRADED")
                 .containsEntry("providerEnabled", "true");
         assertThat(health.get("message")).contains("network down");
+    }
+
+    @Test
+    void grokServiceTreatsEmptyProviderContentAsFallback() {
+        GrokChatbotService service = newGrokService();
+        ReflectionTestUtils.setField(service, "grokApiKey", "test-key");
+        ReflectionTestUtils.setField(service, "grokApiUrl", "https://api.x.ai/v1/chat/completions");
+        ReflectionTestUtils.setField(service, "grokModel", "grok-3");
+
+        when(restTemplate.exchange(
+                eq("https://api.x.ai/v1/chat/completions"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(String.class)
+        )).thenReturn(ResponseEntity.ok("{\"choices\":[{\"message\":{\"content\":\"\"}}]}"));
+
+        User user = new User();
+        user.setEmail("customer@example.com");
+        user.setFirstName("Nguyễn Khách");
+
+        AbstractChatbotService.GeneratedReply generatedReply = ReflectionTestUtils.invokeMethod(
+                service,
+                "generateReply",
+                List.of(Map.of("role", "user", "content", "Tư vấn giúp tôi một cuốn sách kinh doanh")),
+                user
+        );
+
+        assertThat(generatedReply.content()).contains("support@bookstore.com");
+        assertThat(generatedReply.providerResponse()).isFalse();
+        assertThat(service.getHealthStatus()).containsEntry("status", "DEGRADED");
     }
 
     private GrokChatbotService newGrokService() {

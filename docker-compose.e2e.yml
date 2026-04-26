@@ -78,7 +78,11 @@ services:
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: postgres123
       # JWT
-      JWT_SECRET: YourSuperSecretKeyForJWTTokenGenerationThatShouldBeAtLeast256BitsLong!
+      JWT_SECRET: E2ETestJwtSecretForBookStoreOnlyWith32Bytes
+      APP_DEMO_SEED_ENABLED: "true"
+      APP_DEMO_ADMIN_PASSWORD: E2ETestDemoAdminPasswordForBookStore123!
+      APP_DEMO_MANAGER_PASSWORD: E2ETestDemoManagerPasswordForBookStore123!
+      APP_DEMO_CUSTOMER_PASSWORD: E2ETestDemoCustomerPasswordForBookStore123!
       # CORS
       CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://frontend:3000
       # JPA

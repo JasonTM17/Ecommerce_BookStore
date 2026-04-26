@@ -50,18 +50,18 @@ export function ChatHeader({
         };
 
   return (
-    <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-900 px-4 py-3 shadow-lg">
+    <div className="border-b border-black/[0.05] bg-white px-4 py-3 shadow-[rgba(0,0,0,0.04)_0px_1px_2px]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
-            <MessageCircle className="h-5 w-5 text-white" />
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
+            <MessageCircle className="h-5 w-5 text-black" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold text-white">{copy.assistant}</h2>
-            <p className="mt-0.5 text-xs text-blue-100/80">{subtitle}</p>
+            <h2 className="truncate text-sm font-semibold text-black">{copy.assistant}</h2>
+            <p className="mt-0.5 text-xs leading-5 text-[#777169]">{subtitle}</p>
             <div
               className={cn(
-                "mt-2 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-blue-50",
+                "mt-2 inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] bg-[rgba(245,242,239,0.8)] px-2.5 py-1 text-[11px] font-medium text-black",
                 statusClassName
               )}
               data-testid="chatbot-status-badge"
@@ -78,7 +78,7 @@ export function ChatHeader({
               variant="ghost"
               size="icon"
               onClick={onNewChat}
-              className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+              className="h-8 w-8 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
               title={copy.newChat}
             >
               <Plus className="h-4 w-4" />
@@ -90,7 +90,7 @@ export function ChatHeader({
               variant="ghost"
               size="icon"
               onClick={onShowConversations}
-              className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+              className="h-8 w-8 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
               title={copy.history}
             >
               <History className="h-4 w-4" />
@@ -101,7 +101,7 @@ export function ChatHeader({
             variant="ghost"
             size="icon"
             onClick={onMinimize}
-            className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+            className="h-8 w-8 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
             title={isMinimized ? copy.maximize : copy.minimize}
           >
             {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
@@ -111,7 +111,7 @@ export function ChatHeader({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 rounded-lg text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+            className="h-8 w-8 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
             title={copy.close}
           >
             <X className="h-4 w-4" />

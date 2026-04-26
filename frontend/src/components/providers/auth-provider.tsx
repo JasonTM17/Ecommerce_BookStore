@@ -17,6 +17,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (typeof window !== "undefined") {
+        window.localStorage.removeItem("auth-storage");
+
         const path = window.location.pathname;
         if (path === "/login" || path === "/register" || path?.startsWith("/forgot-password")) {
           if (!cancelled) setLoading(false);

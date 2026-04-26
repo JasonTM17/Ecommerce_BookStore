@@ -36,7 +36,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private static final String DEFAULT_ALLOWED_ORIGINS =
-            "http://localhost:3000,http://localhost:3001,http://localhost:5173,https://*.bookstore.com,https://*.onrender.com";
+            "http://localhost:3000,http://localhost:3001,http://localhost:5173";
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -93,17 +93,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/health", "/api/health/**", "/health", "/health/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/coupons/available", "/coupons/available").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/flash-sales/**", "/flash-sales/**").permitAll()
-                        .requestMatchers("/api/email/test/**", "/email/test/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/chatbot/health", "/api/chatbot/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/brands/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/email/health").permitAll()
                         // Admin only endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/email/test/**", "/email/test/**", "/email/health").hasRole("ADMIN")
                         // Protected endpoints
                         .anyRequest().authenticated()
                 )

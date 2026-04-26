@@ -26,6 +26,24 @@ export function setGlobalErrorHandler(handler: ErrorHandler | null) {
 const DEFAULT_RETRY_COUNT = 2;
 const DEFAULT_RETRY_DELAY = 1000;
 const DEFAULT_TIMEOUT_MS = 15000;
+const AUTH_COOKIE_PATH = "/";
+
+function isSecureCookieContext() {
+  return typeof window !== "undefined" && window.location.protocol === "https:";
+}
+
+function authCookieOptions(expires: number): Cookies.CookieAttributes {
+  return {
+    expires,
+    path: AUTH_COOKIE_PATH,
+    sameSite: "Lax",
+    secure: isSecureCookieContext(),
+  };
+}
+
+function removeAuthCookie(name: string) {
+  Cookies.remove(name, { path: AUTH_COOKIE_PATH });
+}
 
 function isRetryableError(error: AxiosError): boolean {
   if (!error.config) return false;
@@ -128,8 +146,8 @@ api.interceptors.response.use(
           );
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
-          Cookies.set("access_token", accessToken, { expires: 1 });
-          Cookies.set("refresh_token", newRefreshToken, { expires: 7 });
+          Cookies.set("access_token", accessToken, authCookieOptions(1));
+          Cookies.set("refresh_token", newRefreshToken, authCookieOptions(7));
 
           originalRequest.headers = {
             ...originalRequest.headers,
@@ -138,14 +156,14 @@ api.interceptors.response.use(
           return api(originalRequest);
         } catch {
           // Refresh failed - clear tokens but DON'T redirect if on login page
-          Cookies.remove("access_token");
-          Cookies.remove("refresh_token");
+          removeAuthCookie("access_token");
+          removeAuthCookie("refresh_token");
           // Let the component handle the error instead of hard redirecting
         }
       } else {
         // No refresh token - clear and let component handle
-        Cookies.remove("access_token");
-        Cookies.remove("refresh_token");
+        removeAuthCookie("access_token");
+        removeAuthCookie("refresh_token");
       }
     }
 
@@ -160,14 +178,14 @@ api.interceptors.response.use(
 
 // Helper to set auth tokens from login/register
 export function setAuthTokens(accessToken: string, refreshToken: string) {
-  Cookies.set("access_token", accessToken, { expires: 1 });
-  Cookies.set("refresh_token", refreshToken, { expires: 7 });
+  Cookies.set("access_token", accessToken, authCookieOptions(1));
+  Cookies.set("refresh_token", refreshToken, authCookieOptions(7));
 }
 
 // Helper to clear auth tokens
 export function clearAuthTokens() {
-  Cookies.remove("access_token");
-  Cookies.remove("refresh_token");
+  removeAuthCookie("access_token");
+  removeAuthCookie("refresh_token");
 }
 
 export interface ApiResponse<T> {

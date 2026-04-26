@@ -8,7 +8,8 @@ declare global {
 }
 
 const CUSTOMER_EMAIL = process.env.TEST_USER_EMAIL || "customer@example.com";
-const CUSTOMER_PASSWORD = process.env.TEST_USER_PASSWORD || "Customer123!";
+const CUSTOMER_PASSWORD =
+  process.env.TEST_USER_PASSWORD || "E2ETestDemoCustomerPasswordForBookStore123!";
 const API_URL = process.env.API_URL || "http://localhost:3001/api";
 
 function escapeRegExp(value: string) {

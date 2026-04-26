@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { clearAuthTokens } from "@/lib/api";
 
 export function Header() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -56,8 +57,7 @@ export function Header() {
 
   const handleLogout = () => {
     logout();
-    document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    clearAuthTokens();
     router.push("/");
     setIsUserMenuOpen(false);
   };

@@ -14,4 +14,10 @@ public class DemoSeedProperties {
     private boolean enabled = true;
 
     private boolean deferred = false;
+
+    private String adminPassword;
+
+    private String managerPassword;
+
+    private String customerPassword;
 }

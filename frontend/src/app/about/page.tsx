@@ -111,30 +111,34 @@ export default function AboutPage() {
 
   return (
     <StaticInfoPageShell
-      accentClassName="from-blue-900 via-blue-800 to-indigo-900"
+      accentClassName="from-[#f5f2ef] via-white to-[#f5f5f5]"
       badgeText={page.shell.badgeText}
       breadcrumbs={page.shell.breadcrumbs}
       description={page.shell.description}
       icon={<Heart className="h-8 w-8" />}
+      tone="light"
       title={page.shell.title}
     >
       <div className="space-y-8">
         <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+          <div className="rounded-[24px] bg-white p-8 shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px,rgba(0,0,0,0.04)_0px_2px_4px]">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[rgba(245,242,239,0.8)] px-4 py-2 text-sm font-medium text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
               <Sparkles className="h-4 w-4" />
               {page.introBadge}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">{page.introTitle}</h2>
-            <p className="mt-4 leading-7 text-gray-600">{page.introBody}</p>
-            <p className="mt-4 leading-7 text-gray-600">{page.introBodyTwo}</p>
+            <h2 className="text-3xl font-light leading-tight text-black md:text-4xl">{page.introTitle}</h2>
+            <p className="mt-5 leading-7 tracking-[0.16px] text-[#4e4e4e]">{page.introBody}</p>
+            <p className="mt-4 leading-7 tracking-[0.16px] text-[#4e4e4e]">{page.introBodyTwo}</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
             {page.stats.map((stat) => (
-              <div key={stat.label} className="rounded-3xl border border-gray-100 bg-gray-50 p-6 shadow-sm">
-                <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
-                <div className="mt-2 text-sm leading-6 text-gray-500">{stat.label}</div>
+              <div
+                key={stat.label}
+                className="rounded-[20px] bg-white p-6 shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset,rgba(0,0,0,0.04)_0px_4px_4px]"
+              >
+                <div className="text-3xl font-light text-black">{stat.value}</div>
+                <div className="mt-2 text-sm leading-6 tracking-[0.14px] text-[#777169]">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -142,31 +146,38 @@ export default function AboutPage() {
 
         <section className="grid gap-5 md:grid-cols-3">
           {page.values.map((value) => (
-            <article key={value.title} className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+            <article
+              key={value.title}
+              className="rounded-[20px] bg-white p-6 shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px,rgba(0,0,0,0.04)_0px_2px_4px]"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
                 <value.icon className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">{value.title}</h3>
-              <p className="mt-3 leading-7 text-gray-600">{value.description}</p>
+              <h3 className="text-xl font-light text-black">{value.title}</h3>
+              <p className="mt-3 leading-7 tracking-[0.16px] text-[#4e4e4e]">{value.description}</p>
             </article>
           ))}
         </section>
 
-        <section className="rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-indigo-50 p-8 shadow-sm">
+        <section className="rounded-[24px] bg-[rgba(245,242,239,0.8)] p-8 shadow-[rgba(78,50,23,0.04)_0px_6px_16px,rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset]">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">{page.ctaHeading}</p>
-              <p className="mt-3 leading-7 text-gray-600">{page.ctaDescription}</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-black">{page.ctaHeading}</p>
+              <p className="mt-3 leading-7 tracking-[0.16px] text-[#4e4e4e]">{page.ctaDescription}</p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/products">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2 rounded-full bg-black px-6 text-white hover:bg-black/85">
                   {page.ctaProducts}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/categories">
-                <Button size="lg" variant="outline">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-transparent bg-white px-6 text-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] hover:bg-white"
+                >
                   {page.ctaCategories}
                 </Button>
               </Link>
