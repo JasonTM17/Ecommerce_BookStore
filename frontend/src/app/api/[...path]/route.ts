@@ -6,6 +6,18 @@ const INTERNAL_PROXY_TIMEOUT_MS = Math.min(
   REQUEST_TIMEOUT_MS,
   Number(process.env.API_PROXY_INTERNAL_TIMEOUT_MS || "8000"),
 );
+const STRIPPED_PROXY_RESPONSE_HEADERS = [
+  "content-encoding",
+  "content-length",
+  "content-security-policy",
+  "permissions-policy",
+  "referrer-policy",
+  "strict-transport-security",
+  "transfer-encoding",
+  "x-content-type-options",
+  "x-frame-options",
+  "x-xss-protection",
+];
 
 function buildTargetUrl(
   request: NextRequest,
@@ -58,9 +70,9 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
         );
 
         const headers = new Headers(response.headers);
-        headers.delete("content-encoding");
-        headers.delete("content-length");
-        headers.delete("transfer-encoding");
+        STRIPPED_PROXY_RESPONSE_HEADERS.forEach((header) => {
+          headers.delete(header);
+        });
 
         return new NextResponse(response.body, {
           status: response.status,
