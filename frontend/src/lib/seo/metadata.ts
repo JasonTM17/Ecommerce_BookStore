@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 const SITE_NAME = "BookStore Vietnam";
 const DEFAULT_DESCRIPTION =
   "Mua sách trực tuyến với giá tốt nhất. Hơn 10.000 đầu sách từ nhiều thể loại: văn học, khoa học, kỹ năng sống, sách ngoại văn.";
@@ -106,7 +107,11 @@ export const HOME_METADATA: Metadata = buildMetadata({
     "BookStore Vietnam - Nền tảng bán sách trực tuyến hàng đầu Việt Nam. Hơn 10.000 đầu sách chính hãng, giao hàng nhanh, giá tốt nhất.",
 });
 
-export const PRODUCT_METADATA = (name: string, description: string, image: string) =>
+export const PRODUCT_METADATA = (
+  name: string,
+  description: string,
+  image: string,
+) =>
   buildMetadata({
     title: name,
     description,
@@ -130,12 +135,14 @@ export const CART_METADATA = buildMetadata({
 
 export const LOGIN_METADATA = buildMetadata({
   title: "Đăng Nhập",
-  description: "Đăng nhập vào tài khoản BookStore Vietnam để mua sắm và theo dõi đơn hàng.",
+  description:
+    "Đăng nhập vào tài khoản BookStore Vietnam để mua sắm và theo dõi đơn hàng.",
   path: "/login",
 });
 
 export const REGISTER_METADATA = buildMetadata({
   title: "Đăng Ký",
-  description: "Tạo tài khoản BookStore Vietnam để nhận ưu đãi và mua sắm dễ dàng.",
+  description:
+    "Tạo tài khoản BookStore Vietnam để nhận ưu đãi và mua sắm dễ dàng.",
   path: "/register",
 });

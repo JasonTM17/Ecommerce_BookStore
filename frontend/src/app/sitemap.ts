@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
 import { apiPublic } from "@/lib/api";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -108,7 +109,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const categoryRoutes: MetadataRoute.Sitemap = [];
 
     if (categoriesRes.status === "fulfilled") {
-      const categories = categoriesRes.value.data?.content || categoriesRes.value.data || [];
+      const categories =
+        categoriesRes.value.data?.content || categoriesRes.value.data || [];
       for (const category of categories) {
         categoryRoutes.push({
           url: `${BASE_URL}/categories?id=${category.id}`,

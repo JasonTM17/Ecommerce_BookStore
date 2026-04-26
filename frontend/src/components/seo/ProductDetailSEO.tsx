@@ -3,21 +3,33 @@
 import { ProductSchema, BookSchema, BreadcrumbSchema } from "./JsonLd";
 import type { Product } from "@/lib/types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 
 interface ProductDetailSEOProps {
   product: Product;
   breadcrumbs?: Array<{ name: string; url: string }>;
 }
 
-export function ProductDetailSEO({ product, breadcrumbs }: ProductDetailSEOProps) {
+export function ProductDetailSEO({
+  product,
+  breadcrumbs,
+}: ProductDetailSEOProps) {
   const breadcrumbItems = breadcrumbs || [
     { name: "Trang chủ", url: BASE_URL },
     { name: "Sản phẩm", url: `${BASE_URL}/products` },
     ...(product.category
-      ? [{ name: product.category.name, url: `${BASE_URL}/categories?id=${product.category.id}` }]
+      ? [
+          {
+            name: product.category.name,
+            url: `${BASE_URL}/categories?id=${product.category.id}`,
+          },
+        ]
       : []),
-    { name: product.name, url: `${BASE_URL}/products/${product.slug || product.id}` },
+    {
+      name: product.name,
+      url: `${BASE_URL}/products/${product.slug || product.id}`,
+    },
   ];
 
   return (
@@ -46,7 +58,8 @@ export function ProductDetailSEO({ product, breadcrumbs }: ProductDetailSEOProps
           imageUrl: product.imageUrl,
           author: product.author,
           currentPrice: product.currentPrice,
-          originalPrice: product.price !== product.currentPrice ? product.price : undefined,
+          originalPrice:
+            product.price !== product.currentPrice ? product.price : undefined,
           discountPercent: product.discountPercent,
           inStock: product.inStock,
           rating: product.avgRating,
@@ -64,7 +77,10 @@ interface CategorySEOProps {
   productCount?: number;
 }
 
-export function CategorySEO({ categoryName, categoryDescription }: CategorySEOProps) {
+export function CategorySEO({
+  categoryName,
+  categoryDescription,
+}: CategorySEOProps) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -92,7 +108,10 @@ interface HomeSEOProps {
   totalCategories?: number;
 }
 
-export function HomeSEO({ totalProducts = 10000, totalCategories = 20 }: HomeSEOProps) {
+export function HomeSEO({
+  totalProducts = 10000,
+  totalCategories = 20,
+}: HomeSEOProps) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",

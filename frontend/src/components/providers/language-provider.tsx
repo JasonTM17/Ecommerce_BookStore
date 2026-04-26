@@ -21,7 +21,9 @@ interface LanguageContextType {
   isLoading: boolean;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 const localeCookieMaxAge = 60 * 60 * 24 * 365;
 
 function localeCookieValue(locale: Locale) {
@@ -46,7 +48,9 @@ export function LanguageProvider({
 
   useEffect(() => {
     const savedLocale = localStorage.getItem("locale");
-    const nextLocale = isLocale(savedLocale) ? savedLocale : getLocaleFromCookie();
+    const nextLocale = isLocale(savedLocale)
+      ? savedLocale
+      : getLocaleFromCookie();
 
     if (nextLocale !== locale) {
       setLocaleState(nextLocale);
@@ -55,21 +59,24 @@ export function LanguageProvider({
     document.cookie = localeCookieValue(nextLocale);
   }, [locale]);
 
-  const setLocale = useCallback((newLocale: Locale) => {
-    if (newLocale === locale) {
-      return;
-    }
+  const setLocale = useCallback(
+    (newLocale: Locale) => {
+      if (newLocale === locale) {
+        return;
+      }
 
-    localStorage.setItem("locale", newLocale);
-    document.cookie = localeCookieValue(newLocale);
-    setLocaleState(newLocale);
-    setIsLoading(true);
+      localStorage.setItem("locale", newLocale);
+      document.cookie = localeCookieValue(newLocale);
+      setLocaleState(newLocale);
+      setIsLoading(true);
 
-    startTransition(() => {
-      router.refresh();
-      setIsLoading(false);
-    });
-  }, [locale, router]);
+      startTransition(() => {
+        router.refresh();
+        setIsLoading(false);
+      });
+    },
+    [locale, router],
+  );
 
   const t = useCallback(
     (key: string): string => {
@@ -79,7 +86,7 @@ export function LanguageProvider({
         return key;
       }
     },
-    [locale]
+    [locale],
   );
 
   return (

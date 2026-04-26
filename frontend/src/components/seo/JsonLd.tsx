@@ -30,9 +30,12 @@ export function OrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "BookStore Vietnam",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com",
+    url:
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      "https://bookstore-web-dr1k.onrender.com",
     logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com"}/logo.svg`,
-    description: "Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại.",
+    description:
+      "Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại.",
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+84-28-1234-5678",
@@ -48,7 +51,11 @@ export function OrganizationSchema() {
   return <JsonLd schema={schema} />;
 }
 
-export function BreadcrumbSchema({ items }: { items: Array<{ name: string; url: string }> }) {
+export function BreadcrumbSchema({
+  items,
+}: {
+  items: Array<{ name: string; url: string }>;
+}) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -82,13 +89,16 @@ export function ProductSchema({
     category?: string;
   };
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    "https://bookstore-web-dr1k.onrender.com";
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.description || `Mua sách ${product.name} chính hãng với giá tốt.`,
+    description:
+      product.description || `Mua sách ${product.name} chính hãng với giá tốt.`,
     image: product.imageUrl || `${baseUrl}/placeholder-book.jpg`,
     url: `${baseUrl}/products/${product.slug || product.id}`,
     sku: `BOOK-${product.id}`,
@@ -108,9 +118,14 @@ export function ProductSchema({
       priceCurrency: "VND",
       price: product.currentPrice,
       ...(product.originalPrice && {
-        priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
       }),
-      availability: product.inStock !== false ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      availability:
+        product.inStock !== false
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
       seller: {
         "@type": "Organization",
         name: "BookStore Vietnam",
@@ -146,7 +161,9 @@ export function BookSchema({
     currentPrice: number;
   };
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    "https://bookstore-web-dr1k.onrender.com";
 
   const schema = {
     "@context": "https://schema.org",
@@ -155,7 +172,9 @@ export function BookSchema({
     description: book.description,
     isbn: book.isbn,
     author: book.author ? { "@type": "Person", name: book.author } : undefined,
-    publisher: book.publisher ? { "@type": "Organization", name: book.publisher } : undefined,
+    publisher: book.publisher
+      ? { "@type": "Organization", name: book.publisher }
+      : undefined,
     datePublished: book.publishYear?.toString(),
     image: book.imageUrl,
     url: `${baseUrl}/products/${book.slug || book.id}`,
@@ -171,14 +190,17 @@ export function BookSchema({
 }
 
 export function WebSiteSchema() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    "https://bookstore-web-dr1k.onrender.com";
 
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "BookStore Vietnam",
     url: baseUrl,
-    description: "Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại.",
+    description:
+      "Nền tảng thương mại điện tử chuyên sách với trải nghiệm mua sắm hiện đại.",
     potentialAction: {
       "@type": "SearchAction",
       target: {
