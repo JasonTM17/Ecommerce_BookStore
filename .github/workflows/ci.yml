@@ -820,7 +820,7 @@ jobs:
       - name: Trigger Render backend deploy
         run: |
           if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND_STAGING }}" ]; then
-            echo "⚠️ RENDER_DEPLOY_HOOK_BACKEND_STAGING secret not set. Skipping."
+            echo "WARNING: RENDER_DEPLOY_HOOK_BACKEND_STAGING secret not set. Skipping."
             exit 0
           fi
           echo "Triggering Render backend staging deploy..."
@@ -830,7 +830,7 @@ jobs:
       - name: Trigger Render frontend deploy
         run: |
           if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND_STAGING }}" ]; then
-            echo "⚠️ RENDER_DEPLOY_HOOK_FRONTEND_STAGING secret not set. Skipping."
+            echo "WARNING: RENDER_DEPLOY_HOOK_FRONTEND_STAGING secret not set. Skipping."
             exit 0
           fi
           echo "Triggering Render frontend staging deploy..."
@@ -850,8 +850,8 @@ jobs:
       - name: Trigger Render backend deploy
         run: |
           if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}" ]; then
-            echo "⚠️ RENDER_DEPLOY_HOOK_BACKEND secret not set. Skipping deploy."
-            echo "→ Set it in GitHub repo Settings > Secrets > Actions"
+            echo "WARNING: RENDER_DEPLOY_HOOK_BACKEND secret not set. Skipping deploy."
+            echo "Set it in GitHub repo Settings > Secrets > Actions"
             exit 0
           fi
           echo "Triggering Render backend production deploy..."
@@ -861,8 +861,8 @@ jobs:
       - name: Trigger Render frontend deploy
         run: |
           if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}" ]; then
-            echo "⚠️ RENDER_DEPLOY_HOOK_FRONTEND secret not set. Skipping deploy."
-            echo "→ Set it in GitHub repo Settings > Secrets > Actions"
+            echo "WARNING: RENDER_DEPLOY_HOOK_FRONTEND secret not set. Skipping deploy."
+            echo "Set it in GitHub repo Settings > Secrets > Actions"
             exit 0
           fi
           echo "Triggering Render frontend production deploy..."

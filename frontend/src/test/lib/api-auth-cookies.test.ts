@@ -42,18 +42,26 @@ describe("auth cookie helpers", () => {
 
     setAuthTokens("access-token", "refresh-token");
 
-    expect(mocks.cookieSet).toHaveBeenCalledWith("access_token", "access-token", {
-      expires: 1,
-      path: "/",
-      sameSite: "Lax",
-      secure: false,
-    });
-    expect(mocks.cookieSet).toHaveBeenCalledWith("refresh_token", "refresh-token", {
-      expires: 7,
-      path: "/",
-      sameSite: "Lax",
-      secure: false,
-    });
+    expect(mocks.cookieSet).toHaveBeenCalledWith(
+      "access_token",
+      "access-token",
+      {
+        expires: 1,
+        path: "/",
+        sameSite: "Lax",
+        secure: false,
+      },
+    );
+    expect(mocks.cookieSet).toHaveBeenCalledWith(
+      "refresh_token",
+      "refresh-token",
+      {
+        expires: 7,
+        path: "/",
+        sameSite: "Lax",
+        secure: false,
+      },
+    );
   });
 
   it("removes auth cookies with the app-wide path", async () => {
@@ -61,7 +69,11 @@ describe("auth cookie helpers", () => {
 
     clearAuthTokens();
 
-    expect(mocks.cookieRemove).toHaveBeenCalledWith("access_token", { path: "/" });
-    expect(mocks.cookieRemove).toHaveBeenCalledWith("refresh_token", { path: "/" });
+    expect(mocks.cookieRemove).toHaveBeenCalledWith("access_token", {
+      path: "/",
+    });
+    expect(mocks.cookieRemove).toHaveBeenCalledWith("refresh_token", {
+      path: "/",
+    });
   });
 });

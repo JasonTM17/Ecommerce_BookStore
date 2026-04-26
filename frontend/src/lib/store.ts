@@ -158,8 +158,8 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
         }),
     }),
-    { name: "auth-store" }
-  )
+    { name: "auth-store" },
+  ),
 );
 
 // ===== Cart Store =====
@@ -184,21 +184,25 @@ export const useCartStore = create<CartState>()(
         totalItems: 0,
         total: 0,
         isLoading: false,
-        setCart: (items, totalItems, total) => set({ items, totalItems, total }),
+        setCart: (items, totalItems, total) =>
+          set({ items, totalItems, total }),
         clearCart: () => set({ items: [], totalItems: 0, total: 0 }),
         addItem: (item) => {
           const items = get().items;
-          const existing = items.find((i) => i.id === item.id || i.product.id === item.product.id);
+          const existing = items.find(
+            (i) => i.id === item.id || i.product.id === item.product.id,
+          );
           if (existing) {
             set({
               items: items.map((i) =>
-                (i.id === item.id || i.product.id === item.product.id)
+                i.id === item.id || i.product.id === item.product.id
                   ? {
                       ...i,
                       quantity: i.quantity + item.quantity,
-                      subtotal: i.product.currentPrice * (i.quantity + item.quantity),
+                      subtotal:
+                        i.product.currentPrice * (i.quantity + item.quantity),
                     }
-                  : i
+                  : i,
               ),
             });
           } else {
@@ -219,7 +223,7 @@ export const useCartStore = create<CartState>()(
           const items = get().items.map((i) =>
             i.id === itemId
               ? { ...i, quantity, subtotal: i.product.currentPrice * quantity }
-              : i
+              : i,
           );
           const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
           const total = items.reduce((sum, i) => sum + i.subtotal, 0);
@@ -235,10 +239,10 @@ export const useCartStore = create<CartState>()(
           totalItems: state.totalItems,
           total: state.total,
         }),
-      }
+      },
     ),
-    { name: "cart-store" }
-  )
+    { name: "cart-store" },
+  ),
 );
 
 // ===== UI Store =====
@@ -259,5 +263,6 @@ export const useUIStore = create<UIState>()((set) => ({
   toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
   toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
   toggleMenu: () => set((state) => ({ isMenuOpen: !state.isMenuOpen })),
-  closeAll: () => set({ isCartOpen: false, isSearchOpen: false, isMenuOpen: false }),
+  closeAll: () =>
+    set({ isCartOpen: false, isSearchOpen: false, isMenuOpen: false }),
 }));

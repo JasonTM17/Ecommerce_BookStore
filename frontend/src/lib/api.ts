@@ -11,7 +11,7 @@ function normalizeApiBaseUrl(raw: string): string {
 }
 
 export const API_URL = normalizeApiBaseUrl(
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api",
 );
 
 // Global error handler callback
@@ -49,19 +49,31 @@ function isRetryableError(error: AxiosError): boolean {
   if (!error.config) return false;
   const method = (error.config as AxiosRequestConfig).method?.toUpperCase();
   // Don't retry POST/PUT/DELETE
-  if (method === "POST" || method === "PUT" || method === "DELETE" || method === "PATCH") {
+  if (
+    method === "POST" ||
+    method === "PUT" ||
+    method === "DELETE" ||
+    method === "PATCH"
+  ) {
     return false;
   }
   // Retry on network errors and 5xx server errors
   if (!error.response) return true;
-  return error.response.status >= 500 || error.response.status === 408 || error.response.status === 429;
+  return (
+    error.response.status >= 500 ||
+    error.response.status === 408 ||
+    error.response.status === 429
+  );
 }
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function retryRequest(config: AxiosRequestConfig, retryCount: number): Promise<unknown> {
+async function retryRequest(
+  config: AxiosRequestConfig,
+  retryCount: number,
+): Promise<unknown> {
   for (let attempt = 0; attempt <= retryCount; attempt++) {
     try {
       return await axios.request(config);
@@ -102,7 +114,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Retry interceptor for GET requests
@@ -120,16 +132,22 @@ apiPublic.interceptors.response.use(
     }
     if (globalErrorHandler) globalErrorHandler(error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - handle 401 and token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as AxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
 
       const refreshToken = Cookies.get("refresh_token");
@@ -142,7 +160,7 @@ api.interceptors.response.use(
               headers: {
                 Authorization: `Bearer ${refreshToken}`,
               },
-            }
+            },
           );
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
@@ -173,7 +191,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Helper to set auth tokens from login/register
@@ -213,4 +231,3 @@ export interface ApiError {
   status: number;
   errors?: Record<string, string[]>;
 }
-

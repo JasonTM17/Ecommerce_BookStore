@@ -4,7 +4,14 @@ import Link from "next/link";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useCartStore } from "@/lib/store";
 import { useLanguage } from "@/components/providers/language-provider";
-import { ShoppingCart, User, Search, LogOut, ChevronDown, BookOpen } from "lucide-react";
+import {
+  ShoppingCart,
+  User,
+  Search,
+  LogOut,
+  ChevronDown,
+  BookOpen,
+} from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -47,7 +54,10 @@ export function Header() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     };
@@ -66,7 +76,9 @@ export function Header() {
     <header
       className={cn(
         "sticky top-0 z-50 transition-all duration-300",
-        isScrolled ? "bg-white/95 backdrop-blur-md shadow-lg shadow-gray-200/50" : "bg-white"
+        isScrolled
+          ? "bg-white/95 backdrop-blur-md shadow-lg shadow-gray-200/50"
+          : "bg-white",
       )}
     >
       <div className="container mx-auto px-4">
@@ -100,13 +112,23 @@ export function Header() {
 
           <div className="flex items-center space-x-2">
             <Link href="/products?focus=search">
-              <Button variant="ghost" size="icon" className="relative group" aria-label={t("common.search")}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative group"
+                aria-label={t("common.search")}
+              >
                 <Search className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
               </Button>
             </Link>
 
             <Link href="/cart" className="relative">
-              <Button variant="ghost" size="icon" className="relative group" aria-label={t("nav.cart")}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative group"
+                aria-label={t("nav.cart")}
+              >
                 <ShoppingCart className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-bounce">
@@ -129,19 +151,25 @@ export function Header() {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">
                     {user?.fullName?.charAt(0)?.toUpperCase() || "U"}
                   </div>
-                  <span className="hidden sm:inline text-sm font-medium text-gray-700">{user?.fullName}</span>
+                  <span className="hidden sm:inline text-sm font-medium text-gray-700">
+                    {user?.fullName}
+                  </span>
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 text-gray-500 transition-transform duration-200",
-                      isUserMenuOpen && "rotate-180"
+                      isUserMenuOpen && "rotate-180",
                     )}
                   />
                 </Button>
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl shadow-gray-200/50 border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                      <p className="text-sm font-semibold text-gray-900">{user?.fullName}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{user?.email}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user?.fullName}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {user?.email}
+                      </p>
                     </div>
                     <div className="py-2">
                       <Link
@@ -206,19 +234,19 @@ export function Header() {
                 <span
                   className={cn(
                     "absolute left-0 w-full h-0.5 bg-gray-600 transition-all duration-300",
-                    isMenuOpen ? "rotate-45 top-2.5" : "top-1"
+                    isMenuOpen ? "rotate-45 top-2.5" : "top-1",
                   )}
                 />
                 <span
                   className={cn(
                     "absolute left-0 top-2.5 w-full h-0.5 bg-gray-600 transition-opacity duration-300",
-                    isMenuOpen ? "opacity-0" : "opacity-100"
+                    isMenuOpen ? "opacity-0" : "opacity-100",
                   )}
                 />
                 <span
                   className={cn(
                     "absolute left-0 w-full h-0.5 bg-gray-600 transition-all duration-300",
-                    isMenuOpen ? "-rotate-45 top-2.5" : "top-4"
+                    isMenuOpen ? "-rotate-45 top-2.5" : "top-4",
                   )}
                 />
               </div>

@@ -20,15 +20,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         window.localStorage.removeItem("auth-storage");
 
         const path = window.location.pathname;
-        if (path === "/login" || path === "/register" || path?.startsWith("/forgot-password")) {
+        if (
+          path === "/login" ||
+          path === "/register" ||
+          path?.startsWith("/forgot-password")
+        ) {
           if (!cancelled) setLoading(false);
           return;
         }
       }
 
       const cookies = document.cookie.split(";");
-      const accessTokenCookie = cookies.find((c) => c.trim().startsWith("access_token="));
-      const refreshTokenCookie = cookies.find((c) => c.trim().startsWith("refresh_token="));
+      const accessTokenCookie = cookies.find((c) =>
+        c.trim().startsWith("access_token="),
+      );
+      const refreshTokenCookie = cookies.find((c) =>
+        c.trim().startsWith("refresh_token="),
+      );
       const hasSessionCookie = Boolean(accessTokenCookie || refreshTokenCookie);
 
       if (!hasSessionCookie) {
@@ -66,7 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const { user, isAuthenticated, isLoading, logout, setUser } = useAuthStore();
 
-  const isAdmin = user?.roles?.includes("ADMIN") || user?.roles?.includes("MANAGER");
+  const isAdmin =
+    user?.roles?.includes("ADMIN") || user?.roles?.includes("MANAGER");
 
   return {
     user,

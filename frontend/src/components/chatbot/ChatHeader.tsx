@@ -1,6 +1,13 @@
 "use client";
 
-import { History, Maximize2, MessageCircle, Minimize2, Plus, X } from "lucide-react";
+import {
+  History,
+  Maximize2,
+  MessageCircle,
+  Minimize2,
+  Plus,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
@@ -57,12 +64,16 @@ export function ChatHeader({
             <MessageCircle className="h-5 w-5 text-black" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold text-black">{copy.assistant}</h2>
-            <p className="mt-0.5 text-xs leading-5 text-[#777169]">{subtitle}</p>
+            <h2 className="truncate text-sm font-semibold text-black">
+              {copy.assistant}
+            </h2>
+            <p className="mt-0.5 text-xs leading-5 text-[#777169]">
+              {subtitle}
+            </p>
             <div
               className={cn(
                 "mt-2 inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] bg-[rgba(245,242,239,0.8)] px-2.5 py-1 text-[11px] font-medium text-black",
-                statusClassName
+                statusClassName,
               )}
               data-testid="chatbot-status-badge"
             >
@@ -104,7 +115,11 @@ export function ChatHeader({
             className="h-8 w-8 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
             title={isMinimized ? copy.maximize : copy.minimize}
           >
-            {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            {isMinimized ? (
+              <Maximize2 className="h-4 w-4" />
+            ) : (
+              <Minimize2 className="h-4 w-4" />
+            )}
           </Button>
 
           <Button

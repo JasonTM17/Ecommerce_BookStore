@@ -53,7 +53,11 @@ export function StaticInfoPageShell({
             >
               <Link
                 href="/"
-                className={isLight ? "transition-colors hover:text-black" : "hover:text-white transition-colors"}
+                className={
+                  isLight
+                    ? "transition-colors hover:text-black"
+                    : "hover:text-white transition-colors"
+                }
               >
                 {homeLabel}
               </Link>
@@ -63,12 +67,18 @@ export function StaticInfoPageShell({
                   {crumb.href ? (
                     <Link
                       href={crumb.href}
-                      className={isLight ? "transition-colors hover:text-black" : "hover:text-white transition-colors"}
+                      className={
+                        isLight
+                          ? "transition-colors hover:text-black"
+                          : "hover:text-white transition-colors"
+                      }
                     >
                       {crumb.label}
                     </Link>
                   ) : (
-                    <span className={isLight ? "text-black" : "text-white"}>{crumb.label}</span>
+                    <span className={isLight ? "text-black" : "text-white"}>
+                      {crumb.label}
+                    </span>
                   )}
                 </div>
               ))}
@@ -83,7 +93,9 @@ export function StaticInfoPageShell({
                       : "bg-white/10 text-white backdrop-blur-sm"
                   }`}
                 >
-                  <span className={isLight ? "text-black" : "text-yellow-300"}>{badgeText}</span>
+                  <span className={isLight ? "text-black" : "text-yellow-300"}>
+                    {badgeText}
+                  </span>
                 </div>
                 <div className="flex items-start gap-4">
                   <div

@@ -105,7 +105,8 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     degradedHeadline: "Grok đã được cấu hình nhưng chưa ổn định",
     degradedMessage:
       "Một số phản hồi có thể quay về chế độ hỗ trợ cơ bản cho tới khi kết nối Grok ổn định hơn.",
-    degradedPlaceholder: "Nhập tin nhắn, chatbot sẽ trả lời ở chế độ dự phòng nếu cần...",
+    degradedPlaceholder:
+      "Nhập tin nhắn, chatbot sẽ trả lời ở chế độ dự phòng nếu cần...",
     readyBadge: (model) => `Grok sẵn sàng · ${model}`,
     readyHeadline: "Chatbot đã sẵn sàng hỗ trợ",
     readyMessage:
@@ -158,7 +159,8 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     degradedHeadline: "Grok is configured, but not fully stable",
     degradedMessage:
       "Some replies may fall back to the basic assistant experience until the Grok connection settles.",
-    degradedPlaceholder: "Type a message and the chatbot will fall back if needed...",
+    degradedPlaceholder:
+      "Type a message and the chatbot will fall back if needed...",
     readyBadge: (model) => `Grok ready · ${model}`,
     readyHeadline: "Chatbot is ready to help",
     readyMessage:
@@ -166,7 +168,8 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     readyPlaceholder: "Ask about books, orders, or promotions...",
     readySuccess: "Grok replied successfully.",
     helperText: "Press Enter to send, Shift + Enter for a new line",
-    disabledHelperText: "The chatbot is temporarily off. You can still browse the store directly.",
+    disabledHelperText:
+      "The chatbot is temporarily off. You can still browse the store directly.",
     subtitle: "Book suggestions, orders, and deals right inside the store.",
     guestTitle: "Hello there!",
     guestDescription:
@@ -200,7 +203,7 @@ function resolveHealthMeta(
   health: ChatbotHealth | null,
   isCheckingHealth: boolean,
   healthError: string | null,
-  copy: WidgetCopy
+  copy: WidgetCopy,
 ): HealthMeta {
   if (isCheckingHealth && !health) {
     return {
@@ -264,7 +267,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
-  const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
+  const [currentConversationId, setCurrentConversationId] = useState<
+    number | null
+  >(null);
   const [showConversations, setShowConversations] = useState(false);
   const [health, setHealth] = useState<ChatbotHealth | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
@@ -274,7 +279,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
   const copy = widgetCopy[locale as WidgetLocale] ?? widgetCopy.vi;
   const healthMeta = useMemo(
     () => resolveHealthMeta(health, isCheckingHealth, healthError, copy),
-    [copy, health, healthError, isCheckingHealth]
+    [copy, health, healthError, isCheckingHealth],
   );
   const canSendMessages = isAuthenticated && healthMeta.kind !== "disabled";
 
@@ -343,14 +348,15 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
       });
 
       setCurrentConversationId(response.conversationId);
-      setHealth((prev) =>
-        prev ?? {
-          status: "UP",
-          service: "Grok AI Chatbot",
-          model: response.modelUsed || "grok-3",
-          message: copy.readySuccess,
-          providerEnabled: "true",
-        }
+      setHealth(
+        (prev) =>
+          prev ?? {
+            status: "UP",
+            service: "Grok AI Chatbot",
+            model: response.modelUsed || "grok-3",
+            message: copy.readySuccess,
+            providerEnabled: "true",
+          },
       );
       setHealthError(null);
 
@@ -370,7 +376,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
         error?.response?.data?.message || copy.sendError,
         {
           description: copy.sendErrorDescription,
-        }
+        },
       );
 
       setHealth((prev) =>
@@ -380,7 +386,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
               status: "DEGRADED",
               message: copy.degradedMessage,
             }
-          : prev
+          : prev,
       );
 
       const fallbackMsg: ChatMessageType = {
@@ -397,7 +403,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
 
   const handleSelectConversation = (
     conversationId: number,
-    conversationMessages: ChatMessageType[]
+    conversationMessages: ChatMessageType[],
   ) => {
     setCurrentConversationId(conversationId);
     setMessages(conversationMessages);
@@ -426,7 +432,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
         }}
         className={cn(
           "fixed bottom-5 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] transition-all duration-300 active:scale-95 sm:bottom-6 sm:right-6",
-          "hover:scale-105 hover:bg-black/85"
+          "hover:scale-105 hover:bg-black/85",
         )}
         aria-label={isOpen ? copy.closeAriaLabel : copy.openAriaLabel}
       >
@@ -442,7 +448,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                   ? "bg-emerald-400"
                   : healthMeta.kind === "disabled"
                     ? "bg-slate-300"
-                    : "bg-amber-400"
+                    : "bg-amber-400",
               )}
             />
           </>
@@ -455,13 +461,17 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           "fixed bottom-24 left-2 right-2 z-50 flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[24px] bg-white shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px,rgba(0,0,0,0.04)_0px_2px_4px] transition-all duration-300 ease-out sm:left-auto sm:right-6 sm:w-[420px]",
           isOpen && !isMinimized
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
-            : "pointer-events-none translate-y-4 scale-95 opacity-0"
+            : "pointer-events-none translate-y-4 scale-95 opacity-0",
         )}
       >
         <ChatHeader
           onClose={() => setIsOpen(false)}
           onMinimize={() => setIsMinimized((prev) => !prev)}
-          onShowConversations={isAuthenticated ? () => setShowConversations((prev) => !prev) : undefined}
+          onShowConversations={
+            isAuthenticated
+              ? () => setShowConversations((prev) => !prev)
+              : undefined
+          }
           onNewChat={isAuthenticated ? handleNewChat : undefined}
           isMinimized={isMinimized}
           statusLabel={healthMeta.badgeLabel}
@@ -492,9 +502,13 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                       ) : (
                         <Sparkles className="h-4 w-4 text-amber-500" />
                       )}
-                      <p className="text-sm font-semibold text-black">{healthMeta.headline}</p>
+                      <p className="text-sm font-semibold text-black">
+                        {healthMeta.headline}
+                      </p>
                     </div>
-                    <p className="mt-1 text-xs leading-5 tracking-[0.14px] text-[#777169]">{healthMeta.message}</p>
+                    <p className="mt-1 text-xs leading-5 tracking-[0.14px] text-[#777169]">
+                      {healthMeta.message}
+                    </p>
                   </div>
 
                   <Button
@@ -513,7 +527,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                 className="flex-1 space-y-4 overflow-y-auto p-4"
                 role="log"
                 aria-live="polite"
-                aria-label={locale === "vi" ? "Tin nhắn chatbot" : "Chatbot messages"}
+                aria-label={
+                  locale === "vi" ? "Tin nhắn chatbot" : "Chatbot messages"
+                }
               >
                 {!isAuthenticated ? (
                   <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] bg-white p-6 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
@@ -522,9 +538,12 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                         <MessageCircle className="h-8 w-8 text-black" />
                       </div>
                       <h3 className="mb-2 flex items-center justify-center gap-2 text-lg font-semibold text-slate-900">
-                        {copy.guestTitle} <Hand className="h-4 w-4 text-blue-500" />
+                        {copy.guestTitle}{" "}
+                        <Hand className="h-4 w-4 text-blue-500" />
                       </h3>
-                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">{copy.guestDescription}</p>
+                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">
+                        {copy.guestDescription}
+                      </p>
                     </div>
 
                     <div className="space-y-3">
@@ -537,7 +556,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                             className="rounded-[18px] bg-[#f5f5f5] px-3 py-3 text-left shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-colors hover:bg-[#f5f2ef]"
                           >
                             <action.icon className="mb-2 h-4 w-4 text-black" />
-                            <span className="block text-sm font-medium text-slate-800">{action.label}</span>
+                            <span className="block text-sm font-medium text-slate-800">
+                              {action.label}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -559,34 +580,41 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]">
                         <MessageCircle className="h-8 w-8 text-white" />
                       </div>
-                      <h3 className="mb-2 text-lg font-semibold text-slate-900">{copy.startConversationTitle}</h3>
-                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">{copy.startConversationDescription}</p>
+                      <h3 className="mb-2 text-lg font-semibold text-slate-900">
+                        {copy.startConversationTitle}
+                      </h3>
+                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">
+                        {copy.startConversationDescription}
+                      </p>
                     </div>
 
                     <div className="space-y-3">
                       <div className="flex flex-wrap justify-center gap-2">
                         {(healthMeta.kind === "disabled"
                           ? copy.guestActions.map((action) => action.label)
-                          : copy.authenticatedSuggestions).map((suggestion) => (
-                            <button
-                              key={suggestion}
-                              type="button"
-                              onClick={() => {
-                                if (healthMeta.kind === "disabled") {
-                                  const matchingAction = copy.guestActions.find((item) => item.label === suggestion);
-                                  if (matchingAction) {
-                                    handleGuestAction(matchingAction.path);
-                                  }
-                                  return;
+                          : copy.authenticatedSuggestions
+                        ).map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => {
+                              if (healthMeta.kind === "disabled") {
+                                const matchingAction = copy.guestActions.find(
+                                  (item) => item.label === suggestion,
+                                );
+                                if (matchingAction) {
+                                  handleGuestAction(matchingAction.path);
                                 }
+                                return;
+                              }
 
-                                void handleSendMessage(suggestion);
-                              }}
-                              className="rounded-full bg-[rgba(245,242,239,0.8)] px-3 py-1.5 text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] transition-colors hover:bg-[#eee8e2]"
-                            >
-                              {suggestion}
-                            </button>
-                          ))}
+                              void handleSendMessage(suggestion);
+                            }}
+                            className="rounded-full bg-[rgba(245,242,239,0.8)] px-3 py-1.5 text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] transition-colors hover:bg-[#eee8e2]"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
                       </div>
 
                       <div className="flex items-center justify-center gap-2 text-xs text-[#777169]">
@@ -627,7 +655,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                   isTyping={isTyping}
                   disabled={!canSendMessages || isAuthLoading}
                   placeholder={healthMeta.inputPlaceholder}
-                  helperText={canSendMessages ? copy.helperText : copy.disabledHelperText}
+                  helperText={
+                    canSendMessages ? copy.helperText : copy.disabledHelperText
+                  }
                 />
               ) : null}
             </div>

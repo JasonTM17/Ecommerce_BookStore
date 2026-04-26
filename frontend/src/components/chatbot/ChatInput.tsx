@@ -39,7 +39,10 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-black/[0.05] bg-white p-3">
+    <form
+      onSubmit={handleSubmit}
+      className="border-t border-black/[0.05] bg-white p-3"
+    >
       <div className="flex items-end gap-2">
         <div className="relative flex-1">
           <textarea
@@ -53,7 +56,7 @@ export function ChatInput({
               "w-full resize-none rounded-[24px] border border-transparent bg-[#f5f5f5] px-4 py-3 pr-12 text-sm tracking-[0.14px] text-black shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-all duration-200",
               "focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-300/50",
               "placeholder:text-[#777169]",
-              "disabled:cursor-not-allowed disabled:opacity-60"
+              "disabled:cursor-not-allowed disabled:opacity-60",
             )}
             style={{
               minHeight: "48px",
@@ -74,14 +77,21 @@ export function ChatInput({
           className={cn(
             "h-12 w-12 shrink-0 rounded-full bg-black text-white shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] transition-all duration-200",
             "hover:bg-black/85",
-            (!message.trim() || isTyping || disabled) && "cursor-not-allowed opacity-50"
+            (!message.trim() || isTyping || disabled) &&
+              "cursor-not-allowed opacity-50",
           )}
         >
-          {isTyping ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+          {isTyping ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Send className="h-5 w-5" />
+          )}
         </Button>
       </div>
 
-      <p className="mt-2 text-center text-[10px] leading-4 text-[#777169]">{helperText}</p>
+      <p className="mt-2 text-center text-[10px] leading-4 text-[#777169]">
+        {helperText}
+      </p>
     </form>
   );
 }
