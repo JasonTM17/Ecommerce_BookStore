@@ -12,6 +12,8 @@ This project is a portfolio/demo bookstore, but the public deployment should sti
 - Stopped persisting the authenticated user object in `localStorage`; auth state now restores from cookies and `/users/me`.
 - Added `SameSite=Lax`, `path=/`, and HTTPS-only `Secure` cookie behavior for browser-managed auth cookies.
 - Added frontend security headers for CSP, frame blocking, HSTS, and browser permissions policy.
+- Aligned backend CSP and Permissions-Policy values across Spring Security and the global security header filter, including CORS preflight responses.
+- Replaced emoji-based backend log prefixes with ASCII text so Windows/CI logs do not render security events as broken glyphs.
 - Moved portfolio demo account passwords out of source defaults; Render now generates demo passwords and the app no longer logs them.
 - Disabled demo seeding by default outside explicit dev/local/render/e2e settings.
 - Restricted email test endpoints to admin-authenticated users even when the test controller is enabled.
