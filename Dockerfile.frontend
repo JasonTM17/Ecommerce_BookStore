@@ -9,7 +9,7 @@ ARG NEXT_PUBLIC_API_URL=/api
 ARG NEXT_PUBLIC_APP_NAME=BookStore
 ARG NEXT_PUBLIC_APP_DESCRIPTION="Professional Vietnamese E-Commerce BookStore Platform"
 ARG NEXT_PUBLIC_VNPAY_ENABLED=false
-ARG API_PROXY_TARGET=http://localhost:8080/api
+ARG API_PROXY_TARGET=https://bookstore-api-a1xl.onrender.com/api
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
@@ -40,7 +40,7 @@ ARG NEXT_PUBLIC_API_URL=/api
 ARG NEXT_PUBLIC_APP_NAME=BookStore
 ARG NEXT_PUBLIC_APP_DESCRIPTION="Professional Vietnamese E-Commerce BookStore Platform"
 ARG NEXT_PUBLIC_VNPAY_ENABLED=false
-ARG API_PROXY_TARGET=http://localhost:8080/api
+ARG API_PROXY_TARGET=https://bookstore-api-a1xl.onrender.com/api
 
 ENV NODE_ENV=production
 ENV PORT=3000

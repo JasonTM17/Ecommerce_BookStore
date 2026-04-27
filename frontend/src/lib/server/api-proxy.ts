@@ -1,4 +1,4 @@
-const FALLBACK_PROXY_TARGET = "http://localhost:8080/api";
+const FALLBACK_PROXY_TARGET = "https://bookstore-api-a1xl.onrender.com/api";
 
 export function normalizeProxyTarget(rawTarget?: string) {
   const target = (rawTarget || FALLBACK_PROXY_TARGET)

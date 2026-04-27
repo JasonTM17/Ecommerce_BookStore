@@ -3,6 +3,7 @@ package com.bookstore.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ import java.util.Map;
 public class HealthController {
 
     private final DataSource dataSource;
+    private final Environment environment;
 
     @Value("${spring.application.name:bookstore-api}")
     private String applicationName;
@@ -72,6 +74,13 @@ public class HealthController {
 
         if (!allUp) {
             health.put("status", "DEGRADED");
+        }
+
+        if (isProductionLikeProfile()) {
+            health.remove("version");
+            health.remove("database");
+            health.remove("memory");
+            health.remove("disk");
         }
 
         return ResponseEntity.ok(health);
@@ -144,6 +153,17 @@ public class HealthController {
         return dbCheck;
     }
 
+    private boolean isProductionLikeProfile() {
+        for (String profile : environment.getActiveProfiles()) {
+            if ("prod".equalsIgnoreCase(profile)
+                    || "production".equalsIgnoreCase(profile)
+                    || "render".equalsIgnoreCase(profile)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Kiểm tra memory usage
      */
@@ -164,12 +184,12 @@ public class HealthController {
         memCheck.put("nonHeap.max", formatBytes(nonHeapUsage.getMax()));
 
         // Alert nếu heap > 85%
-        if (heapPercent > 85) {
-            memCheck.put("status", "WARNING");
-            memCheck.put("alert", "Heap memory usage above 85%");
-        } else if (heapPercent > 95) {
+        if (heapPercent > 95) {
             memCheck.put("status", "CRITICAL");
             memCheck.put("alert", "Heap memory usage above 95%!");
+        } else if (heapPercent > 85) {
+            memCheck.put("status", "WARNING");
+            memCheck.put("alert", "Heap memory usage above 85%");
         } else {
             memCheck.put("status", "UP");
         }
@@ -183,7 +203,6 @@ public class HealthController {
     private Map<String, Object> checkDisk() {
         Map<String, Object> diskCheck = new LinkedHashMap<>();
         try {
-            File uploadDir = new File(System.getProperty("user.dir"));
             File root = new File("/");
             
             long total = root.getTotalSpace();
@@ -236,9 +255,9 @@ public class HealthController {
     private String getVersion() {
         try {
             String implVersion = getClass().getPackage().getImplementationVersion();
-            return implVersion != null ? implVersion : "1.0.0";
+            return implVersion != null ? implVersion : "1.0.1";
         } catch (Exception e) {
-            return "1.0.0";
+            return "1.0.1";
         }
     }
 }

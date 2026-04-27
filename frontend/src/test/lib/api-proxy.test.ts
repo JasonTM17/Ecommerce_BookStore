@@ -35,6 +35,12 @@ describe("api proxy target resolution", () => {
     ).toBe("https://bookstore-api-a1xl.onrender.com/api");
   });
 
+  it("uses the public demo backend when no proxy target is configured", () => {
+    expect(resolveProxyTarget({})).toBe(
+      "https://bookstore-api-a1xl.onrender.com/api",
+    );
+  });
+
   it("normalizes missing api suffix", () => {
     expect(
       normalizeProxyTarget("https://bookstore-api-a1xl.onrender.com"),

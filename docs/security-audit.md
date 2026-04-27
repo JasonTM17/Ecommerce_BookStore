@@ -17,7 +17,7 @@ This project is a portfolio/demo bookstore, but the public deployment should sti
 - Moved portfolio demo account passwords out of source defaults; Render now generates demo passwords and the app no longer logs them.
 - Disabled demo seeding by default outside explicit render/e2e settings; dev/local now require opt-in env vars and private demo passwords.
 - Restricted email test endpoints to admin-authenticated users even when the test controller is enabled.
-- Reduced public actuator health detail exposure in production/render profiles while preserving liveness/readiness health checks.
+- Reduced public actuator and custom health detail exposure in production/render profiles while preserving liveness/readiness health checks.
 - Removed broad wildcard default CORS origins from backend security defaults.
 - Required `JWT_SECRET` explicitly in production/render profiles.
 - Required production `DB_PASSWORD` and `APP_BASE_URL` explicitly so the prod profile no longer falls back to local demo values.
@@ -26,6 +26,8 @@ This project is a portfolio/demo bookstore, but the public deployment should sti
 - Skipped multipart body scanning in the input validation filter; upload validation is handled by `StorageService`.
 - Hardened upload storage path resolution and delete handling so files must remain under the configured upload root.
 - Reduced outbound chatbot fragility by shortening shared `RestTemplate` timeouts and recording Grok fallback responses separately from provider-backed responses.
+- Switched the frontend to call the same-origin `/api` proxy by default, with a public Render backend fallback for standalone local/Docker Hub runs.
+- Added generated PNG/ICO app icons so the browser/PWA metadata no longer depends only on the legacy SVG icon.
 - Updated `follow-redirects` in frontend and mobile lockfiles to `1.16.0`.
 - Upgraded the frontend runtime/tooling from Next.js 14/React 18/ESLint 8/Vitest 2 to Next.js 16/React 19/ESLint 9/Vitest 4 and migrated the removed `next lint`/middleware conventions.
 - Added a frontend `postcss` override to keep Next's internal PostCSS dependency on the patched `8.5.10` line.

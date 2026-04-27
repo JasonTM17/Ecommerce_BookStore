@@ -173,7 +173,7 @@ export default function HomePage() {
                   {t("home.heroTitleLead")}{" "}
                   <span className="italic text-[#777169]">
                     {t("home.heroTitleAccent")}
-                  </span>
+                  </span>{" "}
                   <br />
                   <span>{t("home.heroTitleTail")}</span>
                 </h1>
@@ -312,8 +312,7 @@ export default function HomePage() {
             </div>
 
             <h2 className="eleven-display mx-auto max-w-3xl text-4xl leading-tight md:text-5xl">
-              {t("home.ctaTitleLead")}
-              <br />
+              {t("home.ctaTitleLead")} <br />
               <span className="italic text-[#777169]">
                 {t("home.ctaTitleAccent")}
               </span>

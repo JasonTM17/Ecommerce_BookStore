@@ -5,9 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -58,6 +62,31 @@ class HealthControllerTest {
         assertThat(content).contains("database");
         assertThat(content).contains("memory");
         assertThat(content).contains("disk");
+    }
+
+    @Test
+    @DisplayName("GET /api/health hides internal details on render profile")
+    void healthCheck_hidesInternalDetailsInRenderProfile() throws Exception {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource(
+                "jdbc:h2:mem:health-sanitized;DB_CLOSE_DELAY=-1",
+                "sa",
+                ""
+        );
+        MockEnvironment environment = new MockEnvironment();
+        environment.setActiveProfiles("render");
+        HealthController controller = new HealthController(dataSource, environment);
+        ReflectionTestUtils.setField(controller, "applicationName", "bookstore-api");
+        MockMvc renderMockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+
+        renderMockMvc.perform(get("/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").exists())
+                .andExpect(jsonPath("$.service").exists())
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.version").doesNotExist())
+                .andExpect(jsonPath("$.database").doesNotExist())
+                .andExpect(jsonPath("$.memory").doesNotExist())
+                .andExpect(jsonPath("$.disk").doesNotExist());
     }
 
     @Test

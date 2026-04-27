@@ -474,6 +474,24 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend-dockerhub-image
           platforms: linux/amd64,linux/arm64
 
+      - name: Summarize backend Docker Hub image
+        if: always()
+        run: |
+          {
+            echo "### Docker Hub backend publish"
+            if [ "${{ steps.dockerhub.outputs.enabled }}" = "true" ]; then
+              echo "- Image: \`docker.io/${{ steps.dockerhub.outputs.namespace }}/ecommerce-bookstore-backend\`"
+              echo "- Version: \`v${{ steps.dockerhub-backend-version.outputs.version }}\`"
+              if [ "${GITHUB_REF_NAME}" = "master" ]; then
+                echo "- Tags: \`latest\`, \`v${{ steps.dockerhub-backend-version.outputs.version }}\`, \`v${{ steps.dockerhub-backend-version.outputs.major }}\`"
+              else
+                echo "- Tags: \`develop\`, \`develop-v${{ steps.dockerhub-backend-version.outputs.version }}\`"
+              fi
+            else
+              echo "- Skipped: Docker Hub secrets are not configured."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   dockerhub-publish-frontend:
     name: Docker Publish Frontend (Docker Hub)
     runs-on: ubuntu-latest
@@ -573,6 +591,24 @@ jobs:
           cache-from: type=gha,scope=frontend-dockerhub-image
           cache-to: type=gha,mode=max,scope=frontend-dockerhub-image
           platforms: linux/amd64
+
+      - name: Summarize frontend Docker Hub image
+        if: always()
+        run: |
+          {
+            echo "### Docker Hub frontend publish"
+            if [ "${{ steps.dockerhub.outputs.enabled }}" = "true" ]; then
+              echo "- Image: \`docker.io/${{ steps.dockerhub.outputs.namespace }}/ecommerce-bookstore-frontend\`"
+              echo "- Version: \`v${{ steps.dockerhub-frontend-version.outputs.version }}\`"
+              if [ "${GITHUB_REF_NAME}" = "master" ]; then
+                echo "- Tags: \`latest\`, \`v${{ steps.dockerhub-frontend-version.outputs.version }}\`, \`v${{ steps.dockerhub-frontend-version.outputs.major }}\`"
+              else
+                echo "- Tags: \`develop\`, \`develop-v${{ steps.dockerhub-frontend-version.outputs.version }}\`"
+              fi
+            else
+              echo "- Skipped: Docker Hub secrets are not configured."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   frontend-build:
     name: Frontend Build
