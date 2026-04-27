@@ -1,27 +1,27 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { apiPublic } from "@/lib/api";
-import { Product, Category } from "@/lib/types";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { ProductCardSkeleton } from "@/components/product-skeleton";
+import { useLanguage } from "@/components/providers/language-provider";
 import { ApiStatusCard } from "@/components/ui/api-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddToCart } from "@/hooks/useAddToCart";
-import { useLanguage } from "@/components/providers/language-provider";
+import { apiPublic } from "@/lib/api";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
-import { ArrowRight } from "lucide-react";
+import { Category, Product } from "@/lib/types";
 
-const CATEGORY_GRADIENTS = [
-  "from-blue-600 to-blue-700",
-  "from-purple-600 to-pink-600",
-  "from-green-600 to-emerald-600",
-  "from-orange-600 to-amber-600",
-  "from-red-600 to-rose-600",
-  "from-indigo-600 to-violet-600",
-  "from-teal-600 to-cyan-600",
-  "from-yellow-600 to-orange-600",
+const CATEGORY_ACCENTS = [
+  "bg-[#0b0b0b]",
+  "bg-[#777169]",
+  "bg-[#b8aa9d]",
+  "bg-[#d9cec3]",
+  "bg-[#4e4e4e]",
+  "bg-[#c8b9aa]",
+  "bg-[#1f1f1f]",
+  "bg-[#a49486]",
 ];
 
 const SECTION_COPY = {
@@ -30,14 +30,56 @@ const SECTION_COPY = {
     errorDescription:
       "Hệ thống đang khởi động hoặc đồng bộ dữ liệu. Vui lòng thử lại sau ít phút.",
     retry: "Thử lại",
+    categoryDescription:
+      "Khám phá các thể loại sách phong phú từ văn học, khoa học đến kỹ năng sống.",
   },
   en: {
     errorTitle: "Store data is temporarily unavailable",
     errorDescription:
       "The backend is still warming up or syncing data. Please try again in a moment.",
     retry: "Try again",
+    categoryDescription:
+      "Explore a broad mix of categories, from literature and science to practical self-growth.",
   },
 } as const;
+
+function SectionHeader({
+  kicker,
+  title,
+  children,
+  href,
+  linkLabel,
+}: {
+  kicker: string;
+  title: string;
+  children?: React.ReactNode;
+  href?: string;
+  linkLabel?: string;
+}) {
+  return (
+    <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p className="eleven-kicker mb-2">{kicker}</p>
+        <h2 className="eleven-display text-3xl leading-tight md:text-4xl">
+          {title}
+        </h2>
+        {children ? (
+          <div className="eleven-body mt-3 max-w-2xl">{children}</div>
+        ) : null}
+      </div>
+
+      {href && linkLabel ? (
+        <Link
+          href={href}
+          className="eleven-pill-white group inline-flex w-fit items-center gap-2 px-4 py-2 text-sm font-medium transition-transform hover:scale-[1.02]"
+        >
+          {linkLabel}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+      ) : null}
+    </div>
+  );
+}
 
 export function FeaturedProducts() {
   const { t, locale } = useLanguage();
@@ -60,7 +102,7 @@ export function FeaturedProducts() {
   if (isLoading) {
     return (
       <section className="py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto max-w-7xl px-4">
           <div className="mb-10 flex items-center justify-between">
             <div>
               <Skeleton className="mb-2 h-9 w-48" />
@@ -81,7 +123,7 @@ export function FeaturedProducts() {
   if (isError) {
     return (
       <section className="py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto max-w-7xl px-4">
           <ApiStatusCard
             compact
             title={sectionCopy.errorTitle}
@@ -101,23 +143,14 @@ export function FeaturedProducts() {
   }
 
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4">
-        <div className="mb-10 flex items-center justify-between">
-          <div>
-            <h2 className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl font-bold text-transparent">
-              {t("common.bestseller")}
-            </h2>
-            <p className="mt-1 text-gray-500">{t("home.showcaseLikes")}</p>
-          </div>
-          <Link
-            href="/products?featured=true"
-            className="group flex items-center gap-2 font-medium text-blue-600 transition-colors hover:text-blue-700"
-          >
-            {t("common.viewAll")}
-            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
+    <section className="bg-white py-16">
+      <div className="container mx-auto max-w-7xl px-4">
+        <SectionHeader
+          kicker={t("home.showcaseLikes")}
+          title={t("common.bestseller")}
+          href="/products?featured=true"
+          linkLabel={t("common.viewAll")}
+        />
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {products.slice(0, 8).map((product, index) => (
             <ProductCard
@@ -154,8 +187,8 @@ export function NewProducts() {
 
   if (isLoading) {
     return (
-      <section className="bg-gradient-to-b from-gray-50/50 to-white py-16">
-        <div className="container mx-auto px-4">
+      <section className="bg-[#f6f6f6] py-16">
+        <div className="container mx-auto max-w-7xl px-4">
           <div className="mb-10 flex items-center justify-between">
             <div>
               <Skeleton className="mb-2 h-9 w-48" />
@@ -175,8 +208,8 @@ export function NewProducts() {
 
   if (isError) {
     return (
-      <section className="bg-gradient-to-b from-gray-50/50 to-white py-16">
-        <div className="container mx-auto px-4">
+      <section className="bg-[#f6f6f6] py-16">
+        <div className="container mx-auto max-w-7xl px-4">
           <ApiStatusCard
             compact
             title={sectionCopy.errorTitle}
@@ -196,23 +229,14 @@ export function NewProducts() {
   }
 
   return (
-    <section className="bg-gradient-to-b from-gray-50/50 to-white py-16">
-      <div className="container mx-auto px-4">
-        <div className="mb-10 flex items-center justify-between">
-          <div>
-            <h2 className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl font-bold text-transparent">
-              {t("common.newArrival")}
-            </h2>
-            <p className="mt-1 text-gray-500">{t("home.ctaTitleAccent")}</p>
-          </div>
-          <Link
-            href="/products?isNew=true"
-            className="group flex items-center gap-2 font-medium text-blue-600 transition-colors hover:text-blue-700"
-          >
-            {t("common.viewAll")}
-            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
+    <section className="bg-[#f6f6f6] py-16">
+      <div className="container mx-auto max-w-7xl px-4">
+        <SectionHeader
+          kicker={t("home.ctaTitleAccent")}
+          title={t("common.newArrival")}
+          href="/products?isNew=true"
+          linkLabel={t("common.viewAll")}
+        />
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {products.slice(0, 8).map((product, index) => (
             <ProductCard
@@ -249,7 +273,7 @@ export function CategorySection() {
   if (isLoading) {
     return (
       <section className="py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto max-w-7xl px-4">
           <div className="mb-10">
             <Skeleton className="mb-2 h-9 w-48" />
             <Skeleton className="h-5 w-36" />
@@ -267,7 +291,7 @@ export function CategorySection() {
   if (isError) {
     return (
       <section className="py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto max-w-7xl px-4">
           <ApiStatusCard
             compact
             title={sectionCopy.errorTitle}
@@ -287,17 +311,14 @@ export function CategorySection() {
   }
 
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4">
-        <div className="mb-12 text-center">
-          <h2 className="mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl font-bold text-transparent">
+    <section className="bg-white py-16">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <p className="eleven-kicker mb-3">{t("home.libraryBadge")}</p>
+          <h2 className="eleven-display mb-4 text-3xl leading-tight md:text-4xl">
             {t("nav.categories")}
           </h2>
-          <p className="mx-auto max-w-xl text-gray-500">
-            {locale === "vi"
-              ? "Khám phá các thể loại sách phong phú từ văn học, khoa học đến kỹ năng sống."
-              : "Explore a broad mix of categories, from literature and science to practical self-growth."}
-          </p>
+          <p className="eleven-body">{sectionCopy.categoryDescription}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -305,21 +326,21 @@ export function CategorySection() {
             <Link
               key={category.id}
               href={`/categories?id=${category.id}`}
-              className="group relative h-36 overflow-hidden rounded-2xl"
+              className="eleven-surface group relative h-40 overflow-hidden rounded-3xl p-5 transition-transform duration-300 hover:-translate-y-1"
             >
               <div
-                className={`absolute inset-0 bg-gradient-to-br ${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]} transition-transform duration-500 group-hover:scale-110`}
+                className={`absolute right-5 top-5 h-3 w-10 rounded-full ${
+                  CATEGORY_ACCENTS[index % CATEGORY_ACCENTS.length]
+                }`}
               />
-              <div className="absolute inset-0 bg-black/20 transition-colors group-hover:bg-black/10" />
-              <div className="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-white">
-                <h3 className="text-center text-lg font-bold transition-transform duration-300 group-hover:scale-105">
+              <div className="flex h-full flex-col justify-end">
+                <h3 className="pr-10 text-xl font-light leading-tight text-black">
                   {category.name}
                 </h3>
                 {typeof category.productCount === "number" &&
                   category.productCount > 0 && (
-                    <p className="mt-2 rounded-full bg-white/20 px-3 py-1 text-sm text-white/80 backdrop-blur-sm">
+                    <p className="eleven-muted mt-3 text-sm">
                       {category.productCount.toLocaleString(
                         locale === "vi" ? "vi-VN" : "en-US",
                       )}{" "}
@@ -328,8 +349,8 @@ export function CategorySection() {
                   )}
               </div>
 
-              <div className="absolute right-3 top-3 flex h-8 w-8 translate-x-2 items-center justify-center rounded-full bg-white/20 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                <ArrowRight className="h-4 w-4 text-white" />
+              <div className="eleven-pill-stone absolute bottom-5 right-5 flex h-9 w-9 items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <ArrowRight className="h-4 w-4 text-black" />
               </div>
             </Link>
           ))}

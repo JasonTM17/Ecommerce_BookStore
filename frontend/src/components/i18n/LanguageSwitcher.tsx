@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Globe, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, ChevronDown, Globe } from "lucide-react";
 import { useLanguage } from "@/components/providers/language-provider";
+import { cn } from "@/lib/utils";
 
 const languages = [
   { code: "vi", name: "Tiếng Việt", flag: "VN" },
@@ -14,7 +14,8 @@ export function LanguageSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
   const { locale, setLocale, isLoading } = useLanguage();
 
-  const currentLang = languages.find((language) => language.code === locale) || languages[0];
+  const currentLang =
+    languages.find((language) => language.code === locale) || languages[0];
 
   const handleSwitch = (newLocale: string) => {
     setIsOpen(false);
@@ -32,23 +33,29 @@ export function LanguageSwitcher() {
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600",
-          "hover:bg-gray-100 transition-colors",
-          isLoading && "opacity-60 cursor-wait"
+          "eleven-pill-stone flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium",
+          "transition-colors hover:bg-[#eee9e4]",
+          isLoading && "cursor-wait opacity-60",
         )}
       >
-        <Globe className="w-4 h-4" />
+        <Globe className="h-4 w-4" />
         <span className="hidden sm:inline">{currentLang.name}</span>
-        <ChevronDown className={cn("w-3 h-3 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown
+          className={cn("h-3 w-3 transition-transform", isOpen && "rotate-180")}
+        />
       </button>
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden="true" />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
           <div
             role="listbox"
             aria-label="Select language"
-            className="absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 overflow-hidden"
+            className="eleven-surface absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl bg-white py-1"
           >
             {languages.map((language) => (
               <button
@@ -57,15 +64,17 @@ export function LanguageSwitcher() {
                 aria-selected={language.code === locale}
                 onClick={() => handleSwitch(language.code)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+                  "flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors",
                   language.code === locale
-                    ? "bg-blue-50 text-blue-600 font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
+                    ? "bg-[#f5f2ef] font-medium text-black"
+                    : "text-[#4e4e4e] hover:bg-[#f8f6f3] hover:text-black",
                 )}
               >
                 <span>{language.flag}</span>
                 <span>{language.name}</span>
-                {language.code === locale && <span className="ml-auto text-blue-500">✓</span>}
+                {language.code === locale && (
+                  <Check className="ml-auto h-4 w-4 text-black" />
+                )}
               </button>
             ))}
           </div>

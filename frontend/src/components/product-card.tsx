@@ -73,14 +73,14 @@ export function ProductCard({
   return (
     <div
       data-testid="product-card"
-      className="group relative bg-white/70 backdrop-blur-xl rounded-2xl overflow-hidden shadow border border-white/60 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 ring-1 ring-black/5 hover:ring-blue-500/20"
+      className="eleven-surface group relative overflow-hidden rounded-[26px] bg-white transition-transform duration-300 hover:-translate-y-1"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-50 to-gray-200 overflow-hidden">
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f2ef]">
         <Link href={productHref} scroll className="block h-full">
           {!imageLoaded && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+            <div className="absolute inset-0 animate-pulse bg-[#e8dfd6]" />
           )}
 
           {imageSrc ? (
@@ -103,30 +103,30 @@ export function ProductCard({
               className="absolute inset-0 flex items-center justify-center"
               aria-label={t("common.noImage")}
             >
-              <BookOpen className="h-16 w-16 text-gray-300" />
+              <BookOpen className="h-16 w-16 text-[#b7a99b]" />
             </div>
           )}
 
           <div
             className={cn(
-              "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-all duration-500",
+              "absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent transition-opacity duration-300",
               isHovered ? "opacity-100" : "opacity-0",
             )}
           />
 
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
+          <div className="absolute left-3 top-3 flex flex-col gap-2">
             {hasDiscount && (
-              <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+              <span className="rounded-full bg-black px-3 py-1.5 text-xs font-bold text-white shadow-[rgba(0,0,0,0.12)_0_6px_16px]">
                 -{product.discountPercent}%
               </span>
             )}
             {product.isNew && (
-              <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+              <span className="eleven-pill-white px-3 py-1.5 text-xs font-bold">
                 {t("common.newArrival")}
               </span>
             )}
             {product.isBestseller && (
-              <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+              <span className="eleven-pill-stone px-3 py-1.5 text-xs font-bold">
                 {t("common.bestseller")}
               </span>
             )}
@@ -143,10 +143,10 @@ export function ProductCard({
               : t("common.addToWishlist")
           }
           className={cn(
-            "absolute top-3 right-3 z-10 w-10 h-10 bg-white/90 backdrop-blur-md hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all duration-500",
+            "absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/94 shadow-[rgba(0,0,0,0.12)_0_6px_18px] transition-all duration-300 hover:bg-white",
             isWishlisted
-              ? "text-red-500 shadow-red-500/20 scale-110"
-              : "text-gray-400 hover:text-red-500 hover:scale-110 hover:shadow-xl",
+              ? "scale-105 text-red-500"
+              : "text-[#777169] hover:scale-105 hover:text-red-500",
             isHovered
               ? "pointer-events-auto opacity-100 translate-y-0"
               : "pointer-events-none opacity-0 -translate-y-4",
@@ -168,7 +168,7 @@ export function ProductCard({
             onClick={handleAddToCart}
             disabled={addToCartDisabled}
             data-testid="product-card-add-to-cart"
-            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 transition-all duration-500 hover:from-blue-500 hover:to-indigo-500 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+            className="eleven-pill-black flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-transform duration-300 hover:scale-[1.01] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
           >
             <ShoppingCart className="h-4 w-4" />
             <span>
@@ -182,29 +182,23 @@ export function ProductCard({
         </div>
       </div>
 
-      <Link
-        href={productHref}
-        scroll
-        className="block p-5 bg-gradient-to-b from-white/50 to-white/90"
-      >
+      <Link href={productHref} scroll className="block bg-white p-5">
         {product.category && (
-          <p className="text-xs text-blue-600 font-medium mb-2 uppercase tracking-wide">
+          <p className="eleven-kicker mb-2 line-clamp-1">
             {product.category.name}
           </p>
         )}
 
-        <h3 className="font-bold text-gray-900 line-clamp-2 mb-1 group-hover:text-blue-600 group-hover:underline decoration-blue-200 underline-offset-4 transition-all duration-300 min-h-[2.5rem]">
+        <h3 className="mb-1 line-clamp-2 min-h-[2.5rem] font-medium leading-tight text-black underline-offset-4 transition-all duration-300 group-hover:underline">
           {product.name}
         </h3>
 
         {product.author && (
-          <p className="text-sm text-gray-500 mb-3 truncate">
-            {product.author}
-          </p>
+          <p className="eleven-muted mb-3 truncate text-sm">{product.author}</p>
         )}
 
         {product.avgRating && product.avgRating > 0 && (
-          <div className="flex items-center gap-2 mb-3">
+          <div className="mb-3 flex items-center gap-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -213,24 +207,24 @@ export function ProductCard({
                   className={cn(
                     "transition-colors duration-200",
                     i < Math.round(product.avgRating!)
-                      ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-300",
+                      ? "fill-[#b7a99b] text-[#b7a99b]"
+                      : "text-[#ddd7d0]",
                   )}
                 />
               ))}
             </div>
-            <span className="text-xs text-gray-500">
+            <span className="eleven-muted text-xs">
               ({product.reviewCount} {t("common.reviews")})
             </span>
           </div>
         )}
 
-        <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="text-xl font-extrabold bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <span className="text-xl font-semibold text-black">
             {formatCurrency(product.currentPrice)}
           </span>
           {hasDiscount && (
-            <span className="text-sm font-medium text-red-500 line-through decoration-red-500/30">
+            <span className="text-sm font-medium text-[#a64b4b] line-through decoration-[#a64b4b]/30">
               {formatCurrency(product.price)}
             </span>
           )}
@@ -238,13 +232,13 @@ export function ProductCard({
 
         <div className="mt-3 flex items-center gap-2">
           {product.inStock ? (
-            <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#3f7a4f]">
+              <span className="h-2 w-2 rounded-full bg-[#3f7a4f]" />
               {t("common.inStock")}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-xs text-red-600 font-medium">
-              <span className="w-2 h-2 bg-red-500 rounded-full" />
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#a64b4b]">
+              <span className="h-2 w-2 rounded-full bg-[#a64b4b]" />
               {t("common.outOfStock")}
             </span>
           )}
