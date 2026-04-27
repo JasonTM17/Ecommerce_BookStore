@@ -20,6 +20,7 @@ This project is a portfolio/demo bookstore, but the public deployment should sti
 - Reduced public actuator health detail exposure in production/render profiles while preserving liveness/readiness health checks.
 - Removed broad wildcard default CORS origins from backend security defaults.
 - Required `JWT_SECRET` explicitly in production/render profiles.
+- Required production `DB_PASSWORD` and `APP_BASE_URL` explicitly so the prod profile no longer falls back to local demo values.
 - Tightened request-body validation so chunked over-limit payloads are rejected instead of truncated silently.
 - Skipped multipart body scanning in the input validation filter; upload validation is handled by `StorageService`.
 - Hardened upload storage path resolution and delete handling so files must remain under the configured upload root.
