@@ -18,7 +18,14 @@ describe("publicWarmupQueryOptions", () => {
     ).toBe(true);
 
     expect(
-      publicWarmupQueryOptions.retry(3, {
+      publicWarmupQueryOptions.retry(4, {
+        isAxiosError: true,
+        response: { status: 503 },
+      }),
+    ).toBe(true);
+
+    expect(
+      publicWarmupQueryOptions.retry(5, {
         isAxiosError: true,
         response: { status: 503 },
       }),

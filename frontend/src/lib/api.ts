@@ -26,6 +26,9 @@ export function setGlobalErrorHandler(handler: ErrorHandler | null) {
 const DEFAULT_RETRY_COUNT = 2;
 const DEFAULT_RETRY_DELAY = 1000;
 const DEFAULT_TIMEOUT_MS = 15000;
+const PUBLIC_TIMEOUT_MS = Number(
+  process.env.NEXT_PUBLIC_API_TIMEOUT_MS || "65000",
+);
 const AUTH_COOKIE_PATH = "/";
 
 function isSecureCookieContext() {
@@ -90,7 +93,7 @@ async function retryRequest(
 // Public API instance (no auth headers)
 export const apiPublic = axios.create({
   baseURL: API_URL,
-  timeout: DEFAULT_TIMEOUT_MS,
+  timeout: PUBLIC_TIMEOUT_MS,
   headers: {
     "Content-Type": "application/json",
   },

@@ -58,6 +58,8 @@ agency-agents/
 *.log
 *.tmp
 *.temp
+*.tsbuildinfo
+.codex-artifacts/
 tmp-*
 tmp_*
 .cache/

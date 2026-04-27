@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node scripts/start-standalone.mjs",
+    "start:local": "node scripts/start-standalone.mjs --port 3001 --rebuild --kill-port",
+    "restart:local": "npm run start:local",
     "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run",

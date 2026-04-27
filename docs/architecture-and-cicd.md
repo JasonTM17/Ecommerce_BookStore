@@ -8,7 +8,7 @@ This document summarizes the current technical architecture of Ecommerce BookSto
 
 The application follows a **micro-monolith** model:
 
-- **Frontend**: Next.js 14 App Router
+- **Frontend**: Next.js 16 App Router
 - **Backend**: Spring Boot 3.x REST API
 - **Database**: MySQL for local/E2E, PostgreSQL for Render production
 - **Runtime proxy**: frontend reaches backend through `/api`

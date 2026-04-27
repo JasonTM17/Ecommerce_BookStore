@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveProxyTargets } from "@/lib/server/api-proxy";
+import {
+  resolveProxyTargets,
+  shouldFallbackProxyResponseStatus,
+} from "@/lib/server/api-proxy";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.API_PROXY_TIMEOUT_MS || "65000");
 const INTERNAL_PROXY_TIMEOUT_MS = Math.min(
@@ -72,6 +75,17 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
             signal: controller.signal,
           },
         );
+
+        if (
+          index < targets.length - 1 &&
+          shouldFallbackProxyResponseStatus(response.status)
+        ) {
+          lastError = new Error(
+            `Proxy target returned retryable status ${response.status}`,
+          );
+          await response.body?.cancel().catch(() => undefined);
+          continue;
+        }
 
         const headers = new Headers(response.headers);
         STRIPPED_PROXY_RESPONSE_HEADERS.forEach((header) => {

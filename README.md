@@ -5,7 +5,7 @@ Portfolio full-stack bookstore built with Spring Boot, Next.js, MySQL, Docker Co
 ## Stack
 
 - `backend/`: Spring Boot 3.2, JPA/Hibernate, JWT auth, MySQL, Swagger, Actuator
-- `frontend/`: Next.js 14 App Router, Tailwind CSS, Vitest, Playwright
+- `frontend/`: Next.js 16 App Router, Tailwind CSS, Vitest, Playwright
 - `mobile/`: mobile app workspace kept for future expansion
 
 ## Demo-first quick start
@@ -58,6 +58,16 @@ Backend local/dev reads the repo-root `.env` file through Spring config import, 
 cd frontend
 npm install
 npm run dev
+```
+
+For a production-like local check, use the standalone runner. It rebuilds the
+Next output, prepares `public` and `.next/static` inside the standalone bundle,
+stops any stale process on port `3001`, then starts the same server shape used
+by Docker/Render:
+
+```bash
+cd frontend
+npm run start:local
 ```
 
 ## Weekly flash sale automation
@@ -134,7 +144,7 @@ Please refer to the `docs/` folder for comprehensive guides:
 ```text
 Ecommerce_BookStore/
 |-- backend/          # Spring Boot REST API
-|-- frontend/         # Next.js 14 App Router
+|-- frontend/         # Next.js 16 App Router
 |-- docs/             # Project documentation
 |-- scripts/          # CI/E2E helper scripts
 |-- docker-compose.yml

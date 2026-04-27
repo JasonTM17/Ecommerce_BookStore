@@ -3,6 +3,7 @@ import {
   normalizeProxyTarget,
   resolveProxyTargets,
   resolveProxyTarget,
+  shouldFallbackProxyResponseStatus,
 } from "@/lib/server/api-proxy";
 
 describe("api proxy target resolution", () => {
@@ -45,5 +46,14 @@ describe("api proxy target resolution", () => {
     expect(
       normalizeProxyTarget("https://bookstore-api-a1xl.onrender.com"),
     ).toBe("https://bookstore-api-a1xl.onrender.com/api");
+  });
+
+  it("falls back only for transient proxy response statuses", () => {
+    expect(shouldFallbackProxyResponseStatus(429)).toBe(true);
+    expect(shouldFallbackProxyResponseStatus(502)).toBe(true);
+    expect(shouldFallbackProxyResponseStatus(503)).toBe(true);
+    expect(shouldFallbackProxyResponseStatus(504)).toBe(true);
+    expect(shouldFallbackProxyResponseStatus(404)).toBe(false);
+    expect(shouldFallbackProxyResponseStatus(500)).toBe(false);
   });
 });

@@ -8,7 +8,7 @@ Tài liệu này mô tả tổng quan kỹ thuật của Ecommerce BookStore và
 
 Ứng dụng đi theo mô hình **micro-monolith**:
 
-- **Frontend**: Next.js 14 App Router
+- **Frontend**: Next.js 16 App Router
 - **Backend**: Spring Boot 3.x REST API
 - **Database**: MySQL cho local/E2E, PostgreSQL cho Render production
 - **Proxy runtime**: frontend gọi backend qua `/api`

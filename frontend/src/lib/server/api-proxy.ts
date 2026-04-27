@@ -1,4 +1,5 @@
 const FALLBACK_PROXY_TARGET = "https://bookstore-api-a1xl.onrender.com/api";
+const FALLBACK_PROXY_STATUSES = new Set([429, 502, 503, 504]);
 
 export function normalizeProxyTarget(rawTarget?: string) {
   const target = (rawTarget || FALLBACK_PROXY_TARGET)
@@ -40,4 +41,8 @@ export function resolveProxyTarget(
     | { BACKEND_HOSTPORT?: string; API_PROXY_TARGET?: string },
 ) {
   return resolveProxyTargets(env)[0];
+}
+
+export function shouldFallbackProxyResponseStatus(status: number) {
+  return FALLBACK_PROXY_STATUSES.has(status);
 }

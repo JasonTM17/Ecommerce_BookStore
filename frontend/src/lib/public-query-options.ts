@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 
 const RETRYABLE_HTTP_STATUS = new Set([429, 502, 503, 504]);
-const MAX_PUBLIC_WARMUP_RETRIES = 3;
+const MAX_PUBLIC_WARMUP_RETRIES = 5;
 
 export const publicWarmupQueryOptions = {
   retry(failureCount: number, error: unknown) {
@@ -23,6 +23,6 @@ export const publicWarmupQueryOptions = {
     );
   },
   retryDelay(attemptIndex: number) {
-    return Math.min(1500 * 2 ** attemptIndex, 8000);
+    return Math.min(1500 * 2 ** attemptIndex, 15000);
   },
 } as const;
