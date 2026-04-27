@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -178,8 +178,27 @@ export default function ProductDetailPage() {
     productId && !Number.isNaN(numericId) && numericId > 0,
   );
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  useLayoutEffect(() => {
+    const resetScroll = () => {
+      if (window.location.hash) {
+        return;
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+
+    const animationFrames: number[] = [];
+    resetScroll();
+    animationFrames.push(
+      window.requestAnimationFrame(() => {
+        resetScroll();
+        animationFrames.push(window.requestAnimationFrame(resetScroll));
+      }),
+    );
+
+    return () => {
+      animationFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    };
   }, [productId]);
 
   const {
