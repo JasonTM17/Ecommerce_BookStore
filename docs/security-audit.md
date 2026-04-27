@@ -1,6 +1,6 @@
 # Security audit notes
 
-Last reviewed: 2026-04-26
+Last reviewed: 2026-04-27
 
 This project is a portfolio/demo bookstore, but the public deployment should still avoid avoidable leaks and fragile defaults.
 
@@ -15,12 +15,13 @@ This project is a portfolio/demo bookstore, but the public deployment should sti
 - Aligned backend CSP and Permissions-Policy values across Spring Security and the global security header filter, including CORS preflight responses.
 - Replaced emoji-based backend log prefixes with ASCII text so Windows/CI logs do not render security events as broken glyphs.
 - Moved portfolio demo account passwords out of source defaults; Render now generates demo passwords and the app no longer logs them.
-- Disabled demo seeding by default outside explicit dev/local/render/e2e settings.
+- Disabled demo seeding by default outside explicit render/e2e settings; dev/local now require opt-in env vars and private demo passwords.
 - Restricted email test endpoints to admin-authenticated users even when the test controller is enabled.
 - Reduced public actuator health detail exposure in production/render profiles while preserving liveness/readiness health checks.
 - Removed broad wildcard default CORS origins from backend security defaults.
 - Required `JWT_SECRET` explicitly in production/render profiles.
 - Required production `DB_PASSWORD` and `APP_BASE_URL` explicitly so the prod profile no longer falls back to local demo values.
+- Removed production-like default database passwords from `docker-compose.yml`; compose now requires private DB passwords from environment variables.
 - Tightened request-body validation so chunked over-limit payloads are rejected instead of truncated silently.
 - Skipped multipart body scanning in the input validation filter; upload validation is handled by `StorageService`.
 - Hardened upload storage path resolution and delete handling so files must remain under the configured upload root.
@@ -49,6 +50,7 @@ Validation run: `npm run typecheck` and `npx expo-doctor` pass locally. A real A
 ## Operational recommendations
 
 - Keep `JWT_SECRET`, database credentials, mail credentials, VNPay keys, and Grok API keys only in deployment secrets.
+- Treat `.env.test`, `docker-compose.e2e.yml`, and `docker-compose.dev.yml` values as local/CI-only fixtures; never reuse them for a public deployment.
 - Keep `management.endpoint.health.show-details=when-authorized` or stricter in public environments.
 - Move browser auth tokens to HttpOnly cookies in a future auth-flow change with CSRF protection; this was not done here because it changes API/browser contracts.
 - Tighten frontend CSP further in a framework upgrade pass by removing `unsafe-inline`/`unsafe-eval` once the app has nonce/hash support for Next runtime scripts.

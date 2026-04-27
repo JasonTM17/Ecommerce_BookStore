@@ -1,6 +1,29 @@
 /** @type {import('next').NextConfig} */
 const isProduction = process.env.NODE_ENV === "production";
 const localApiSources = ["http://localhost:8080", "http://127.0.0.1:8080"];
+
+function getHttpOrigin(value) {
+  if (!value || !/^https?:\/\//i.test(value)) {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+const configuredApiOrigins = [
+  process.env.NEXT_PUBLIC_API_URL,
+  process.env.API_PROXY_TARGET,
+  process.env.BACKEND_PUBLIC_URL,
+]
+  .map(getHttpOrigin)
+  .filter(Boolean);
+const allowedApiOrigins = Array.from(
+  new Set(["https://bookstore-api-a1xl.onrender.com", ...configuredApiOrigins]),
+);
 const scriptSources = [
   "'self'",
   "'unsafe-inline'",
@@ -11,11 +34,12 @@ const imageSources = [
   "data:",
   "blob:",
   "https:",
+  ...configuredApiOrigins,
   ...(!isProduction ? localApiSources : []),
 ];
 const connectSources = [
   "'self'",
-  "https://bookstore-api-a1xl.onrender.com",
+  ...allowedApiOrigins,
   ...(!isProduction ? localApiSources : []),
 ];
 

@@ -5,17 +5,21 @@ services:
     container_name: bookstore-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass123
-      MYSQL_DATABASE: bookstore
-      MYSQL_USER: bookstore
-      MYSQL_PASSWORD: bookstore123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD to a private value}
+      MYSQL_DATABASE: ${DB_NAME:-bookstore}
+      MYSQL_USER: ${DB_USERNAME:-bookstore}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD to a private value}
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass123"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +35,7 @@ services:
     environment:
       POSTGRES_DB: bookstore
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD to a private value}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
@@ -57,15 +61,15 @@ services:
       # MySQL (primary)
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_NAME: bookstore
-      DB_USERNAME: bookstore
-      DB_PASSWORD: bookstore123
+      DB_NAME: ${DB_NAME:-bookstore}
+      DB_USERNAME: ${DB_USERNAME:-bookstore}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD to a private value}
       # PostgreSQL (optional, for specific features)
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: bookstore
       POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: postgres123
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD to a private value}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to a non-public value with at least 32 bytes}
       CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://frontend:3000
       JPA_DDL_AUTO: update
@@ -120,7 +124,13 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health/liveness"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:8080/api/actuator/health/liveness",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
