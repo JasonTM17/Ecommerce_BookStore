@@ -25,9 +25,19 @@ const STRIPPED_PROXY_RESPONSE_HEADERS = [
 const PUBLIC_PROXY_CACHE_TTL_MS = Number(
   process.env.API_PROXY_PUBLIC_CACHE_TTL_MS || "30000",
 );
+const PUBLIC_PROXY_STALE_TTL_MS = Number(
+  process.env.API_PROXY_PUBLIC_STALE_TTL_MS || "300000",
+);
+const PUBLIC_PROXY_RETRY_DELAY_MS = Number(
+  process.env.API_PROXY_PUBLIC_RETRY_DELAY_MS || "250",
+);
+const PUBLIC_PROXY_RETRIES = Number(
+  process.env.API_PROXY_PUBLIC_RETRIES || "2",
+);
 
 type PublicProxyCacheEntry = {
   expiresAt: number;
+  staleUntil: number;
   status: number;
   statusText: string;
   headers: [string, string][];
@@ -70,6 +80,20 @@ function buildCachedProxyResponse(entry: PublicProxyCacheEntry) {
   });
 }
 
+function delay(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function getProxyAttemptCount(cacheablePublicGet: boolean) {
+  if (!cacheablePublicGet) {
+    return 1;
+  }
+
+  return Math.max(1, PUBLIC_PROXY_RETRIES + 1);
+}
+
 async function proxyRequest(request: NextRequest, pathSegments: string[]) {
   const body =
     request.method === "GET" || request.method === "HEAD"
@@ -104,17 +128,56 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
-        const response = await fetch(
-          buildTargetUrl(request, pathSegments, target),
-          {
-            method: request.method,
-            headers: copyRequestHeaders(request),
-            body,
-            cache: "no-store",
-            redirect: "manual",
-            signal: controller.signal,
-          },
-        );
+        let response: Response | undefined;
+        const attemptCount = getProxyAttemptCount(cacheablePublicGet);
+
+        for (let attempt = 0; attempt < attemptCount; attempt += 1) {
+          try {
+            response = await fetch(
+              buildTargetUrl(request, pathSegments, target),
+              {
+                method: request.method,
+                headers: copyRequestHeaders(request),
+                body,
+                cache: "no-store",
+                redirect: "manual",
+                signal: controller.signal,
+              },
+            );
+          } catch (error) {
+            lastError = error;
+
+            if (
+              attempt < attemptCount - 1 &&
+              !(error instanceof Error && error.name === "AbortError")
+            ) {
+              await delay(PUBLIC_PROXY_RETRY_DELAY_MS * (attempt + 1));
+              continue;
+            }
+
+            throw error;
+          }
+
+          if (!shouldFallbackProxyResponseStatus(response.status)) {
+            break;
+          }
+
+          lastError = new Error(
+            `Proxy target returned retryable status ${response.status}`,
+          );
+
+          if (attempt < attemptCount - 1) {
+            await response.body?.cancel().catch(() => undefined);
+            await delay(PUBLIC_PROXY_RETRY_DELAY_MS * (attempt + 1));
+            continue;
+          }
+        }
+
+        if (!response) {
+          throw lastError instanceof Error
+            ? lastError
+            : new Error("Proxy target did not return a response");
+        }
 
         if (
           index < targets.length - 1 &&
@@ -136,6 +199,10 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
           const responseBody = await response.arrayBuffer();
           publicProxyCache.set(cacheKey, {
             expiresAt: Date.now() + PUBLIC_PROXY_CACHE_TTL_MS,
+            staleUntil:
+              Date.now() +
+              PUBLIC_PROXY_CACHE_TTL_MS +
+              PUBLIC_PROXY_STALE_TTL_MS,
             status: response.status,
             statusText: response.statusText,
             headers: Array.from(headers.entries()),
@@ -147,6 +214,18 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
             statusText: response.statusText,
             headers,
           });
+        }
+
+        if (
+          cacheKey &&
+          shouldFallbackProxyResponseStatus(response.status) &&
+          PUBLIC_PROXY_STALE_TTL_MS > 0
+        ) {
+          const cached = publicProxyCache.get(cacheKey);
+          if (cached && cached.staleUntil > Date.now()) {
+            await response.body?.cancel().catch(() => undefined);
+            return buildCachedProxyResponse(cached);
+          }
         }
 
         return new NextResponse(response.body, {
@@ -161,6 +240,13 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
           (error instanceof Error && error.name === "AbortError");
 
         if (index === targets.length - 1) {
+          if (cacheKey && PUBLIC_PROXY_STALE_TTL_MS > 0) {
+            const cached = publicProxyCache.get(cacheKey);
+            if (cached && cached.staleUntil > Date.now()) {
+              return buildCachedProxyResponse(cached);
+            }
+          }
+
           throw error;
         }
       } finally {
