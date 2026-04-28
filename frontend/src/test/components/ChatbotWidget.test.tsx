@@ -6,6 +6,12 @@ import { chatbotApi } from "@/lib/chatbot";
 const pushMock = vi.fn();
 const authState = { isAuthenticated: false, isLoading: false };
 let currentLocale: "vi" | "en" = "vi";
+const mojibakePattern =
+  /\u00C3|\u00C4|\u00C6|\u00C2|\u00E2\u20AC\u2122|\u00E1\u00BB|\u00E1\u00BA|Nguy\u00E1|S\u00C6|Tr\u00E1\u00BA|\uFFFD/u;
+
+function expectNoMojibake() {
+  expect(document.body.textContent || "").not.toMatch(mojibakePattern);
+}
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -137,6 +143,7 @@ describe("ChatbotWidget", () => {
       "Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng."
     );
     expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent("Grok sẵn sàng · grok-3");
+    expectNoMojibake();
 
     fireEvent.click(screen.getByTestId("chatbot-login-cta"));
 
@@ -165,6 +172,7 @@ describe("ChatbotWidget", () => {
       "Book suggestions, orders, and deals right inside the store."
     );
     expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent("Grok ready · grok-3");
+    expectNoMojibake();
   });
 
   it("renders the ready state copy in English for authenticated users", async () => {
@@ -189,6 +197,7 @@ describe("ChatbotWidget", () => {
       "Press Enter to send, Shift + Enter for a new line"
     );
     expect(screen.getByText("Find books about Python")).toBeInTheDocument();
+    expectNoMojibake();
   });
 
   it("renders the disabled state copy and keeps the input locked", async () => {
@@ -212,5 +221,6 @@ describe("ChatbotWidget", () => {
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
       "Chatbot đang tạm tắt. Bạn vẫn có thể duyệt sách và khuyến mãi trực tiếp."
     );
+    expectNoMojibake();
   });
 });

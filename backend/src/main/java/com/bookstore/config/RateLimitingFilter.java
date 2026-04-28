@@ -60,6 +60,12 @@ public class RateLimitingFilter implements Filter {
         
         String clientIp = getClientIP(request);
         String requestUri = request.getRequestURI();
+
+        if (isHealthEndpoint(requestUri)) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+
         String key = clientIp + ":" + requestUri;
         
         RateLimitConfig config = getRateLimitConfig(request.getMethod(), requestUri);
@@ -123,6 +129,19 @@ public class RateLimitingFilter implements Filter {
                 || uri.equals("/reviews")
                 || uri.equals("/api/coupons/available")
                 || uri.equals("/coupons/available");
+    }
+
+    private boolean isHealthEndpoint(String uri) {
+        return uri.equals("/api/health")
+                || uri.startsWith("/api/health/")
+                || uri.equals("/health")
+                || uri.startsWith("/health/")
+                || uri.equals("/api/actuator/health")
+                || uri.startsWith("/api/actuator/health/")
+                || uri.equals("/actuator/health")
+                || uri.startsWith("/actuator/health/")
+                || uri.equals("/api/chatbot/health")
+                || uri.equals("/chatbot/health");
     }
     
     private String getClientIP(HttpServletRequest request) {

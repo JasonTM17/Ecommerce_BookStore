@@ -4,6 +4,15 @@ import {
   resolveProxyTargets,
   shouldFallbackProxyResponseStatus,
 } from "@/lib/server/api-proxy";
+import {
+  demoBrands,
+  demoCategories,
+  demoRootCategories,
+  getDemoActiveFlashSales,
+  getDemoFeaturedProducts,
+  getDemoNewProducts,
+  getDemoProductsPage,
+} from "@/lib/demo-storefront";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.API_PROXY_TIMEOUT_MS || "65000");
 const INTERNAL_PROXY_TIMEOUT_MS = Math.min(
@@ -89,6 +98,160 @@ function buildCachedProxyResponse(entry: PublicProxyCacheEntry) {
     statusText: entry.statusText,
     headers: new Headers(entry.headers),
   });
+}
+
+function buildJsonCacheEntry(
+  payload: unknown,
+  cacheTtlMs: number,
+): PublicProxyCacheEntry {
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  const body = bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  );
+
+  return {
+    expiresAt: Date.now() + cacheTtlMs,
+    staleUntil: Date.now() + cacheTtlMs + PUBLIC_PROXY_STALE_TTL_MS,
+    status: 200,
+    statusText: "OK",
+    headers: [
+      ["content-type", "application/json"],
+      ["cache-control", "no-store"],
+      ["x-bookstore-proxy-fallback", "demo"],
+    ],
+    body,
+  };
+}
+
+function buildApiSuccessPayload(data: unknown, message: string) {
+  return {
+    success: true,
+    data,
+    message,
+    timestamp: Date.now(),
+  };
+}
+
+function getDemoCoupons() {
+  const startDate = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const endDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+
+  return [
+    {
+      id: 7001,
+      code: "BOOKSTORE10",
+      description: "Giảm 10% cho đơn sách từ 200.000đ.",
+      type: "PERCENTAGE",
+      discountValue: 10,
+      minOrderAmount: 200000,
+      maxDiscount: 50000,
+      startDate,
+      endDate,
+      usageLimit: 1000,
+      usedCount: 120,
+      perUserLimit: 1,
+      isActive: true,
+      isPublic: true,
+      isValid: true,
+      isExpired: false,
+      discountDisplay: "Giảm 10%",
+      createdAt: startDate,
+    },
+    {
+      id: 7002,
+      code: "FREESHIP",
+      description: "Miễn phí vận chuyển cho đơn từ 150.000đ.",
+      type: "FREE_SHIPPING",
+      discountValue: 0,
+      minOrderAmount: 150000,
+      maxDiscount: 30000,
+      startDate,
+      endDate,
+      usageLimit: 1000,
+      usedCount: 95,
+      perUserLimit: 1,
+      isActive: true,
+      isPublic: true,
+      isValid: true,
+      isExpired: false,
+      discountDisplay: "Miễn phí vận chuyển",
+      createdAt: startDate,
+    },
+  ];
+}
+
+function buildPublicFallbackEntry(
+  request: NextRequest,
+  pathSegments: string[],
+): PublicProxyCacheEntry | null {
+  const joinedPath = pathSegments.join("/");
+  const params = request.nextUrl.searchParams;
+  const page = Number(params.get("page") || "0");
+  const size = Number(params.get("size") || "12");
+  const fallbackTtlMs = Math.max(PUBLIC_PROXY_CACHE_TTL_MS, 30000);
+  let data: unknown;
+
+  switch (joinedPath) {
+    case "products":
+      data = getDemoProductsPage({
+        keyword: params.get("keyword") || "",
+        categoryId: params.get("categoryId"),
+        brandId: params.get("brandId"),
+        sortBy: params.get("sortBy") || "newest",
+        page,
+        size,
+      });
+      break;
+    case "products/featured":
+      data = getDemoFeaturedProducts();
+      break;
+    case "products/new":
+      data = getDemoNewProducts();
+      break;
+    case "categories":
+      data = demoCategories;
+      break;
+    case "categories/root":
+      data = demoRootCategories;
+      break;
+    case "brands":
+      data = demoBrands;
+      break;
+    case "flash-sales/active":
+      data = getDemoActiveFlashSales();
+      break;
+    case "coupons/available":
+      data = getDemoCoupons();
+      break;
+    default:
+      return null;
+  }
+
+  return buildJsonCacheEntry(
+    buildApiSuccessPayload(
+      data,
+      "Using portfolio fallback data while the backend warms up.",
+    ),
+    fallbackTtlMs,
+  );
+}
+
+function buildPublicFallbackResponse(
+  request: NextRequest,
+  pathSegments: string[],
+  cacheKey: string | null,
+) {
+  const fallbackEntry = buildPublicFallbackEntry(request, pathSegments);
+  if (!fallbackEntry) {
+    return null;
+  }
+
+  if (cacheKey) {
+    publicProxyCache.set(cacheKey, fallbackEntry);
+  }
+
+  return buildCachedProxyResponse(fallbackEntry);
 }
 
 function delay(ms: number) {
@@ -239,6 +402,18 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
           }
         }
 
+        if (cacheKey && shouldFallbackProxyResponseStatus(response.status)) {
+          await response.body?.cancel().catch(() => undefined);
+          const fallbackResponse = buildPublicFallbackResponse(
+            request,
+            pathSegments,
+            cacheKey,
+          );
+          if (fallbackResponse) {
+            return fallbackResponse;
+          }
+        }
+
         return new NextResponse(response.body, {
           status: response.status,
           statusText: response.statusText,
@@ -258,6 +433,15 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
             }
           }
 
+          const fallbackResponse = buildPublicFallbackResponse(
+            request,
+            pathSegments,
+            cacheKey,
+          );
+          if (fallbackResponse) {
+            return fallbackResponse;
+          }
+
           throw error;
         }
       } finally {
@@ -271,6 +455,18 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
       (lastError instanceof Error && lastError.name === "AbortError")
         ? "Backend request timed out"
         : "Backend service is unavailable";
+
+    const cacheKey = isCacheablePublicProxyGet(request.method, pathSegments)
+      ? getPublicProxyCacheKey(request, pathSegments)
+      : null;
+    const fallbackResponse = buildPublicFallbackResponse(
+      request,
+      pathSegments,
+      cacheKey,
+    );
+    if (fallbackResponse) {
+      return fallbackResponse;
+    }
 
     return NextResponse.json(
       {

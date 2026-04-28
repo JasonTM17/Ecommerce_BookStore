@@ -9,11 +9,11 @@
 
 Dự án được xây dựng trên mô hình Micro-monolith hiện đại:
 
-- **Backend**: Spring Boot 3.3, Java 17, Spring Security (JWT), Spring Data JPA.
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI, React Query.
-- **Mobile**: React Native (Expo), Lucide Icons, Zustand.
+- **Backend**: Spring Boot 3.2, Java 17, Spring Security (JWT), Spring Data JPA.
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, React Query.
+- **Mobile**: Expo SDK 55, React Native 0.83, Lucide Icons, Zustand.
 - **Database & DevOps**: MySQL 8, Docker, Docker Compose, GitHub Actions (CI/CD).
-- **Security**: Bucket4j (Rate Limiting), JWT Stateless Auth, CSP Headers.
+- **Security**: Rate limiting, JWT stateless auth, CSP/HSTS/Permissions-Policy headers.
 
 ## Tính năng Nổi bật
 
@@ -51,13 +51,15 @@ docker compose up -d
 ```
 
 Hệ thống sẽ khả dụng tại:
-- Frontend: `http://localhost:3000`
+- Frontend: `http://localhost:3001`
 - Backend API: `http://localhost:8080/api`
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Swagger UI: `http://localhost:8080/api/swagger-ui.html`
 
 ## Bảo mật & Độ tin cậy
 - **Rate Limiting**: Chống tấn công brute-force ở các điểm nhạy cảm (Login, Register, Chatbot).
 - **CI/CD**: Tự động chạy Unit Test, Integration Test (MySQL), E2E Test (Playwright) và Security Scan (Trivy) trên mỗi lần push.
+- **Chatbot an toàn**: Health endpoint công khai không trả lỗi provider thô; context gửi sang Grok không kèm email người dùng.
+- **Docker Hub**: Pipeline publish thật khi repository secrets `DOCKERHUB_USERNAME` và `DOCKERHUB_TOKEN` đã được cấu hình.
 
 ## Tài liệu chi tiết
 

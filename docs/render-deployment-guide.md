@@ -66,8 +66,15 @@ For `bookstore-api`, confirm the following:
 GitHub Actions now publishes images to **GHCR** and **Docker Hub** with semver-first tags:
 
 - `latest`
-- `v1.0.0`
+- `v1.1.2`
 - `v1`
+
+Docker Hub publishing requires repository secrets:
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+
+If `DOCKERHUB_NAMESPACE` is not set as a repository variable, the workflow uses `DOCKERHUB_USERNAME` as the namespace.
 
 These tags are intended for registry artifacts. Render Blueprint/source deploy history will still display **commit hashes**, which is expected behavior for source-based deployments.
 

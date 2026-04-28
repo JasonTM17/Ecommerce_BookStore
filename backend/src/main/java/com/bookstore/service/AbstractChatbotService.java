@@ -49,7 +49,7 @@ public abstract class AbstractChatbotService implements ChatbotService {
         - Thân thiện, gần gũi như đang trò chuyện với người bạn
         - Sử dụng tiếng Việt, có thể xen lẫn tiếng Anh cho tên sách/tác giả
         - Trả lời NGẮN GỌN (dưới 200 từ) trừ khi cần chi tiết
-        - Nếu không biết thì gợi ý hotline: 1900-xxxx hoặc email: support@bookstore.com
+        - Nếu không biết thì gợi ý trang Liên hệ hoặc email support@bookstore.com
 
         CÁC TÍNH NĂNG CỦA CỬA HÀNG:
         - Giao hàng toàn quốc, miễn phí vận chuyển cho đơn từ 200.000đ
@@ -167,10 +167,10 @@ public abstract class AbstractChatbotService implements ChatbotService {
 
             Bạn có thể:
             - Thử hỏi lại câu hỏi của mình
-            - Liên hệ hotline: 1900-xxxx để được hỗ trợ nhanh hơn
-            - Email: support@bookstore.com
+            - Mở trang Liên hệ để gửi yêu cầu hỗ trợ
+            - Email support@bookstore.com nếu cần kiểm tra đơn hàng gấp
 
-            Cảm ơn bạn đã thông cảm!
+            Cảm ơn bạn đã thông cảm.
             """;
     }
 
@@ -180,8 +180,8 @@ public abstract class AbstractChatbotService implements ChatbotService {
 
             Bạn vẫn có thể:
             - Duyệt danh mục sách và tìm kiếm trực tiếp trên cửa hàng
-            - Liên hệ hotline: 1900-xxxx
-            - Email: support@bookstore.com
+            - Mở trang Liên hệ để gửi yêu cầu hỗ trợ
+            - Email support@bookstore.com nếu cần kiểm tra đơn hàng gấp
 
             Khi trợ lý được bật lại, mình sẽ hỗ trợ tư vấn chi tiết hơn.
             """;
@@ -235,8 +235,9 @@ public abstract class AbstractChatbotService implements ChatbotService {
 
     protected String buildUserContext(User user) {
         StringBuilder context = new StringBuilder("\n\nTHÔNG TIN KHÁCH HÀNG:");
-        context.append("\n- Tên: ").append(user.getFullName());
-        context.append("\n- Email: ").append(user.getEmail());
+        String displayName = user.getFullName();
+        context.append("\n- Tên hiển thị: ")
+                .append(displayName == null || displayName.isBlank() ? "Khách hàng đã đăng nhập" : displayName);
 
         try {
             var orders = orderRepository.findByUserId(user.getId(), PageRequest.of(0, 1));

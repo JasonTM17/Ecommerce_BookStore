@@ -126,6 +126,16 @@ cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
 - `GROK_ENABLED=false` by default
 - Set `GROK_ENABLED=true` together with `GROK_API_KEY` to enable Grok in local/dev or Docker
 - Frontend chatbot health is driven by `/api/chatbot/health`
+- Public health responses are sanitized; raw provider errors and user email addresses are not returned to the browser.
+
+## CI/CD registry secrets
+
+The GitHub Actions pipeline publishes to GHCR automatically. Docker Hub publish is enabled when these repository secrets exist:
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+
+If `DOCKERHUB_NAMESPACE` is not set as a repository variable, the workflow uses `DOCKERHUB_USERNAME` as the Docker Hub namespace.
 
 ## Payments
 

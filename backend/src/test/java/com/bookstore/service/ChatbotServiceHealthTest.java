@@ -66,7 +66,9 @@ class ChatbotServiceHealthTest {
                 .containsEntry("service", "Grok AI Chatbot")
                 .containsEntry("model", "grok-3")
                 .containsEntry("providerEnabled", "true");
-        assertThat(health.get("message")).contains("API key");
+        assertThat(health.get("message"))
+                .contains("chế độ dự phòng")
+                .doesNotContain("API key");
     }
 
     @Test
@@ -98,12 +100,15 @@ class ChatbotServiceHealthTest {
 
         assertThat(generatedReply.content())
                 .contains("support@bookstore.com")
-                .contains("1900-xxxx");
+                .doesNotContain("1900-xxxx");
         assertThat(generatedReply.providerResponse()).isFalse();
         assertThat(health)
                 .containsEntry("status", "DEGRADED")
                 .containsEntry("providerEnabled", "true");
-        assertThat(health.get("message")).contains("network down");
+        assertThat(health.get("message"))
+                .contains("chế độ dự phòng")
+                .doesNotContain("network down")
+                .doesNotContain("https://api.x.ai");
     }
 
     @Test
@@ -134,6 +139,31 @@ class ChatbotServiceHealthTest {
         assertThat(generatedReply.content()).contains("support@bookstore.com");
         assertThat(generatedReply.providerResponse()).isFalse();
         assertThat(service.getHealthStatus()).containsEntry("status", "DEGRADED");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void userContextSentToProviderDoesNotIncludeEmail() {
+        GrokChatbotService service = newGrokService();
+        User user = new User();
+        user.setId(17L);
+        user.setEmail("customer@example.com");
+        user.setFirstName("Nguyễn Khách");
+
+        List<Map<String, String>> messages = ReflectionTestUtils.invokeMethod(
+                service,
+                "buildMessages",
+                List.of(),
+                "Tư vấn giúp tôi một cuốn sách kinh doanh",
+                user
+        );
+
+        assertThat(messages).isNotNull();
+        String systemPrompt = messages.get(0).get("content");
+        assertThat(systemPrompt)
+                .contains("Nguyễn Khách")
+                .doesNotContain("customer@example.com")
+                .doesNotContain("Email:");
     }
 
     private GrokChatbotService newGrokService() {

@@ -1,6 +1,6 @@
 # Security audit notes
 
-Last reviewed: 2026-04-27
+Last reviewed: 2026-04-28
 
 This project is a portfolio/demo bookstore, but the public deployment should still avoid avoidable leaks and fragile defaults.
 
@@ -26,7 +26,11 @@ This project is a portfolio/demo bookstore, but the public deployment should sti
 - Skipped multipart body scanning in the input validation filter; upload validation is handled by `StorageService`.
 - Hardened upload storage path resolution and delete handling so files must remain under the configured upload root.
 - Reduced outbound chatbot fragility by shortening shared `RestTemplate` timeouts and recording Grok fallback responses separately from provider-backed responses.
+- Sanitized public chatbot health messages so provider failures do not expose raw exception text or provider URLs.
+- Removed user email from the context sent to the chatbot provider; the prompt now uses display name and order count only.
+- Restricted chatbot statistics with method-level admin authorization.
 - Switched the frontend to call the same-origin `/api` proxy by default, with a public Render backend fallback for standalone local/Docker Hub runs.
+- Added portfolio-safe fallback payloads for public catalog proxy endpoints so Render cold starts do not surface `429`/timeout responses to public pages or API smoke checks.
 - Added generated PNG/ICO app icons so the browser/PWA metadata no longer depends only on the legacy SVG icon.
 - Updated `follow-redirects` in frontend and mobile lockfiles to `1.16.0`.
 - Upgraded the frontend runtime/tooling from Next.js 14/React 18/ESLint 8/Vitest 2 to Next.js 16/React 19/ESLint 9/Vitest 4 and migrated the removed `next lint`/middleware conventions.
@@ -57,3 +61,4 @@ Validation run: `npm run typecheck` and `npx expo-doctor` pass locally. A real A
 - Move browser auth tokens to HttpOnly cookies in a future auth-flow change with CSRF protection; this was not done here because it changes API/browser contracts.
 - Tighten frontend CSP further in a framework upgrade pass by removing `unsafe-inline`/`unsafe-eval` once the app has nonce/hash support for Next runtime scripts.
 - Keep the chatbot in `GROK_ENABLED=false` mode unless `GROK_API_KEY` is present and provider latency is acceptable for the storefront.
+- Keep Docker Hub repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` configured before expecting Docker Hub publish jobs to push real images.

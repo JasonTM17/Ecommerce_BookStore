@@ -142,6 +142,14 @@ class ChatbotControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "customer@example.com", roles = {"CUSTOMER"})
+    @DisplayName("GET /api/chatbot/stats - rejects non-admin users")
+    void getChatbotStats_asCustomer_forbidden() throws Exception {
+        mockMvc.perform(get("/chatbot/stats"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @DisplayName("POST /api/chatbot/message - returns 401 when not authenticated")
     void sendMessage_unauthenticated() throws Exception {
         ChatMessageRequest request = ChatMessageRequest.builder()

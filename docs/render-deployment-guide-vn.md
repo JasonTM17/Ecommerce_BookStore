@@ -66,8 +66,15 @@ Trên service `bookstore-api`, hãy xác nhận:
 GitHub Actions hiện publish image lên **GHCR** và **Docker Hub** bằng semver tags:
 
 - `latest`
-- `v1.0.0`
+- `v1.1.2`
 - `v1`
+
+Docker Hub publish cần repository secrets:
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+
+Nếu không đặt repository variable `DOCKERHUB_NAMESPACE`, workflow sẽ dùng chính `DOCKERHUB_USERNAME` làm namespace.
 
 Những tag này dành cho artifact registry. Riêng lịch sử deploy trong Render Blueprint/source deploy vẫn sẽ hiển thị theo **commit hash**, đây là hành vi bình thường của Render khi deploy từ source.
 

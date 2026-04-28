@@ -100,7 +100,7 @@ stateDiagram-v2
    - Publish image lên GHCR và Docker Hub.
    - Tag chuyên nghiệp theo semver:
      - `latest`
-     - `v1.0.0`
+     - `v1.1.2`
      - `v1`
 5. **Render deploy**
    - Gọi deploy hooks sau khi toàn bộ gate chính đã xanh.

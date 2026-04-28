@@ -142,12 +142,11 @@ public class GrokChatbotService extends AbstractChatbotService {
     @Override
     protected String getStatusMessage() {
         if (grokApiKey == null || grokApiKey.isBlank()) {
-            return "Grok đang bật nhưng chưa có API key trong environment.";
+            return "Trợ lý AI đang ở chế độ dự phòng do cấu hình provider chưa hoàn tất.";
         }
 
         if (lastFailureAt != null && (lastSuccessAt == null || lastFailureAt.isAfter(lastSuccessAt))) {
-            return "Grok đã được cấu hình nhưng lần gọi gần nhất thất bại: "
-                    + (lastFailureMessage != null ? lastFailureMessage : "không rõ nguyên nhân");
+            return "Trợ lý AI đã được cấu hình nhưng lần gọi gần nhất chưa ổn định. Chatbot đang dùng chế độ dự phòng.";
         }
 
         return "Grok đã được cấu hình và sẵn sàng trả lời.";

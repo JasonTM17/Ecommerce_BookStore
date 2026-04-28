@@ -100,7 +100,7 @@ stateDiagram-v2
    - Publishes images to GHCR and Docker Hub.
    - Public tags follow semver-first naming:
      - `latest`
-     - `v1.0.0`
+     - `v1.1.2`
      - `v1`
 5. **Render deploy**
    - Triggers Render deploy hooks after the required gates pass.
