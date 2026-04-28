@@ -114,7 +114,10 @@ export const flashSaleApi = {
   },
 };
 
-async function getCachedPublicFlashSales(endpoint: string, fallback: FlashSale[]) {
+async function getCachedPublicFlashSales(
+  endpoint: string,
+  fallback: FlashSale[],
+) {
   const now = Date.now();
   const cached = flashSalePublicCache.get(endpoint);
 

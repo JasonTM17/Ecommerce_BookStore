@@ -63,9 +63,7 @@ describe("api proxy target resolution", () => {
     expect(isCacheablePublicProxyGet("GET", ["flash-sales", "active"])).toBe(
       true,
     );
-    expect(isCacheablePublicProxyGet("GET", ["admin", "products"])).toBe(
-      false,
-    );
+    expect(isCacheablePublicProxyGet("GET", ["admin", "products"])).toBe(false);
     expect(isCacheablePublicProxyGet("POST", ["products"])).toBe(false);
   });
 });

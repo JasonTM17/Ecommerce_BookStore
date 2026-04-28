@@ -55,7 +55,10 @@ export function shouldFallbackProxyResponseStatus(status: number) {
   return FALLBACK_PROXY_STATUSES.has(status);
 }
 
-export function isCacheablePublicProxyGet(method: string, pathSegments: string[]) {
+export function isCacheablePublicProxyGet(
+  method: string,
+  pathSegments: string[],
+) {
   if (method.toUpperCase() !== "GET") {
     return false;
   }
