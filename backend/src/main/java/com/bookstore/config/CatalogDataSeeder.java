@@ -9,11 +9,13 @@ import com.bookstore.repository.ProductRepository;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -29,6 +31,50 @@ public final class CatalogDataSeeder {
             "Tái bản chọn lọc",
             "Bản sưu tầm"
     };
+    private static final Map<String, String> PRIORITY_GENERATED_COVERS = Map.ofEntries(
+            Map.entry("nghe-thuat/mau-sac-va-cam-xuc-an-ban-dac-biet", "/images/books/generated/nghe-thuat-mau-sac-va-cam-xuc-an-ban-dac-biet.png"),
+            Map.entry("nghe-thuat/anh-dep-quanh-ta-an-ban-dac-biet", "/images/books/generated/nghe-thuat-anh-dep-quanh-ta-an-ban-dac-biet.png"),
+            Map.entry("nghe-thuat/nhap-mon-hoi-hoa-an-ban-dac-biet", "/images/books/generated/nghe-thuat-nhap-mon-hoi-hoa-an-ban-dac-biet.png"),
+            Map.entry("nghe-thuat/so-tay-sang-tao", "/images/books/generated/nghe-thuat-so-tay-sang-tao.png"),
+            Map.entry("nghe-thuat/chat-lieu-va-anh-sang", "/images/books/generated/nghe-thuat-chat-lieu-va-anh-sang.png"),
+            Map.entry("nghe-thuat/bo-cuc-trong-thiet-ke", "/images/books/generated/nghe-thuat-bo-cuc-trong-thiet-ke.png"),
+            Map.entry("nghe-thuat/cau-chuyen-my-thuat", "/images/books/generated/nghe-thuat-cau-chuyen-my-thuat.png"),
+            Map.entry("nghe-thuat/nhiep-anh-duong-pho", "/images/books/generated/nghe-thuat-nhiep-anh-duong-pho.png"),
+            Map.entry("nghe-thuat/thiet-ke-tu-co-ban", "/images/books/generated/nghe-thuat-thiet-ke-tu-co-ban.png"),
+            Map.entry("nghe-thuat/ky-hoa-moi-ngay", "/images/books/generated/nghe-thuat-ky-hoa-moi-ngay.png"),
+            Map.entry("nghe-thuat/mau-sac-va-cam-xuc", "/images/books/generated/nghe-thuat-mau-sac-va-cam-xuc.png"),
+            Map.entry("nghe-thuat/anh-dep-quanh-ta", "/images/books/generated/nghe-thuat-anh-dep-quanh-ta.png"),
+            Map.entry("nghe-thuat/nhap-mon-hoi-hoa", "/images/books/generated/nghe-thuat-nhap-mon-hoi-hoa.png"),
+            Map.entry("am-thuc/cam-nang-lam-banh-an-ban-dac-biet", "/images/books/generated/am-thuc-cam-nang-lam-banh-an-ban-dac-biet.png"),
+            Map.entry("am-thuc/mon-viet-cuoi-tuan-an-ban-dac-biet", "/images/books/generated/am-thuc-mon-viet-cuoi-tuan-an-ban-dac-biet.png"),
+            Map.entry("am-thuc/bep-nha-an-yen-an-ban-dac-biet", "/images/books/generated/am-thuc-bep-nha-an-yen-an-ban-dac-biet.png"),
+            Map.entry("am-thuc/nghe-thuat-pha-che", "/images/books/generated/am-thuc-nghe-thuat-pha-che.png"),
+            Map.entry("am-thuc/thuc-don-30-ngay", "/images/books/generated/am-thuc-thuc-don-30-ngay.png"),
+            Map.entry("am-thuc/mon-ngon-dai-khach", "/images/books/generated/am-thuc-mon-ngon-dai-khach.png"),
+            Map.entry("am-thuc/huong-vi-mien-trung", "/images/books/generated/am-thuc-huong-vi-mien-trung.png"),
+            Map.entry("am-thuc/bep-chay-moi-ngay", "/images/books/generated/am-thuc-bep-chay-moi-ngay.png"),
+            Map.entry("am-thuc/bua-com-gia-dinh", "/images/books/generated/am-thuc-bua-com-gia-dinh.png"),
+            Map.entry("sach-giao-khoa/toan-lop-1", "/images/books/generated/sach-giao-khoa-toan-lop-1.png"),
+            Map.entry("phat-trien-ban-than/doc-vi-ban-than", "/images/books/generated/phat-trien-ban-than-doc-vi-ban-than.png"),
+            Map.entry("lich-su/lich-su-viet-nam", "/images/books/generated/lich-su-lich-su-viet-nam.png"),
+            Map.entry("tieu-thuyet/dac-nhan-tam", "/images/books/generated/tieu-thuyet-dac-nhan-tam.png"),
+            Map.entry("sach-thieu-nhi/co-be-ban-diem", "/images/books/generated/sach-thieu-nhi-co-be-ban-diem.png"),
+            Map.entry("tho/dac-nhan-tam", "/images/books/generated/tho-dac-nhan-tam.png"),
+            Map.entry("marketing/nghi-lon", "/images/books/generated/marketing-nghi-lon.png"),
+            Map.entry("lanh-dao/nghi-lon", "/images/books/generated/lanh-dao-nghi-lon.png"),
+            Map.entry("cong-nghe/co-the-cua-ban", "/images/books/generated/cong-nghe-co-the-cua-ban.png"),
+            Map.entry("sach-thieu-nhi/doraemon-tap-1-50", "/images/books/generated/sach-thieu-nhi-doraemon-tap-1-50.png"),
+            Map.entry("sach-giao-khoa/vat-ly-lop-10", "/images/books/generated/sach-giao-khoa-vat-ly-lop-10.png"),
+            Map.entry("sach-thieu-nhi/alice-o-xu-so-than-tien", "/images/books/generated/sach-thieu-nhi-alice-o-xu-so-than-tien.png"),
+            Map.entry("tho/harry-potter-va-hon-da-phu-thuy", "/images/books/generated/tho-harry-potter-va-hon-da-phu-thuy.png"),
+            Map.entry("van-hoc-co-dien/harry-potter-va-hon-da-phu-thuy", "/images/books/generated/van-hoc-co-dien-harry-potter-va-hon-da-phu-thuy.png"),
+            Map.entry("sach-ngoai-van/1984-george-orwell", "/images/books/generated/sach-ngoai-van-1984-george-orwell.png"),
+            Map.entry("am-thuc/cam-nang-lam-banh", "/images/books/generated/am-thuc-cam-nang-lam-banh.png"),
+            Map.entry("sach-ngoai-van/pride-and-prejudice", "/images/books/generated/sach-ngoai-van-pride-and-prejudice.png"),
+            Map.entry("lanh-dao/khoi-nghiep-tu-san-sau", "/images/books/generated/lanh-dao-khoi-nghiep-tu-san-sau.png"),
+            Map.entry("sach-thieu-nhi/harry-potter-bo-day-du", "/images/books/generated/sach-thieu-nhi-harry-potter-bo-day-du.png"),
+            Map.entry("khoa-hoc-tu-nhien/nguoi-dan-duong", "/images/books/generated/khoa-hoc-tu-nhien-nguoi-dan-duong.png")
+    );
 
     private CatalogDataSeeder() {
     }
@@ -354,7 +400,7 @@ public final class CatalogDataSeeder {
                 boolean isFeatured = i < 3;
                 boolean isBestseller = i < 4;
                 boolean isNew = i >= 2 && i < 6;
-                String imageUrl = resolvePlaceholderPath(cat);
+                String imageUrl = resolveProductImagePath(cat, title);
                 String shortDesc = buildShortDescription(cat.getName(), author, publisher);
                 String description = buildLongDescription(cat.getName(), author, publisher, pages);
 
@@ -535,9 +581,25 @@ public final class CatalogDataSeeder {
         };
     }
 
+    private static String resolveProductImagePath(Category category, String title) {
+        String generatedCoverPath = resolveGeneratedCoverPath(category, title);
+        if (generatedCoverPath != null) {
+            return generatedCoverPath;
+        }
+
+        return resolvePlaceholderPath(category);
+    }
+
     private static String resolveNormalizedImageUrl(Product product) {
         if (product != null && ShowcaseBookCatalog.isCuratedIsbn(product.getIsbn())) {
             return ShowcaseBookCatalog.localCoverPath(product.getIsbn());
+        }
+
+        String generatedCoverPath = resolveGeneratedCoverPath(
+                product != null ? product.getCategory() : null,
+                product != null ? product.getName() : null);
+        if (generatedCoverPath != null) {
+            return generatedCoverPath;
         }
 
         if (product != null && product.getImages() != null) {
@@ -562,15 +624,22 @@ public final class CatalogDataSeeder {
             images.add(ShowcaseBookCatalog.localCoverPath(product.getIsbn()));
         }
 
+        String generatedCoverPath = resolveGeneratedCoverPath(
+                product != null ? product.getCategory() : null,
+                product != null ? product.getName() : null);
+        if (generatedCoverPath != null) {
+            images.add(generatedCoverPath);
+        }
+
         if (product != null && product.getImages() != null) {
             for (String image : product.getImages()) {
-                if (image != null && !image.isBlank() && image.startsWith("/")) {
+                if (isReusableLocalImagePath(image, generatedCoverPath)) {
                     images.add(image);
                 }
             }
         }
 
-        if (product != null && product.getImageUrl() != null && !product.getImageUrl().isBlank() && product.getImageUrl().startsWith("/")) {
+        if (product != null && isReusableLocalImagePath(product.getImageUrl(), generatedCoverPath)) {
             images.add(product.getImageUrl());
         }
 
@@ -579,5 +648,44 @@ public final class CatalogDataSeeder {
         }
 
         return List.copyOf(images);
+    }
+
+    private static String resolveGeneratedCoverPath(Category category, String title) {
+        String key = generatedCoverKey(category, title);
+        if (key.isBlank()) {
+            return null;
+        }
+
+        return PRIORITY_GENERATED_COVERS.get(key);
+    }
+
+    private static String generatedCoverKey(Category category, String title) {
+        if (category == null || title == null || title.isBlank()) {
+            return "";
+        }
+
+        return slugifyCoverKey(category.getName()) + "/" + slugifyCoverKey(title);
+    }
+
+    private static String slugifyCoverKey(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .replace('\u0111', 'd')
+                .replace('\u0110', 'D')
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("(^-+|-+$)", "");
+    }
+
+    private static boolean isReusableLocalImagePath(String image, String generatedCoverPath) {
+        if (image == null || image.isBlank() || !image.startsWith("/")) {
+            return false;
+        }
+
+        return generatedCoverPath == null || !image.contains("/images/books/placeholders/");
     }
 }

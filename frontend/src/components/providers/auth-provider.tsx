@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store";
-import { api } from "@/lib/api";
+import { api, clearAuthTokens } from "@/lib/api";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, setUser, setLoading, logout } = useAuthStore();
@@ -51,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch {
         if (!cancelled) {
+          clearAuthTokens();
           logout();
         }
       } finally {

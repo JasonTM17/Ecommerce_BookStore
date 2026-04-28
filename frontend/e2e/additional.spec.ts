@@ -245,8 +245,6 @@ test.describe('Performance', () => {
 // ============================================
 
 test.describe('Wishlist', () => {
-  test.use({ storageState: 'storageState.json' } as any);
-
   test('Wishlist button is visible on product card', async ({ page }) => {
     await page.goto(`${BASE_URL}/products`);
     await page.waitForLoadState('networkidle');

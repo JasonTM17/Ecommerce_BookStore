@@ -36,20 +36,10 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
 
 async function assertNoMojibake(page: Page) {
   const bodyText = await page.locator("body").innerText();
-  const suspiciousSequences = [
-    "\u00c3",
-    "\u00c2",
-    "\u00c6",
-    "\u00c4",
-    "\u00e1\u00ba",
-    "\u00e1\u00bb",
-  ];
+  const mojibakePattern =
+    /[\u00c2\u00c3\u00c4\u00c6][\u0080-\u00bf]|\u00e1[\u00ba\u00bb]|\ufffd/u;
 
-  for (const sequence of suspiciousSequences) {
-    expect(bodyText).not.toContain(sequence);
-  }
-
-  expect(bodyText).not.toContain("\ufffd");
+  expect(bodyText).not.toMatch(mojibakePattern);
 }
 
 async function login(page: Page, email: string, password: string) {

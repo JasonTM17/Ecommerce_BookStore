@@ -15,12 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Rate Limiting Filter để bảo vệ ứng dụng khỏi brute-force attacks và DDoS.
- * 
- * Giới hạn:
- * - Auth endpoints: 5 requests/phút/IP
- * - API endpoints: 100 requests/phút/IP
- * - Public endpoints: 200 requests/phút/IP
+ * Rate limiting filter for protecting auth and API endpoints from brute-force
+ * and burst traffic.
  */
 @Component
 @Order(1)
@@ -29,25 +25,25 @@ public class RateLimitingFilter implements Filter {
 
     private final Map<String, RateLimitEntry> rateLimitMap = new ConcurrentHashMap<>();
     
-    @Value("${app.rate-limit.enabled:true}")
+    @Value("${app.rate-limit.enabled:${rate.limit.enabled:true}}")
     private boolean rateLimitEnabled;
     
-    @Value("${app.rate-limit.auth-limit:5}")
+    @Value("${app.rate-limit.auth-limit:${rate.limit.auth.limit:5}}")
     private int authLimit;
     
-    @Value("${app.rate-limit.auth-window-ms:60000}")
+    @Value("${app.rate-limit.auth-window-ms:${rate.limit.auth.window.ms:60000}}")
     private long authWindowMs;
     
-    @Value("${app.rate-limit.api-limit:100}")
+    @Value("${app.rate-limit.api-limit:${rate.limit.api.limit:100}}")
     private int apiLimit;
     
-    @Value("${app.rate-limit.api-window-ms:60000}")
+    @Value("${app.rate-limit.api-window-ms:${rate.limit.api.window.ms:60000}}")
     private long apiWindowMs;
     
-    @Value("${app.rate-limit.public-limit:200}")
+    @Value("${app.rate-limit.public-limit:${rate.limit.public.limit:200}}")
     private int publicLimit;
     
-    @Value("${app.rate-limit.public-window-ms:60000}")
+    @Value("${app.rate-limit.public-window-ms:${rate.limit.public.window.ms:60000}}")
     private long publicWindowMs;
 
     @Override
@@ -66,10 +62,8 @@ public class RateLimitingFilter implements Filter {
         String requestUri = request.getRequestURI();
         String key = clientIp + ":" + requestUri;
         
-        // Xác định loại endpoint để áp dụng limit phù hợp
         RateLimitConfig config = getRateLimitConfig(request.getMethod(), requestUri);
         
-        // Kiểm tra rate limit
         RateLimitEntry entry = rateLimitMap.computeIfAbsent(key, k -> new RateLimitEntry(config.limit, config.windowMs));
         
         if (!entry.tryConsume()) {
@@ -86,7 +80,6 @@ public class RateLimitingFilter implements Filter {
             return;
         }
         
-        // Thêm headers vào response
         response.setHeader("X-RateLimit-Limit", String.valueOf(config.limit));
         response.setHeader("X-RateLimit-Remaining", String.valueOf(entry.getRemaining()));
         response.setHeader("X-RateLimit-Reset", String.valueOf(entry.getResetTime() / 1000));

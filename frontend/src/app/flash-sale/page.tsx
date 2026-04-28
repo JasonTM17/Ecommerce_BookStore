@@ -32,7 +32,7 @@ const COPY = {
     heroKicker: "Giá sốc hôm nay",
     heroTitle: "Flash Sale 5 khung giờ",
     heroDescription:
-      "Săn deal sách chính hãng theo phong cách Tiki: khung giờ rõ ràng, thanh bán chạy trực quan và giá tốt được đồng bộ từ API thật.",
+      "Săn deal sách chính hãng theo phong cách sàn thương mại điện tử: khung giờ rõ ràng, thanh bán chạy trực quan và giá tốt được đồng bộ từ API thật.",
     browseBooks: "Xem toàn bộ sách",
     browsePromotions: "Xem khuyến mãi",
     liveNow: "Đang bán",
@@ -78,7 +78,7 @@ const COPY = {
     heroKicker: "Today’s good deals",
     heroTitle: "Five-slot Flash Sale",
     heroDescription:
-      "A Tiki-inspired sale surface for official books: clear time slots, visual selling bars, and live API-backed prices.",
+      "A marketplace-inspired sale surface for official books: clear time slots, visual selling bars, and live API-backed prices.",
     browseBooks: "Browse all books",
     browsePromotions: "View promotions",
     liveNow: "Live now",
@@ -201,6 +201,8 @@ export default function FlashSalePage() {
   }, [activeSales, upcomingSales]);
 
   const isLoading = activeLoading || upcomingLoading;
+  const isStatsPending =
+    isLoading && activeSales.length === 0 && upcomingSales.length === 0;
   const isError = activeError || upcomingError;
   const isEmpty =
     !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
@@ -276,14 +278,17 @@ export default function FlashSalePage() {
                         <StatPill
                           value={saleStats.totalDeals}
                           label={copy.totalDeals}
+                          loading={isStatsPending}
                         />
                         <StatPill
                           value={`${saleStats.bestDiscount}%`}
                           label={copy.bestDiscount}
+                          loading={isStatsPending}
                         />
                         <StatPill
                           value={saleStats.stockReady}
                           label={copy.stockReady}
+                          loading={isStatsPending}
                         />
                       </div>
                     </div>
@@ -400,7 +405,7 @@ export default function FlashSalePage() {
                 </div>
 
                 {activeSales.length > 0 ? (
-                  <div className="grid gap-4 bg-[#f7fbff] p-4 sm:grid-cols-2 lg:grid-cols-4 lg:p-5">
+                  <div className="grid justify-center gap-4 bg-[#f7fbff] p-4 [grid-template-columns:repeat(auto-fit,minmax(220px,280px))] lg:p-5">
                     {activeSales.map((sale, index) => (
                       <FlashSaleCard
                         key={sale.id}
@@ -464,10 +469,22 @@ export default function FlashSalePage() {
   );
 }
 
-function StatPill({ value, label }: { value: string | number; label: string }) {
+function StatPill({
+  value,
+  label,
+  loading = false,
+}: {
+  value: string | number;
+  label: string;
+  loading?: boolean;
+}) {
   return (
     <div className="rounded-2xl bg-white px-3 py-3 text-center text-[#0b74e5]">
-      <p className="text-xl font-bold leading-none">{value}</p>
+      {loading ? (
+        <Skeleton className="mx-auto h-5 w-10" />
+      ) : (
+        <p className="text-xl font-bold leading-none">{value}</p>
+      )}
       <p className="mt-1 text-[11px] font-medium leading-4 text-gray-500">
         {label}
       </p>

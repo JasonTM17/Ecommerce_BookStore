@@ -96,7 +96,7 @@ export function FlashSaleSection() {
             </Link>
           </div>
 
-          <div className="grid gap-4 bg-[#f7fbff] p-4 sm:grid-cols-2 lg:grid-cols-4 lg:p-5">
+          <div className="grid justify-center gap-4 bg-[#f7fbff] p-4 [grid-template-columns:repeat(auto-fit,minmax(220px,280px))] lg:p-5">
             {activeSales.slice(0, 8).map((sale, index) => (
               <FlashSaleCard
                 key={sale.id}

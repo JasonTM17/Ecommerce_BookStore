@@ -231,6 +231,7 @@ function ProductsContent() {
   const totalPages = productsData?.totalPages || 0;
   const totalElements = productsData?.totalElements || 0;
   const products = productsData?.content || [];
+  const isProductsPending = productsLoading && !productsData;
   const collectionHeading =
     collectionMode === "featured"
       ? copy.featuredHeading
@@ -239,7 +240,7 @@ function ProductsContent() {
         : copy.allHeading;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50/50 to-white">
+    <div className="min-h-screen flex flex-col overflow-x-hidden bg-gradient-to-b from-gray-50/50 to-white">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -255,7 +256,16 @@ function ProductsContent() {
           </h1>
           <p className="text-gray-500">
             {collectionHeading.description}{" "}
-            <span className="font-semibold text-red-600">{totalElements}</span>{" "}
+            {isProductsPending ? (
+              <span
+                aria-hidden="true"
+                className="inline-block h-5 w-12 animate-pulse rounded-lg bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 align-middle"
+              />
+            ) : (
+              <span className="font-semibold text-red-600">
+                {totalElements}
+              </span>
+            )}{" "}
             {locale === "vi" ? "cuốn sách chất lượng" : "books"}
           </p>
         </div>
@@ -448,7 +458,14 @@ function ProductsContent() {
             />
             <p className="text-gray-600">
               {copy.results}{" "}
-              <span className="font-bold text-gray-900">{totalElements}</span>{" "}
+              {isProductsPending ? (
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-5 w-12 animate-pulse rounded-lg bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 align-middle"
+                />
+              ) : (
+                <span className="font-bold text-gray-900">{totalElements}</span>
+              )}{" "}
               {locale === "vi" ? "sản phẩm" : "products"}
             </p>
           </div>

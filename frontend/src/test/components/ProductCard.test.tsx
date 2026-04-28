@@ -6,7 +6,11 @@ import type { Product } from "@/lib/types";
 const pushMock = vi.fn();
 const toggleWishlistMock = vi.fn();
 const authState = { isAuthenticated: true };
-const wishlistState = { isWishlisted: false, isAdding: false, isRemoving: false };
+const wishlistState = {
+  isWishlisted: false,
+  isAdding: false,
+  isRemoving: false,
+};
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -26,7 +30,7 @@ vi.mock("@/components/providers/language-provider", () => ({
     locale: "vi",
     t: (key: string) =>
       (
-        {
+        ({
           "common.noImage": "Chưa có ảnh bìa",
           "common.newArrival": "Mới",
           "common.bestseller": "Bán chạy",
@@ -37,7 +41,7 @@ vi.mock("@/components/providers/language-provider", () => ({
           "common.reviews": "đánh giá",
           "common.addToWishlist": "Thêm vào danh sách yêu thích",
           "common.removeFromWishlist": "Xóa khỏi danh sách yêu thích",
-        } as Record<string, string>
+        }) as Record<string, string>
       )[key] ?? key,
   }),
 }));
@@ -53,12 +57,18 @@ vi.mock("@/hooks/useWishlist", () => ({
 
 vi.mock("@/lib/utils", () => ({
   formatCurrency: (amount: number) =>
-    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount),
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount),
   buildLoginRedirect: (target?: string | null) =>
     `/login?redirect=${encodeURIComponent(
-      target && target.startsWith("/") && !target.startsWith("//") ? target : "/"
+      target && target.startsWith("/") && !target.startsWith("//")
+        ? target
+        : "/",
     )}`,
-  cn: (...classes: (string | boolean | undefined)[]) => classes.filter(Boolean).join(" "),
+  cn: (...classes: (string | boolean | undefined)[]) =>
+    classes.filter(Boolean).join(" "),
 }));
 
 const mockProduct: Product = {
@@ -136,7 +146,9 @@ describe("ProductCard", () => {
 
     render(<ProductCard product={mockProduct} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /thêm vào danh sách yêu thích/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /thêm vào danh sách yêu thích/i }),
+    );
 
     expect(pushMock).toHaveBeenCalledWith("/login?redirect=%2Fproducts");
     expect(toggleWishlistMock).not.toHaveBeenCalled();
@@ -145,7 +157,9 @@ describe("ProductCard", () => {
   it("toggles the real wishlist flow for authenticated users", () => {
     render(<ProductCard product={mockProduct} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /thêm vào danh sách yêu thích/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /thêm vào danh sách yêu thích/i }),
+    );
 
     expect(toggleWishlistMock).toHaveBeenCalledWith(mockProduct.id);
     expect(pushMock).not.toHaveBeenCalled();
@@ -163,8 +177,19 @@ describe("ProductCard", () => {
   });
 
   it("does not render discount badge when no discount", () => {
-    const noDiscountProduct = { ...mockProduct, discountPercent: 0, currentPrice: 250000 };
-    render(<ProductCard product={noDiscountProduct} />);
+    const noDiscountProduct = {
+      ...mockProduct,
+      discountPercent: 0,
+      currentPrice: 250000,
+    };
+    const { container } = render(<ProductCard product={noDiscountProduct} />);
     expect(screen.queryByText("-20%")).not.toBeInTheDocument();
+    expect(container.textContent?.split(/\s+/)).not.toContain("0");
+  });
+
+  it("does not render a stray zero when rating is zero", () => {
+    const noRatingProduct = { ...mockProduct, avgRating: 0, reviewCount: 0 };
+    const { container } = render(<ProductCard product={noRatingProduct} />);
+    expect(container.textContent?.split(/\s+/)).not.toContain("0");
   });
 });

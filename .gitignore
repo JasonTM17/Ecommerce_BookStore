@@ -69,6 +69,8 @@ playwright-report/
 frontend/playwright-report/
 frontend/test-results/
 frontend/artifacts/
+docs/portfolio/screenshots/
+frontend/docs/portfolio/qa-current/
 
 # Cursor
 .cursor/

@@ -40,7 +40,10 @@ vi.mock("@/components/providers/language-provider", () => ({
 
 vi.mock("@/components/providers/auth-provider", () => ({
   useAuth: () => ({
+    user: { id: 1, fullName: "Admin User", email: "admin@example.com" },
+    isAuthenticated: true,
     isAdmin: true,
+    isLoading: false,
   }),
 }));
 
@@ -62,10 +65,15 @@ const pushMock = vi.fn();
 const refreshMock = vi.fn();
 
 vi.mock("next/navigation", async () => {
-  const actual = await vi.importActual<typeof import("next/navigation")>("next/navigation");
+  const actual =
+    await vi.importActual<typeof import("next/navigation")>("next/navigation");
   return {
     ...actual,
-    useRouter: () => ({ push: pushMock, replace: pushMock, refresh: refreshMock }),
+    useRouter: () => ({
+      push: pushMock,
+      replace: pushMock,
+      refresh: refreshMock,
+    }),
     useParams: () => ({ id: "123" }),
   };
 });
@@ -94,7 +102,9 @@ function renderWithQueryClient(ui: ReactElement) {
     },
   });
 
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
 }
 
 describe("Admin runtime i18n", () => {
@@ -152,12 +162,24 @@ describe("Admin runtime i18n", () => {
               {
                 id: 1,
                 orderNumber: "ORD-001",
-                user: { id: 1, email: "user@example.com", fullName: "Test User" },
+                user: {
+                  id: 1,
+                  email: "user@example.com",
+                  fullName: "Test User",
+                },
                 totalAmount: 450000,
                 status: "PENDING",
                 paymentMethod: "COD",
                 paymentStatus: "PENDING",
-                orderItems: [{ id: 1, productId: 1, productName: "Clean Code", quantity: 1, price: 450000 }],
+                orderItems: [
+                  {
+                    id: 1,
+                    productId: 1,
+                    productName: "Clean Code",
+                    quantity: 1,
+                    price: 450000,
+                  },
+                ],
                 shippingAddress: "123 Street",
                 createdAt: "2026-04-12T00:00:00Z",
               },
@@ -175,7 +197,12 @@ describe("Admin runtime i18n", () => {
           data: {
             id: 123,
             orderNumber: "ORD-123",
-            user: { id: 1, email: "user@example.com", fullName: "Test User", phone: "0900000000" },
+            user: {
+              id: 1,
+              email: "user@example.com",
+              fullName: "Test User",
+              phone: "0900000000",
+            },
             totalAmount: 450000,
             subtotal: 400000,
             shippingFee: 30000,
@@ -184,7 +211,15 @@ describe("Admin runtime i18n", () => {
             status: "PENDING",
             paymentMethod: "COD",
             paymentStatus: "PENDING",
-            orderItems: [{ id: 1, productId: 1, productName: "Clean Code", quantity: 1, price: 450000 }],
+            orderItems: [
+              {
+                id: 1,
+                productId: 1,
+                productName: "Clean Code",
+                quantity: 1,
+                price: 450000,
+              },
+            ],
             shippingAddress: "123 Street",
             shippingPhone: "0900000000",
             shippingReceiverName: "Test User",
@@ -193,7 +228,11 @@ describe("Admin runtime i18n", () => {
         };
       }
 
-      if (url.startsWith("/admin/users/search") || url.startsWith("/admin/users?") || url === "/admin/users") {
+      if (
+        url.startsWith("/admin/users/search") ||
+        url.startsWith("/admin/users?") ||
+        url === "/admin/users"
+      ) {
         return {
           data: {
             content: [
@@ -223,18 +262,26 @@ describe("Admin runtime i18n", () => {
   it("switches dashboard copy between vi and en", async () => {
     const { rerender } = renderWithQueryClient(<AdminDashboard />);
 
-    expect(await screen.findByRole("heading", { name: "Bảng điều khiển quản trị" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Bảng điều khiển quản trị" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Làm mới" })).toBeInTheDocument();
 
     currentLocale = "en";
     rerender(
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
         <AdminDashboard />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Admin dashboard" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Admin dashboard" }),
+      ).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
   });
@@ -242,56 +289,90 @@ describe("Admin runtime i18n", () => {
   it("switches product management copy between vi and en", async () => {
     const { rerender } = renderWithQueryClient(<AdminProductsPage />);
 
-    expect(await screen.findByRole("heading", { name: "Quản lý sản phẩm" })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Tìm kiếm sản phẩm...")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Quản lý sản phẩm" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Tìm kiếm sản phẩm..."),
+    ).toBeInTheDocument();
 
     currentLocale = "en";
     rerender(
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
         <AdminProductsPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Product management" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Product management" }),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByPlaceholderText("Search products...")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Search products..."),
+    ).toBeInTheDocument();
   });
 
   it("switches order list copy between vi and en", async () => {
     const { rerender } = renderWithQueryClient(<AdminOrdersPage />);
 
-    expect(await screen.findByRole("heading", { name: "Quản lý đơn hàng" })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Tìm theo mã đơn hoặc email...")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Quản lý đơn hàng" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Tìm theo mã đơn hoặc email..."),
+    ).toBeInTheDocument();
 
     currentLocale = "en";
     rerender(
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
         <AdminOrdersPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Order management" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Order management" }),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByPlaceholderText("Search by order code or email...")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Search by order code or email..."),
+    ).toBeInTheDocument();
   });
 
   it("switches order detail copy between vi and en", async () => {
     const { rerender } = renderWithQueryClient(<AdminOrderDetailPage />);
 
-    expect(await screen.findByRole("heading", { name: /ORD-123/ })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Sản phẩm trong đơn/ })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /ORD-123/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Sản phẩm trong đơn/ }),
+    ).toBeInTheDocument();
 
     currentLocale = "en";
     rerender(
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
         <AdminOrderDetailPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Items in order/ })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Items in order/ }),
+      ).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: "Back" })).toBeInTheDocument();
   });
@@ -299,19 +380,31 @@ describe("Admin runtime i18n", () => {
   it("switches user management copy between vi and en", async () => {
     const { rerender } = renderWithQueryClient(<AdminUsersPage />);
 
-    expect(await screen.findByRole("heading", { name: "Quản lý người dùng" })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Tìm kiếm theo tên hoặc email...")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Quản lý người dùng" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Tìm kiếm theo tên hoặc email..."),
+    ).toBeInTheDocument();
 
     currentLocale = "en";
     rerender(
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
         <AdminUsersPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "User management" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "User management" }),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByPlaceholderText("Search by name or email...")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Search by name or email..."),
+    ).toBeInTheDocument();
   });
 });

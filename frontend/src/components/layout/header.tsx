@@ -27,6 +27,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [quickSearch, setQuickSearch] = useState("");
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
@@ -52,6 +53,20 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const keyword = quickSearch.trim();
+    if (keyword.length < 2) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const params = new URLSearchParams({ focus: "search", keyword });
+      router.push(`/products?${params.toString()}`);
+    }, 550);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [quickSearch, router]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -105,6 +120,30 @@ export function Header() {
               </Link>
             ))}
           </nav>
+
+          <form
+            role="search"
+            className="relative hidden w-56 items-center xl:flex 2xl:w-72"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const keyword = quickSearch.trim();
+              const params = new URLSearchParams({ focus: "search" });
+              if (keyword) {
+                params.set("keyword", keyword);
+              }
+              router.push(`/products?${params.toString()}`);
+            }}
+          >
+            <Search className="pointer-events-none absolute left-4 h-4 w-4 text-[#777169]" />
+            <input
+              type="search"
+              value={quickSearch}
+              onChange={(event) => setQuickSearch(event.target.value)}
+              placeholder={locale === "vi" ? "Tìm kiếm sách" : "Search books"}
+              aria-label={t("common.search")}
+              className="h-11 w-full rounded-full border border-black/[0.08] bg-[#f8f5f1] pl-11 pr-4 text-sm text-black outline-none transition focus:border-black/30 focus:bg-white focus:ring-2 focus:ring-black/5"
+            />
+          </form>
 
           <div className="flex items-center space-x-2">
             <Link href="/products?focus=search">

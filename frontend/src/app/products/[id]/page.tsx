@@ -218,6 +218,20 @@ export default function ProductDetailPage() {
     },
   });
 
+  useEffect(() => {
+    if (!product || window.location.hash) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [product]);
+
   const { data: relatedProducts } = useQuery({
     ...publicWarmupQueryOptions,
     queryKey: ["related-products", productId, product?.category?.id],

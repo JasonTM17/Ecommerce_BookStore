@@ -43,7 +43,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         // CORS handled by SecurityConfig - this is fallback only
         registry.addMapping("/**")
-                .allowedOriginPatterns("http://localhost:3000", "http://localhost:3001", "http://localhost:5173")
+                .allowedOriginPatterns(
+                        "http://localhost:3000",
+                        "http://localhost:3001",
+                        "http://localhost:5173",
+                        "http://127.0.0.1:3000",
+                        "http://127.0.0.1:3001")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("Authorization", "X-Request-ID")

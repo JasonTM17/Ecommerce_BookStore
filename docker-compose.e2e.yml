@@ -84,12 +84,12 @@ services:
       APP_DEMO_MANAGER_PASSWORD: E2ETestDemoManagerPasswordForBookStore123!
       APP_DEMO_CUSTOMER_PASSWORD: E2ETestDemoCustomerPasswordForBookStore123!
       # CORS
-      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://frontend:3000
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,http://frontend:3000
       # JPA
       JPA_DDL_AUTO: create-drop
       # Rate Limiting
       RATE_LIMIT_ENABLED: "true"
-      RATE_LIMIT_AUTH_LIMIT: "10"
+      RATE_LIMIT_AUTH_LIMIT: "500"
       RATE_LIMIT_API_LIMIT: "200"
       RATE_LIMIT_PUBLIC_LIMIT: "500"
       # Input Validation

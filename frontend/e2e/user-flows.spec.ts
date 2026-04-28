@@ -11,8 +11,9 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 test.describe('Shopping Cart', () => {
   test.beforeEach(async ({ page }) => {
     // Login before cart tests
-    const testEmail = process.env.TEST_USER_EMAIL || 'test@example.com';
-    const testPassword = process.env.TEST_USER_PASSWORD || 'Test123456';
+    const testEmail = process.env.TEST_USER_EMAIL || 'customer@example.com';
+    const testPassword =
+      process.env.TEST_USER_PASSWORD || 'E2ETestDemoCustomerPasswordForBookStore123!';
     
     await page.goto(`${BASE_URL}/login`);
     await page.waitForLoadState('networkidle');
@@ -21,7 +22,7 @@ test.describe('Shopping Cart', () => {
       await page.locator('input[type="email"], input[name="email"]').first().fill(testEmail);
       await page.locator('input[type="password"]').first().fill(testPassword);
       await page.locator('button[type="submit"]').first().click();
-      await page.waitForTimeout(2000);
+      await expect(page).toHaveURL(/\/(?!login)/, { timeout: 15000 });
     } catch (e) {
       console.log('Login skipped, may already be logged in');
     }
@@ -30,6 +31,11 @@ test.describe('Shopping Cart', () => {
   test('Add product to cart', async ({ page }) => {
     await page.goto(`${BASE_URL}/products`);
     await page.waitForLoadState('networkidle');
+
+    const firstCard = page.getByTestId('product-card').first();
+    await expect(firstCard).toBeVisible({ timeout: 15000 });
+    await firstCard.scrollIntoViewIfNeeded();
+    await firstCard.hover();
     
     // Look for add to cart button
     const addToCartButton = page.locator('button:has-text("Add to Cart"), button:has-text("Thêm vào giỏ")').first();

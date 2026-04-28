@@ -16,13 +16,18 @@ import {
   Users,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { useAuthStore } from "@/lib/store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLanguage } from "@/components/providers/language-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 
@@ -66,7 +71,8 @@ const COPY = {
   en: {
     breadcrumbHome: "Home",
     title: "Admin dashboard",
-    welcome: "Welcome, {name}! Here is a quick overview of the current demo store.",
+    welcome:
+      "Welcome, {name}! Here is a quick overview of the current demo store.",
     refresh: "Refresh",
     orders: "Orders",
     revenue: "Revenue",
@@ -91,18 +97,42 @@ const COPY = {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
-  const { isAdmin } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    isAdmin,
+    isLoading: isAuthLoading,
+  } = useAuth();
   const { locale } = useLanguage();
   const copy = COPY[locale];
+  const hasSessionCookie =
+    typeof document !== "undefined" &&
+    document.cookie.split(";").some((cookie) => {
+      const normalized = cookie.trim();
+      return (
+        normalized.startsWith("access_token=") ||
+        normalized.startsWith("refresh_token=")
+      );
+    });
+  const isRestoringSession = !isAuthenticated && !user && hasSessionCookie;
+  const isResolvingAuth = isAuthLoading || isRestoringSession;
 
   useEffect(() => {
+    if (isResolvingAuth) {
+      return;
+    }
+
     if (!isAuthenticated || !isAdmin) {
       router.replace("/login");
     }
-  }, [isAuthenticated, isAdmin, router]);
+  }, [isResolvingAuth, isAuthenticated, isAdmin, router]);
 
-  const { data: stats, isLoading, isFetching, refetch } = useQuery({
+  const {
+    data: stats,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
       const response = await api.get("/admin/dashboard");
@@ -111,7 +141,7 @@ export default function AdminDashboard() {
     refetchInterval: 30000,
   });
 
-  if (!isAuthenticated || !isAdmin) {
+  if (isResolvingAuth || !isAuthenticated || !isAdmin) {
     return null;
   }
 
@@ -119,13 +149,19 @@ export default function AdminDashboard() {
     {
       label: copy.orders,
       value: stats?.totalOrders ?? 0,
-      detail: copy.summaryOrders.replace("{count}", String(stats?.newOrdersThisMonth ?? 0)),
+      detail: copy.summaryOrders.replace(
+        "{count}",
+        String(stats?.newOrdersThisMonth ?? 0),
+      ),
       icon: ShoppingCart,
     },
     {
       label: copy.revenue,
       value: formatCurrency(stats?.totalRevenue ?? 0),
-      detail: copy.summaryRevenue.replace("{amount}", formatCurrency(stats?.revenueThisMonth ?? 0)),
+      detail: copy.summaryRevenue.replace(
+        "{amount}",
+        formatCurrency(stats?.revenueThisMonth ?? 0),
+      ),
       icon: DollarSign,
     },
     {
@@ -137,7 +173,10 @@ export default function AdminDashboard() {
     {
       label: copy.pending,
       value: stats?.pendingOrders ?? 0,
-      detail: copy.summaryCompleted.replace("{count}", String(stats?.completedOrders ?? 0)),
+      detail: copy.summaryCompleted.replace(
+        "{count}",
+        String(stats?.completedOrders ?? 0),
+      ),
       icon: AlertTriangle,
     },
   ];
@@ -182,8 +221,15 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <Button variant="outline" className="rounded-xl" onClick={() => void refetch()} disabled={isFetching}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
             {copy.refresh}
           </Button>
         </div>
@@ -203,21 +249,30 @@ export default function AdminDashboard() {
             : summaryCards.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Card key={item.label} className="rounded-2xl border-0 shadow-lg">
+                  <Card
+                    key={item.label}
+                    className="rounded-2xl border-0 shadow-lg"
+                  >
                     <CardContent className="space-y-4 p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
                           <Icon className="h-6 w-6" />
                         </div>
-                        {item.label === copy.pending && (stats?.lowStockProducts ?? 0) > 0 ? (
+                        {item.label === copy.pending &&
+                        (stats?.lowStockProducts ?? 0) > 0 ? (
                           <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600">
-                            {copy.lowStock.replace("{count}", String(stats?.lowStockProducts ?? 0))}
+                            {copy.lowStock.replace(
+                              "{count}",
+                              String(stats?.lowStockProducts ?? 0),
+                            )}
                           </span>
                         ) : null}
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">{item.label}</p>
-                        <p className="mt-1 text-3xl font-bold text-gray-900">{item.value}</p>
+                        <p className="mt-1 text-3xl font-bold text-gray-900">
+                          {item.value}
+                        </p>
                       </div>
                       <p className="text-sm text-gray-600">{item.detail}</p>
                     </CardContent>
@@ -248,10 +303,16 @@ export default function AdminDashboard() {
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <h2 className="font-semibold text-gray-900 transition group-hover:text-blue-600">{action.title}</h2>
-                    <p className="mt-2 text-sm text-gray-600">{action.description}</p>
+                    <h2 className="font-semibold text-gray-900 transition group-hover:text-blue-600">
+                      {action.title}
+                    </h2>
+                    <p className="mt-2 text-sm text-gray-600">
+                      {action.description}
+                    </p>
                     <div className="mt-4 flex items-center gap-2 text-sm font-medium text-blue-600">
-                      <span>{locale === "vi" ? "Mở màn hình" : "Open view"}</span>
+                      <span>
+                        {locale === "vi" ? "Mở màn hình" : "Open view"}
+                      </span>
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   </Link>
@@ -266,13 +327,28 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-gray-600">
               <div className="rounded-xl bg-gray-50 p-4">
-                <p className="font-medium text-gray-900">{copy.summaryOrders.replace("{count}", String(stats?.newOrdersThisMonth ?? 0))}</p>
+                <p className="font-medium text-gray-900">
+                  {copy.summaryOrders.replace(
+                    "{count}",
+                    String(stats?.newOrdersThisMonth ?? 0),
+                  )}
+                </p>
               </div>
               <div className="rounded-xl bg-gray-50 p-4">
-                <p className="font-medium text-gray-900">{copy.summaryRevenue.replace("{amount}", formatCurrency(stats?.revenueThisMonth ?? 0))}</p>
+                <p className="font-medium text-gray-900">
+                  {copy.summaryRevenue.replace(
+                    "{amount}",
+                    formatCurrency(stats?.revenueThisMonth ?? 0),
+                  )}
+                </p>
               </div>
               <div className="rounded-xl bg-gray-50 p-4">
-                <p className="font-medium text-gray-900">{copy.summaryCompleted.replace("{count}", String(stats?.completedOrders ?? 0))}</p>
+                <p className="font-medium text-gray-900">
+                  {copy.summaryCompleted.replace(
+                    "{count}",
+                    String(stats?.completedOrders ?? 0),
+                  )}
+                </p>
               </div>
               <div className="rounded-xl bg-blue-50 p-4 text-blue-700">
                 {locale === "vi"

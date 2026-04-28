@@ -37,7 +37,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private static final String DEFAULT_ALLOWED_ORIGINS =
-            "http://localhost:3000,http://localhost:3001,http://localhost:5173";
+            "http://localhost:3000,http://localhost:3001,http://localhost:5173,"
+                    + "http://127.0.0.1:3000,http://127.0.0.1:3001";
     static final String CONTENT_SECURITY_POLICY = String.join(" ",
             "default-src 'self';",
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;",

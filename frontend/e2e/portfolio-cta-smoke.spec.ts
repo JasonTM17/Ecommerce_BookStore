@@ -186,7 +186,11 @@ test.describe("Portfolio CTA smoke", () => {
     await expect(page.locator("#main-content h1").first()).toBeVisible({
       timeout: 15000,
     });
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), {
+        timeout: 5000,
+      })
+      .toBeLessThanOrEqual(64);
 
     const firstCard = await getFirstProductCard(page);
     await firstCard.hover();

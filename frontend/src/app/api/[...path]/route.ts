@@ -61,10 +61,21 @@ function buildTargetUrl(
 }
 
 function copyRequestHeaders(request: NextRequest) {
-  const headers = new Headers(request.headers);
-  headers.delete("host");
-  headers.delete("connection");
-  headers.delete("content-length");
+  const headers = new Headers();
+  const forwardedHeaders = [
+    "accept",
+    "authorization",
+    "content-type",
+    "x-request-id",
+  ];
+
+  forwardedHeaders.forEach((header) => {
+    const value = request.headers.get(header);
+    if (value) {
+      headers.set(header, value);
+    }
+  });
+
   return headers;
 }
 

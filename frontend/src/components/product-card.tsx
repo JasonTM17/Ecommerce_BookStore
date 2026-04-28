@@ -41,13 +41,20 @@ export function ProductCard({
   const { t } = useLanguage();
   const { isInWishlist, toggleWishlist, isAdding, isRemoving } = useWishlist();
 
-  const hasDiscount = product.discountPercent && product.discountPercent > 0;
+  const hasDiscount = Boolean(
+    product.discountPercent && product.discountPercent > 0,
+  );
+  const hasRating = Boolean(product.avgRating && product.avgRating > 0);
   const addToCartDisabled = !product.inStock || !onAddToCart || isAddingToCart;
   const isWishlistPending = isAdding || isRemoving;
   const isWishlisted = isAuthenticated && isInWishlist(product.id);
   const productHref = `/products/${product.id}`;
   const imageSrc = resolveProductImageSource(product);
   const fallbackSrc = resolveProductFallbackImage(product);
+
+  const handleProductNavigation = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  };
 
   const handleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -78,7 +85,12 @@ export function ProductCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f2ef]">
-        <Link href={productHref} scroll className="block h-full">
+        <Link
+          href={productHref}
+          scroll
+          onClick={handleProductNavigation}
+          className="block h-full"
+        >
           {!imageLoaded && (
             <div className="absolute inset-0 animate-pulse bg-[#e8dfd6]" />
           )}
@@ -109,7 +121,7 @@ export function ProductCard({
 
           <div
             className={cn(
-              "absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent transition-opacity duration-300",
+              "pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent transition-opacity duration-300",
               isHovered ? "opacity-100" : "opacity-0",
             )}
           />
@@ -182,7 +194,12 @@ export function ProductCard({
         </div>
       </div>
 
-      <Link href={productHref} scroll className="block bg-white p-5">
+      <Link
+        href={productHref}
+        scroll
+        onClick={handleProductNavigation}
+        className="block bg-white p-5"
+      >
         {product.category && (
           <p className="mb-2 line-clamp-1 text-xs font-bold tracking-[0.02em] text-[#777169]">
             {product.category.name}
@@ -197,7 +214,7 @@ export function ProductCard({
           <p className="eleven-muted mb-3 truncate text-sm">{product.author}</p>
         )}
 
-        {product.avgRating && product.avgRating > 0 && (
+        {hasRating && (
           <div className="mb-3 flex items-center gap-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
