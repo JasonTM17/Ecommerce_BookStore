@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getCategoryPlaceholderImage,
   isLocalBookAssetPath,
+  resolveProductFallbackImage,
   resolveProductImageSource,
 } from "@/lib/product-images";
 
@@ -39,5 +40,16 @@ describe("product image helpers", () => {
         category: { name: "Lịch Sử" },
       }),
     ).toBe(fallback);
+  });
+
+  it("replaces backend placeholder images with a deterministic local cover", () => {
+    expect(
+      resolveProductImageSource({
+        id: 42,
+        imageUrl: "/images/books/placeholders/children.svg",
+        images: [],
+        category: { name: "Sách Thiếu Nhi" },
+      }),
+    ).toBe(resolveProductFallbackImage({ id: 42, images: [] }));
   });
 });

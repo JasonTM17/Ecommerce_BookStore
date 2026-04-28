@@ -8,7 +8,7 @@ import { flashSaleApi, FlashSale } from "@/lib/flashsale";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { ProductImage } from "@/components/ui/ProductImage";
-import { getCategoryPlaceholderImage } from "@/lib/product-images";
+import { resolveProductFallbackImage } from "@/lib/product-images";
 import { useLanguage } from "@/components/providers/language-provider";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 
@@ -50,11 +50,11 @@ export function FlashSaleSection() {
   }
 
   return (
-    <section className="bg-gradient-to-b from-red-50 to-white py-12">
+    <section className="bg-[#f6f6f6] py-16">
       <div className="container mx-auto px-4">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/30">
+            <div className="eleven-pill-black flex h-12 w-12 items-center justify-center">
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -145,19 +145,23 @@ export function FlashSaleCard({
       href={buildFlashSaleHref(sale.product.id, sale.id)}
       data-testid="flash-sale-card"
       className={cn(
-        "overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm",
-        "group transition-all duration-300 hover:border-red-200 hover:shadow-xl",
+        "eleven-surface group overflow-hidden rounded-[26px] bg-white",
+        "transition-transform duration-300 hover:-translate-y-1",
       )}
     >
-      <div className="relative aspect-[3/4] bg-gray-100">
+      <div className="relative aspect-[3/4] bg-[#f5f2ef]">
         <ProductImage
           src={sale.product.imageUrl || undefined}
-          fallbackSrc={getCategoryPlaceholderImage()}
+          fallbackSrc={resolveProductFallbackImage({
+            id: sale.product.id,
+            imageUrl: sale.product.imageUrl,
+            images: [],
+          })}
           alt={sale.product.name}
           fill
           sizes="(min-width: 1280px) 18vw, (min-width: 640px) 35vw, 90vw"
           priority={imagePriority}
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
         />
 
         <div className="absolute left-3 top-3 flex flex-col gap-2">
@@ -182,7 +186,7 @@ export function FlashSaleCard({
             <div
               className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all"
               style={{
-                width: `${Math.min(100, (sale.soldCount / sale.stockLimit) * 100)}%`,
+                width: `${Math.min(100, (sale.soldCount / Math.max(sale.stockLimit, 1)) * 100)}%`,
               }}
             />
           </div>

@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiPublic } from "@/lib/api";
 import type { Category, Product } from "@/lib/types";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -28,6 +27,10 @@ import { cn } from "@/lib/utils";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useLanguage } from "@/components/providers/language-provider";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
+import {
+  getPublicCategories,
+  getPublicProductsByCategory,
+} from "@/lib/public-storefront";
 
 interface PageResponse<T> {
   content: T[];
@@ -90,23 +93,6 @@ const COPY = {
   },
 } as const;
 
-function normalizeList<T>(data: unknown): T[] {
-  if (Array.isArray(data)) {
-    return data as T[];
-  }
-
-  if (
-    data &&
-    typeof data === "object" &&
-    "content" in data &&
-    Array.isArray((data as PageResponse<T>).content)
-  ) {
-    return (data as PageResponse<T>).content;
-  }
-
-  return [];
-}
-
 function CategoriesContent() {
   const { locale } = useLanguage();
   const copy = COPY[locale];
@@ -124,10 +110,7 @@ function CategoriesContent() {
   >({
     ...publicWarmupQueryOptions,
     queryKey: ["categories-all"],
-    queryFn: async () => {
-      const response = await apiPublic.get("/categories");
-      return normalizeList<Category>(response.data);
-    },
+    queryFn: getPublicCategories,
   });
 
   const { data: productsData, isLoading: productsLoading } = useQuery<
@@ -135,23 +118,8 @@ function CategoriesContent() {
   >({
     ...publicWarmupQueryOptions,
     queryKey: ["category-products", selectedCategoryId, currentPage, pageSize],
-    queryFn: async () => {
-      if (!selectedCategoryId) {
-        return {
-          content: [],
-          totalElements: 0,
-          totalPages: 0,
-          page: 0,
-          number: 0,
-          size: pageSize,
-        };
-      }
-
-      const response = await apiPublic.get(
-        `/products/category/${selectedCategoryId}?page=${currentPage}&size=${pageSize}`,
-      );
-      return response.data;
-    },
+    queryFn: () =>
+      getPublicProductsByCategory(selectedCategoryId, currentPage, pageSize),
     enabled: !!selectedCategoryId,
   });
 

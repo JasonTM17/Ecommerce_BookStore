@@ -129,33 +129,33 @@ export default function FlashSalePage() {
     !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-red-50 via-white to-white">
+    <div className="flex min-h-screen flex-col bg-white">
       <Header />
 
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-red-100 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 py-16 text-white">
-          <div className="absolute inset-0">
-            <div className="absolute -left-20 top-0 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute -right-10 bottom-0 h-72 w-72 rounded-full bg-yellow-300/20 blur-3xl" />
-          </div>
-          <div className="container relative z-10 mx-auto px-4">
+        <section className="border-b border-black/[0.05] bg-[#fffdfb] py-16 md:py-20">
+          <div className="container mx-auto max-w-7xl px-4">
             <div className="max-w-3xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur">
-                <Zap className="h-4 w-4" />
+              <div className="eleven-pill-stone mb-5 inline-flex items-center gap-2 px-4 py-2">
+                <Zap className="h-4 w-4 text-black" />
                 {copy.heroBadge}
               </div>
-              <h1 className="text-4xl font-bold sm:text-5xl">Flash Sale</h1>
-              <p className="mt-4 text-lg text-red-50">{copy.heroDescription}</p>
+              <h1 className="eleven-display text-5xl leading-tight md:text-6xl">
+                Flash Sale
+              </h1>
+              <p className="eleven-body mt-5 max-w-2xl text-lg leading-8">
+                {copy.heroDescription}
+              </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/products">
-                  <Button className="bg-white text-red-600 hover:bg-red-50">
+                  <Button className="eleven-pill-black border-0 px-5">
                     {copy.browseBooks}
                   </Button>
                 </Link>
                 <Link href="/promotions">
                   <Button
                     variant="outline"
-                    className="border-white/60 bg-transparent text-white hover:bg-white/10"
+                    className="eleven-pill-white border-0 px-5"
                   >
                     {copy.browsePromotions}
                   </Button>

@@ -1,6 +1,20 @@
 import type { Product } from "@/lib/types";
 
 const LOCAL_BOOK_ASSET_PREFIX = "/images/books/";
+const LOCAL_FALLBACK_COVERS = [
+  "/images/books/covers/9780061120084-L.jpg",
+  "/images/books/covers/9780132350884-L.jpg",
+  "/images/books/covers/9780134093413-L.jpg",
+  "/images/books/covers/9780141439518-L.jpg",
+  "/images/books/covers/9780345539434-L.jpg",
+  "/images/books/covers/9780525540830-L.jpg",
+  "/images/books/covers/9780735211292-L.jpg",
+  "/images/books/covers/9780743273565-L.jpg",
+  "/images/books/covers/9781591848011-L.jpg",
+  "/images/books/covers/9781612680194-L.jpg",
+  "/images/books/vietnamese/mau_sac_cam_xuc.png",
+  "/images/books/vietnamese/so_tay_sang_tao.png",
+];
 
 const PLACEHOLDER_BY_CATEGORY: Record<string, string> = {
   "sach-van-hoc": "/images/books/placeholders/literature.svg",
@@ -25,7 +39,8 @@ const PLACEHOLDER_BY_CATEGORY: Record<string, string> = {
 };
 
 type ProductLike =
-  | Pick<Product, "imageUrl" | "images" | "category">
+  | (Pick<Product, "imageUrl" | "images" | "category"> &
+      Partial<Pick<Product, "id">>)
   | null
   | undefined;
 
@@ -69,14 +84,48 @@ export function isLocalBookAssetPath(src?: string | null): boolean {
   return Boolean(src && src.startsWith(LOCAL_BOOK_ASSET_PREFIX));
 }
 
+function isPlaceholderAssetPath(src?: string | null): boolean {
+  return Boolean(src && src.includes("/images/books/placeholders/"));
+}
+
+export function getDeterministicBookCover(productId?: number | null): string {
+  if (typeof productId !== "number") {
+    return "";
+  }
+
+  return LOCAL_FALLBACK_COVERS[
+    Math.abs(productId) % LOCAL_FALLBACK_COVERS.length
+  ];
+}
+
+export function resolveProductFallbackImage(product?: ProductLike): string {
+  return (
+    getDeterministicBookCover(product?.id) ||
+    getCategoryPlaceholderImage(product?.category?.name)
+  );
+}
+
 export function resolveProductImageSource(product?: ProductLike): string {
-  const placeholder = getCategoryPlaceholderImage(product?.category?.name);
+  const fallback = resolveProductFallbackImage(product);
   const candidates = uniqueCandidates([
     ...(product?.images ?? []),
     product?.imageUrl,
   ]);
-  const localCandidate = candidates.find((candidate) =>
-    candidate.startsWith("/"),
+  const localCoverCandidate = candidates.find(
+    (candidate) =>
+      candidate.startsWith("/") && !isPlaceholderAssetPath(candidate),
   );
-  return localCandidate || candidates[0] || placeholder;
+  if (localCoverCandidate) {
+    return localCoverCandidate;
+  }
+
+  const remoteCandidate = candidates.find(
+    (candidate) =>
+      !candidate.startsWith("/") && !isPlaceholderAssetPath(candidate),
+  );
+  if (remoteCandidate) {
+    return remoteCandidate;
+  }
+
+  return fallback;
 }

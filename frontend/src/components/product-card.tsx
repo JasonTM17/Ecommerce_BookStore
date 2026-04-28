@@ -10,7 +10,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { Product } from "@/lib/types";
 import {
   resolveProductImageSource,
-  getCategoryPlaceholderImage,
+  resolveProductFallbackImage,
 } from "@/lib/product-images";
 import { buildLoginRedirect, cn, formatCurrency } from "@/lib/utils";
 import { ProductImage } from "@/components/ui/ProductImage";
@@ -47,7 +47,7 @@ export function ProductCard({
   const isWishlisted = isAuthenticated && isInWishlist(product.id);
   const productHref = `/products/${product.id}`;
   const imageSrc = resolveProductImageSource(product);
-  const fallbackSrc = getCategoryPlaceholderImage(product.category?.name);
+  const fallbackSrc = resolveProductFallbackImage(product);
 
   const handleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -92,7 +92,7 @@ export function ProductCard({
               sizes={imageSizes}
               priority={imagePriority}
               className={cn(
-                "object-cover transition-all duration-700",
+                "object-contain p-4 transition-all duration-700",
                 isHovered ? "scale-110" : "scale-100",
                 !imageLoaded && "opacity-0",
               )}

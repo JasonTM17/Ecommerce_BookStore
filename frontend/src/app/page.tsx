@@ -20,8 +20,8 @@ import {
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { useLanguage } from "@/components/providers/language-provider";
-import { apiPublic } from "@/lib/api";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
+import { getPublicCategories } from "@/lib/public-storefront";
 import type { Category } from "@/lib/types";
 
 type ShowcaseGenre = {
@@ -92,10 +92,7 @@ export default function HomePage() {
   const { data: categories = [] } = useQuery({
     ...publicWarmupQueryOptions,
     queryKey: ["home-showcase-categories"],
-    queryFn: async () => {
-      const response = await apiPublic.get("/categories");
-      return Array.isArray(response.data) ? (response.data as Category[]) : [];
-    },
+    queryFn: getPublicCategories,
   });
 
   useEffect(() => {

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiPublic } from "@/lib/api";
 import type { Product, Category, Brand } from "@/lib/types";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -25,6 +24,11 @@ import { cn } from "@/lib/utils";
 import { useAddToCart } from "@/hooks/useAddToCart";
 import { useLanguage } from "@/components/providers/language-provider";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
+import {
+  getPublicBrands,
+  getPublicCategories,
+  getPublicProductsPage,
+} from "@/lib/public-storefront";
 
 interface PageResponse<T> {
   content: T[];
@@ -133,92 +137,6 @@ const COPY = {
   },
 } as const;
 
-function normalizeList<T>(data: unknown): T[] {
-  if (Array.isArray(data)) return data as T[];
-  if (
-    data &&
-    typeof data === "object" &&
-    "content" in data &&
-    Array.isArray((data as PageResponse<T>).content)
-  ) {
-    return (data as PageResponse<T>).content;
-  }
-  return [];
-}
-
-function sortProducts(products: Product[], sortBy: string): Product[] {
-  const sorted = [...products];
-  switch (sortBy) {
-    case "price_asc":
-      sorted.sort(
-        (a, b) => (a.currentPrice || a.price) - (b.currentPrice || b.price),
-      );
-      break;
-    case "price_desc":
-      sorted.sort(
-        (a, b) => (b.currentPrice || b.price) - (a.currentPrice || a.price),
-      );
-      break;
-    case "name_asc":
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    default:
-      sorted.sort((a, b) => {
-        const left = a.updatedAt ? new Date(a.updatedAt).getTime() : a.id;
-        const right = b.updatedAt ? new Date(b.updatedAt).getTime() : b.id;
-        return right - left;
-      });
-      break;
-  }
-  return sorted;
-}
-
-function paginateProducts(
-  products: Product[],
-  currentPage: number,
-  pageSize: number,
-): PageResponse<Product> {
-  const totalElements = products.length;
-  const totalPages =
-    totalElements === 0 ? 0 : Math.ceil(totalElements / pageSize);
-  const safePage = totalPages === 0 ? 0 : Math.min(currentPage, totalPages - 1);
-  const start = safePage * pageSize;
-  return {
-    content: products.slice(start, start + pageSize),
-    totalElements,
-    totalPages,
-    page: safePage,
-    number: safePage,
-    size: pageSize,
-  };
-}
-
-function filterCollectionProducts(
-  products: Product[],
-  searchKeyword: string,
-  selectedCategory: string,
-  selectedBrand: string,
-): Product[] {
-  const normalizedKeyword = searchKeyword.trim().toLowerCase();
-
-  return products.filter((product) => {
-    const matchesKeyword =
-      !normalizedKeyword ||
-      [product.name, product.author, product.publisher, product.description]
-        .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(normalizedKeyword));
-
-    const matchesCategory =
-      selectedCategory === "all" ||
-      product.category?.id?.toString() === selectedCategory;
-    const matchesBrand =
-      selectedBrand === "all" ||
-      product.brand?.id?.toString() === selectedBrand;
-
-    return matchesKeyword && matchesCategory && matchesBrand;
-  });
-}
-
 function ProductsContent() {
   const { locale } = useLanguage();
   const copy = COPY[locale];
@@ -265,57 +183,28 @@ function ProductsContent() {
       currentPage,
       pageSize,
     ],
-    queryFn: async () => {
-      if (collectionMode) {
-        const endpoint =
-          collectionMode === "featured"
-            ? "/products/featured"
-            : "/products/new";
-        const response = await apiPublic.get(endpoint);
-        const collectionProducts = normalizeList<Product>(response.data);
-        const filteredProducts = filterCollectionProducts(
-          collectionProducts,
-          searchKeyword,
-          selectedCategory,
-          selectedBrand,
-        );
-        return paginateProducts(
-          sortProducts(filteredProducts, sortBy),
-          currentPage,
-          pageSize,
-        );
-      }
-
-      const params = new URLSearchParams();
-      if (searchKeyword) params.append("keyword", searchKeyword);
-      if (selectedCategory && selectedCategory !== "all")
-        params.append("categoryId", selectedCategory);
-      if (selectedBrand && selectedBrand !== "all")
-        params.append("brandId", selectedBrand);
-      params.append("sortBy", sortBy);
-      params.append("page", currentPage.toString());
-      params.append("size", pageSize.toString());
-      const response = await apiPublic.get(`/products?${params.toString()}`);
-      return response.data;
-    },
+    queryFn: () =>
+      getPublicProductsPage({
+        collectionMode,
+        keyword: searchKeyword,
+        categoryId: selectedCategory,
+        brandId: selectedBrand,
+        sortBy,
+        page: currentPage,
+        size: pageSize,
+      }),
   });
 
   const { data: categoriesList = [] } = useQuery<Category[]>({
     ...publicWarmupQueryOptions,
     queryKey: ["categories"],
-    queryFn: async () => {
-      const response = await apiPublic.get("/categories");
-      return normalizeList<Category>(response.data);
-    },
+    queryFn: getPublicCategories,
   });
 
   const { data: brandsList = [] } = useQuery<Brand[]>({
     ...publicWarmupQueryOptions,
     queryKey: ["brands"],
-    queryFn: async () => {
-      const response = await apiPublic.get("/brands");
-      return normalizeList<Brand>(response.data);
-    },
+    queryFn: getPublicBrands,
   });
 
   useEffect(() => {

@@ -6,7 +6,7 @@ import { Zap, Clock } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { ProductImage } from "@/components/ui/ProductImage";
-import { getCategoryPlaceholderImage } from "@/lib/product-images";
+import { resolveProductFallbackImage } from "@/lib/product-images";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 
 export function FlashSaleBanner() {
@@ -22,7 +22,7 @@ export function FlashSaleBanner() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-red-500 to-orange-500 py-3">
+    <div className="border-b border-black/[0.06] bg-black py-3">
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
           <div className="shrink-0 flex items-center gap-2 text-white">
@@ -84,17 +84,21 @@ function FlashSaleQuickView({
     <Link
       href={`/products/${sale.product.id}`}
       data-testid="flash-sale-banner-item"
-      className="flex shrink-0 items-center gap-3 rounded-lg bg-white/10 px-3 py-2 transition-colors hover:bg-white/20"
+      className="flex shrink-0 items-center gap-3 rounded-xl bg-white/10 px-3 py-2 transition-colors hover:bg-white/20"
     >
-      <div className="relative h-14 w-10 overflow-hidden rounded bg-white">
+      <div className="relative h-14 w-10 overflow-hidden rounded bg-[#f5f2ef]">
         <ProductImage
           src={sale.product.imageUrl || undefined}
-          fallbackSrc={getCategoryPlaceholderImage()}
+          fallbackSrc={resolveProductFallbackImage({
+            id: sale.product.id,
+            imageUrl: sale.product.imageUrl,
+            images: [],
+          })}
           alt={sale.product.name}
           fill
           sizes="40px"
           priority={imagePriority}
-          className="object-cover"
+          className="object-contain p-1"
         />
       </div>
       <div>

@@ -9,8 +9,12 @@ import { useLanguage } from "@/components/providers/language-provider";
 import { ApiStatusCard } from "@/components/ui/api-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddToCart } from "@/hooks/useAddToCart";
-import { apiPublic } from "@/lib/api";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
+import {
+  getPublicFeaturedProducts,
+  getPublicNewProducts,
+  getPublicRootCategories,
+} from "@/lib/public-storefront";
 import { Category, Product } from "@/lib/types";
 
 const CATEGORY_ACCENTS = [
@@ -93,10 +97,7 @@ export function FeaturedProducts() {
   } = useQuery({
     ...publicWarmupQueryOptions,
     queryKey: ["featured-products"],
-    queryFn: async () => {
-      const response = await apiPublic.get("/products/featured");
-      return response.data as Product[];
-    },
+    queryFn: getPublicFeaturedProducts,
   });
 
   if (isLoading) {
@@ -179,10 +180,7 @@ export function NewProducts() {
   } = useQuery({
     ...publicWarmupQueryOptions,
     queryKey: ["new-products"],
-    queryFn: async () => {
-      const response = await apiPublic.get("/products/new");
-      return response.data as Product[];
-    },
+    queryFn: getPublicNewProducts,
   });
 
   if (isLoading) {
@@ -264,10 +262,7 @@ export function CategorySection() {
   } = useQuery({
     ...publicWarmupQueryOptions,
     queryKey: ["categories"],
-    queryFn: async () => {
-      const response = await apiPublic.get("/categories/root");
-      return response.data as Category[];
-    },
+    queryFn: getPublicRootCategories,
   });
 
   if (isLoading) {

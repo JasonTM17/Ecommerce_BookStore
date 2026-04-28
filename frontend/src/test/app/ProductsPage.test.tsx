@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ProductsPage from "@/app/products/page";
-import { api } from "@/lib/api";
+import { apiPublic } from "@/lib/api";
 
 const localeState = { locale: "vi" as "vi" | "en" };
 
@@ -61,7 +61,7 @@ describe("ProductsPage", () => {
     vi.clearAllMocks();
     localeState.locale = "vi";
 
-    vi.mocked(api.get).mockImplementation(async (url: string) => {
+    vi.mocked(apiPublic.get).mockImplementation(async (url: string) => {
       if (url.startsWith("/products?")) {
         return {
           data: {
@@ -101,14 +101,16 @@ describe("ProductsPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows a recovery state when product loading fails", async () => {
-    vi.mocked(api.get).mockRejectedValueOnce(new Error("backend unavailable"));
+  it("renders fallback catalog content when product loading fails", async () => {
+    vi.mocked(apiPublic.get).mockRejectedValue(
+      new Error("backend unavailable"),
+    );
 
     renderWithQueryClient(<ProductsPage />);
 
+    expect(await screen.findByText("Atomic Habits")).toBeInTheDocument();
     expect(
-      await screen.findByText("Chưa thể tải danh sách sách"),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Thử lại" })).toBeInTheDocument();
+      screen.queryByText("Chưa thể tải danh sách sách"),
+    ).not.toBeInTheDocument();
   });
 });
