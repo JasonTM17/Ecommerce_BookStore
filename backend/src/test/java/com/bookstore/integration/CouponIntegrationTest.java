@@ -1,6 +1,7 @@
 package com.bookstore.integration;
 
 import com.bookstore.entity.User;
+import com.bookstore.entity.Role;
 import com.bookstore.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,9 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,15 +37,34 @@ class CouponIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private User adminUser;
     private User customerUser;
 
     @BeforeEach
     void setUp() {
         adminUser = userRepository.findByEmail("admin@bookstore.com")
-                .orElseThrow(() -> new RuntimeException("Admin user not found"));
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .email("admin@bookstore.com")
+                        .password(passwordEncoder.encode("Admin123!"))
+                        .firstName("Admin")
+                        .phoneNumber("0901234567")
+                        .isActive(true)
+                        .isEmailVerified(true)
+                        .roles(new HashSet<>(Set.of(Role.ADMIN)))
+                        .build()));
         customerUser = userRepository.findByEmail("customer@example.com")
-                .orElseThrow(() -> new RuntimeException("Customer user not found"));
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .email("customer@example.com")
+                        .password(passwordEncoder.encode("Customer123!"))
+                        .firstName("Customer Test")
+                        .phoneNumber("0903456789")
+                        .isActive(true)
+                        .isEmailVerified(true)
+                        .roles(new HashSet<>(Set.of(Role.CUSTOMER)))
+                        .build()));
     }
 
     @Test
