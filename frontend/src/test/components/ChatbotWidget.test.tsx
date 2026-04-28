@@ -140,14 +140,18 @@ describe("ChatbotWidget", () => {
     expect(await screen.findByText("Chào bạn!")).toBeInTheDocument();
     expect(screen.getByText("Đăng nhập để bắt đầu chat")).toBeInTheDocument();
     expect(screen.getByTestId("chat-header-subtitle")).toHaveTextContent(
-      "Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng."
+      "Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng.",
     );
-    expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent("Grok sẵn sàng · grok-3");
+    expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent(
+      "Grok sẵn sàng · grok-3",
+    );
     expectNoMojibake();
 
     fireEvent.click(screen.getByTestId("chatbot-login-cta"));
 
-    expect(pushMock).toHaveBeenCalledWith("/login?redirect=%2Fproducts%3Fsource%3Dhome");
+    expect(pushMock).toHaveBeenCalledWith(
+      "/login?redirect=%2Fproducts%3Fsource%3Dhome",
+    );
   });
 
   it("renders English guest copy and action labels when locale changes", async () => {
@@ -169,9 +173,11 @@ describe("ChatbotWidget", () => {
     expect(screen.getByText("View promotions")).toBeInTheDocument();
     expect(screen.getByText("Browse categories")).toBeInTheDocument();
     expect(screen.getByTestId("chat-header-subtitle")).toHaveTextContent(
-      "Book suggestions, orders, and deals right inside the store."
+      "Book suggestions, orders, and deals right inside the store.",
     );
-    expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent("Grok ready · grok-3");
+    expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent(
+      "Grok ready · grok-3",
+    );
     expectNoMojibake();
   });
 
@@ -188,13 +194,17 @@ describe("ChatbotWidget", () => {
     render(<ChatbotWidget />);
     fireEvent.click(screen.getByTestId("chatbot-launcher"));
 
-    expect(await screen.findByText("Chatbot is ready to help")).toBeInTheDocument();
-    expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent("Grok ready · grok-3");
+    expect(
+      await screen.findByText("Chatbot is ready to help"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent(
+      "Grok ready · grok-3",
+    );
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Ask about books, orders, or promotions..."
+      "Ask about books, orders, or promotions...",
     );
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
-      "Press Enter to send, Shift + Enter for a new line"
+      "Press Enter to send, Shift + Enter for a new line",
     );
     expect(screen.getByText("Find books about Python")).toBeInTheDocument();
     expectNoMojibake();
@@ -213,13 +223,20 @@ describe("ChatbotWidget", () => {
     render(<ChatbotWidget />);
     fireEvent.click(screen.getByTestId("chatbot-launcher"));
 
-    expect(await screen.findByText("Chatbot đang tạm tắt ở môi trường này")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Chatbot đang tạm tắt ở môi trường này"),
+    ).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByTestId("chat-input")).toHaveAttribute("data-disabled", "true");
+      expect(screen.getByTestId("chat-input")).toHaveAttribute(
+        "data-disabled",
+        "true",
+      );
     });
-    expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent("Chatbot đang tạm tắt");
+    expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
+      "Chatbot đang tạm tắt",
+    );
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
-      "Chatbot đang tạm tắt. Bạn vẫn có thể duyệt sách và khuyến mãi trực tiếp."
+      "Chatbot đang tạm tắt. Bạn vẫn có thể duyệt sách và khuyến mãi trực tiếp.",
     );
     expectNoMojibake();
   });
