@@ -150,10 +150,10 @@ export default function HomePage() {
 
       <main className="flex-1">
         <section className="relative overflow-hidden border-b border-black/[0.05] bg-[#fffdfb]">
-          <div className="container relative mx-auto max-w-7xl px-4 py-16 md:py-24">
+          <div className="relative mx-auto w-full max-w-7xl px-4 py-16 md:py-24">
             <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr]">
               <div
-                className={`transition-all duration-700 ${
+                className={`w-full min-w-0 max-w-full transition-all duration-700 ${
                   mounted
                     ? "translate-y-0 opacity-100"
                     : "translate-y-6 opacity-0"
@@ -166,7 +166,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <h1 className="eleven-display max-w-4xl text-5xl leading-[1.04] md:text-6xl lg:text-7xl">
+                <h1 className="eleven-display max-w-full text-4xl leading-[1.08] sm:max-w-4xl sm:text-5xl sm:leading-[1.04] md:text-6xl lg:text-7xl">
                   {t("home.heroTitleLead")}{" "}
                   <span className="italic text-[#777169]">
                     {t("home.heroTitleAccent")}
@@ -175,28 +175,28 @@ export default function HomePage() {
                   <span>{t("home.heroTitleTail")}</span>
                 </h1>
 
-                <p className="eleven-body mt-7 max-w-2xl text-lg leading-8 md:text-xl">
+                <p className="eleven-body mt-7 max-w-full text-base leading-7 sm:max-w-2xl sm:text-lg sm:leading-8 md:text-xl">
                   {t("home.heroDescription")}
                 </p>
 
-                <div className="mt-9 flex flex-wrap gap-3">
+                <div className="mt-9 flex max-w-full flex-col gap-3 min-[420px]:flex-row min-[420px]:flex-wrap">
                   <Link
                     href="/products"
-                    className="eleven-pill-black group inline-flex items-center px-6 py-3 text-[15px] font-medium transition-transform duration-300 hover:scale-[1.02]"
+                    className="eleven-pill-black group inline-flex items-center justify-center px-6 py-3 text-[15px] font-medium transition-transform duration-300 hover:scale-[1.02] min-[420px]:justify-start"
                   >
                     {t("home.shopNow")}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                   <Link
                     href="/categories"
-                    className="eleven-pill-white group inline-flex items-center px-6 py-3 text-[15px] font-medium transition-transform duration-300 hover:scale-[1.02]"
+                    className="eleven-pill-white group inline-flex items-center justify-center px-6 py-3 text-[15px] font-medium transition-transform duration-300 hover:scale-[1.02] min-[420px]:justify-start"
                   >
                     {t("home.browseCategories")}
                     <BookMarked className="ml-2 h-4 w-4 transition-transform group-hover:rotate-6" />
                   </Link>
                 </div>
 
-                <div className="mt-10 grid max-w-2xl gap-3 border-t border-black/[0.06] pt-8 sm:grid-cols-2">
+                <div className="mt-10 grid max-w-full gap-3 border-t border-black/[0.06] pt-8 sm:max-w-2xl sm:grid-cols-2">
                   <div className="flex items-center gap-3">
                     <Shield className="h-5 w-5 text-black" />
                     <span className="eleven-muted text-sm">
@@ -213,7 +213,7 @@ export default function HomePage() {
               </div>
 
               <div
-                className={`transition-all delay-150 duration-700 ${
+                className={`w-full min-w-0 max-w-full transition-all delay-150 duration-700 ${
                   mounted
                     ? "translate-y-0 opacity-100"
                     : "translate-y-6 opacity-0"
@@ -272,7 +272,7 @@ export default function HomePage() {
         </section>
 
         <section className="bg-white py-12">
-          <div className="container mx-auto max-w-7xl px-4">
+          <div className="mx-auto w-full max-w-7xl px-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {featureHighlights.map((feature) => (
                 <div
