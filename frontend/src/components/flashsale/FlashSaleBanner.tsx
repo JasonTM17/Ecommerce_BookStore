@@ -22,14 +22,14 @@ export function FlashSaleBanner() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-red-500 to-orange-500 py-3">
+    <div className="overflow-hidden bg-gradient-to-r from-red-500 to-orange-500 py-3">
       <div className="container mx-auto px-4">
-        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+        <div className="flex min-w-0 items-center gap-3 overflow-hidden sm:gap-4">
           <div className="shrink-0 flex items-center gap-2 text-white">
             <Zap className="h-5 w-5 fill-yellow-400 text-yellow-300" />
             <span className="font-bold tracking-wide">FLASH SALE</span>
           </div>
-          <div className="flex gap-4 overflow-x-auto">
+          <div className="no-scrollbar flex min-w-0 flex-1 gap-3 overflow-x-auto overscroll-x-contain sm:gap-4">
             {flashSales.slice(0, 5).map((sale, index) => (
               <FlashSaleQuickView
                 key={sale.id}
@@ -84,7 +84,7 @@ function FlashSaleQuickView({
     <Link
       href={`/products/${sale.product.id}`}
       data-testid="flash-sale-banner-item"
-      className="flex shrink-0 items-center gap-3 rounded-lg bg-white/10 px-3 py-2 transition-colors hover:bg-white/20"
+      className="flex max-w-[72vw] shrink-0 items-center gap-3 rounded-lg bg-white/10 px-3 py-2 transition-colors hover:bg-white/20 sm:max-w-xs"
     >
       <div className="relative h-14 w-10 overflow-hidden rounded bg-white">
         <ProductImage
@@ -101,11 +101,11 @@ function FlashSaleQuickView({
           className="object-contain p-1"
         />
       </div>
-      <div>
-        <p className="line-clamp-1 text-sm font-medium text-white">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium text-white">
           {sale.product.name}
         </p>
-        <div className="mt-1 flex items-center gap-2">
+        <div className="mt-1 flex min-w-0 items-center gap-2">
           <span className="font-bold text-yellow-300">
             {formatPrice(sale.salePrice)}
           </span>

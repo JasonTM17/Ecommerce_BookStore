@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  isCacheablePublicProxyGet,
   resolveProxyTargets,
   shouldFallbackProxyResponseStatus,
 } from "@/lib/server/api-proxy";
@@ -21,6 +22,19 @@ const STRIPPED_PROXY_RESPONSE_HEADERS = [
   "x-frame-options",
   "x-xss-protection",
 ];
+const PUBLIC_PROXY_CACHE_TTL_MS = Number(
+  process.env.API_PROXY_PUBLIC_CACHE_TTL_MS || "30000",
+);
+
+type PublicProxyCacheEntry = {
+  expiresAt: number;
+  status: number;
+  statusText: string;
+  headers: [string, string][];
+  body: ArrayBuffer;
+};
+
+const publicProxyCache = new Map<string, PublicProxyCacheEntry>();
 
 type ApiRouteContext = {
   params: Promise<{ path: string[] }>;
@@ -44,6 +58,18 @@ function copyRequestHeaders(request: NextRequest) {
   return headers;
 }
 
+function getPublicProxyCacheKey(request: NextRequest, pathSegments: string[]) {
+  return `${pathSegments.join("/")}${request.nextUrl.search || ""}`;
+}
+
+function buildCachedProxyResponse(entry: PublicProxyCacheEntry) {
+  return new NextResponse(entry.body.slice(0), {
+    status: entry.status,
+    statusText: entry.statusText,
+    headers: new Headers(entry.headers),
+  });
+}
+
 async function proxyRequest(request: NextRequest, pathSegments: string[]) {
   const body =
     request.method === "GET" || request.method === "HEAD"
@@ -52,6 +78,20 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
   const targets = resolveProxyTargets(process.env);
   let timeoutFailure = false;
   let lastError: unknown;
+  const cacheablePublicGet = isCacheablePublicProxyGet(
+    request.method,
+    pathSegments,
+  );
+  const cacheKey = cacheablePublicGet
+    ? getPublicProxyCacheKey(request, pathSegments)
+    : null;
+
+  if (cacheKey) {
+    const cached = publicProxyCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return buildCachedProxyResponse(cached);
+    }
+  }
 
   try {
     for (let index = 0; index < targets.length; index += 1) {
@@ -91,6 +131,23 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
         STRIPPED_PROXY_RESPONSE_HEADERS.forEach((header) => {
           headers.delete(header);
         });
+
+        if (cacheKey && response.ok && PUBLIC_PROXY_CACHE_TTL_MS > 0) {
+          const responseBody = await response.arrayBuffer();
+          publicProxyCache.set(cacheKey, {
+            expiresAt: Date.now() + PUBLIC_PROXY_CACHE_TTL_MS,
+            status: response.status,
+            statusText: response.statusText,
+            headers: Array.from(headers.entries()),
+            body: responseBody,
+          });
+
+          return new NextResponse(responseBody.slice(0), {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+          });
+        }
 
         return new NextResponse(response.body, {
           status: response.status,

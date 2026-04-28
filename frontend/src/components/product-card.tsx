@@ -184,7 +184,7 @@ export function ProductCard({
 
       <Link href={productHref} scroll className="block bg-white p-5">
         {product.category && (
-          <p className="eleven-kicker mb-2 line-clamp-1">
+          <p className="mb-2 line-clamp-1 text-xs font-bold tracking-[0.02em] text-[#777169]">
             {product.category.name}
           </p>
         )}

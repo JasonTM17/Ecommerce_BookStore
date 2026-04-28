@@ -67,7 +67,7 @@ public class RateLimitingFilter implements Filter {
         String key = clientIp + ":" + requestUri;
         
         // Xác định loại endpoint để áp dụng limit phù hợp
-        RateLimitConfig config = getRateLimitConfig(requestUri);
+        RateLimitConfig config = getRateLimitConfig(request.getMethod(), requestUri);
         
         // Kiểm tra rate limit
         RateLimitEntry entry = rateLimitMap.computeIfAbsent(key, k -> new RateLimitEntry(config.limit, config.windowMs));
@@ -94,15 +94,42 @@ public class RateLimitingFilter implements Filter {
         filterChain.doFilter(servletRequest, servletResponse);
     }
     
-    private RateLimitConfig getRateLimitConfig(String uri) {
+    private RateLimitConfig getRateLimitConfig(String method, String uri) {
         if (uri.startsWith("/api/auth/") || uri.startsWith("/auth/")) {
             return new RateLimitConfig(authLimit, authWindowMs);
         } else if (uri.startsWith("/api/admin/") || uri.startsWith("/admin/")) {
             return new RateLimitConfig(authLimit, authWindowMs);
+        } else if ("GET".equalsIgnoreCase(method) && isPublicCatalogEndpoint(uri)) {
+            return new RateLimitConfig(publicLimit, publicWindowMs);
         } else if (uri.startsWith("/api/")) {
             return new RateLimitConfig(apiLimit, apiWindowMs);
         }
         return new RateLimitConfig(publicLimit, publicWindowMs);
+    }
+
+    private boolean isPublicCatalogEndpoint(String uri) {
+        return uri.startsWith("/api/products/")
+                || uri.equals("/api/products")
+                || uri.startsWith("/products/")
+                || uri.equals("/products")
+                || uri.startsWith("/api/categories/")
+                || uri.equals("/api/categories")
+                || uri.startsWith("/categories/")
+                || uri.equals("/categories")
+                || uri.startsWith("/api/brands/")
+                || uri.equals("/api/brands")
+                || uri.startsWith("/brands/")
+                || uri.equals("/brands")
+                || uri.startsWith("/api/flash-sales/")
+                || uri.equals("/api/flash-sales")
+                || uri.startsWith("/flash-sales/")
+                || uri.equals("/flash-sales")
+                || uri.startsWith("/api/reviews/")
+                || uri.equals("/api/reviews")
+                || uri.startsWith("/reviews/")
+                || uri.equals("/reviews")
+                || uri.equals("/api/coupons/available")
+                || uri.equals("/coupons/available");
     }
     
     private String getClientIP(HttpServletRequest request) {

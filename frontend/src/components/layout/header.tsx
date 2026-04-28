@@ -216,7 +216,7 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <Link href="/login">
+              <Link href="/login" className="hidden sm:block">
                 <Button className="eleven-pill-black px-6 transition-transform duration-300 hover:scale-[1.02] hover:bg-black/90">
                   {menuLabels.login}
                 </Button>
@@ -269,6 +269,48 @@ export function Header() {
                     <span className="font-medium">{item.label}</span>
                   </Link>
                 ))}
+
+                <div className="my-3 border-t border-black/[0.05]" />
+
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      href="/account"
+                      className="mx-2 flex items-center rounded-full px-4 py-3 text-[#4e4e4e] transition-colors hover:bg-[#f5f2ef] hover:text-black"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User className="mr-3 h-4 w-4" />
+                      <span className="font-medium">{menuLabels.account}</span>
+                    </Link>
+                    <Link
+                      href="/orders"
+                      className="mx-2 flex items-center rounded-full px-4 py-3 text-[#4e4e4e] transition-colors hover:bg-[#f5f2ef] hover:text-black"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <ShoppingCart className="mr-3 h-4 w-4" />
+                      <span className="font-medium">{menuLabels.orders}</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="mx-2 flex w-[calc(100%-1rem)] items-center rounded-full px-4 py-3 text-left text-red-600 transition-colors hover:bg-red-50"
+                    >
+                      <LogOut className="mr-3 h-4 w-4" />
+                      <span className="font-medium">{menuLabels.logout}</span>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="mx-2 flex items-center rounded-full px-4 py-3 text-[#4e4e4e] transition-colors hover:bg-[#f5f2ef] hover:text-black"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="mr-3 h-4 w-4" />
+                    <span className="font-medium">{menuLabels.login}</span>
+                  </Link>
+                )}
               </div>
             </nav>
           </div>

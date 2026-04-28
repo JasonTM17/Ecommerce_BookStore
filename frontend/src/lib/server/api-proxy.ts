@@ -1,5 +1,13 @@
 const FALLBACK_PROXY_TARGET = "https://bookstore-api-a1xl.onrender.com/api";
 const FALLBACK_PROXY_STATUSES = new Set([429, 502, 503, 504]);
+const PUBLIC_CACHEABLE_GET_PREFIXES = [
+  "brands",
+  "categories",
+  "coupons/available",
+  "flash-sales",
+  "products",
+  "reviews",
+];
 
 export function normalizeProxyTarget(rawTarget?: string) {
   const target = (rawTarget || FALLBACK_PROXY_TARGET)
@@ -45,4 +53,15 @@ export function resolveProxyTarget(
 
 export function shouldFallbackProxyResponseStatus(status: number) {
   return FALLBACK_PROXY_STATUSES.has(status);
+}
+
+export function isCacheablePublicProxyGet(method: string, pathSegments: string[]) {
+  if (method.toUpperCase() !== "GET") {
+    return false;
+  }
+
+  const joinedPath = pathSegments.join("/");
+  return PUBLIC_CACHEABLE_GET_PREFIXES.some(
+    (prefix) => joinedPath === prefix || joinedPath.startsWith(`${prefix}/`),
+  );
 }

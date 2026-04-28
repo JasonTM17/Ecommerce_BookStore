@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isCacheablePublicProxyGet,
   normalizeProxyTarget,
   resolveProxyTargets,
   resolveProxyTarget,
@@ -55,5 +56,16 @@ describe("api proxy target resolution", () => {
     expect(shouldFallbackProxyResponseStatus(504)).toBe(true);
     expect(shouldFallbackProxyResponseStatus(404)).toBe(false);
     expect(shouldFallbackProxyResponseStatus(500)).toBe(false);
+  });
+
+  it("only caches safe public GET proxy routes", () => {
+    expect(isCacheablePublicProxyGet("GET", ["products"])).toBe(true);
+    expect(isCacheablePublicProxyGet("GET", ["flash-sales", "active"])).toBe(
+      true,
+    );
+    expect(isCacheablePublicProxyGet("GET", ["admin", "products"])).toBe(
+      false,
+    );
+    expect(isCacheablePublicProxyGet("POST", ["products"])).toBe(false);
   });
 });

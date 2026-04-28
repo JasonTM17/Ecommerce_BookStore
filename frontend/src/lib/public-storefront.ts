@@ -17,11 +17,25 @@ type RetryAwareConfig = AxiosRequestConfig & { _retry?: boolean };
 const PUBLIC_STOREFRONT_TIMEOUT_MS = Number(
   process.env.NEXT_PUBLIC_STOREFRONT_TIMEOUT_MS || "12000",
 );
+const PUBLIC_STOREFRONT_CACHE_TTL_MS = Number(
+  process.env.NEXT_PUBLIC_STOREFRONT_CACHE_TTL_MS || "30000",
+);
 
 const noRetryConfig: RetryAwareConfig = {
   timeout: PUBLIC_STOREFRONT_TIMEOUT_MS,
   _retry: true,
 };
+
+type PublicPayloadCacheEntry = {
+  expiresAt: number;
+  promise: Promise<unknown>;
+};
+
+const publicPayloadCache = new Map<string, PublicPayloadCacheEntry>();
+
+export function clearPublicStorefrontCacheForTests() {
+  publicPayloadCache.clear();
+}
 
 export function normalizePublicList<T>(data: unknown): T[] {
   if (Array.isArray(data)) {
@@ -139,14 +153,36 @@ function filterAndSortProducts(
   }
 }
 
+async function getPublicPayload(endpoint: string) {
+  const now = Date.now();
+  const cached = publicPayloadCache.get(endpoint);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.promise;
+  }
+
+  const promise = apiPublic
+    .get(endpoint, noRetryConfig)
+    .then((response) => response.data);
+
+  if (PUBLIC_STOREFRONT_CACHE_TTL_MS > 0) {
+    publicPayloadCache.set(endpoint, {
+      expiresAt: now + PUBLIC_STOREFRONT_CACHE_TTL_MS,
+      promise,
+    });
+  }
+
+  return promise;
+}
+
 async function getWithFallback<T>(
   endpoint: string,
   fallback: T,
   normalize: (data: unknown, fallback: T) => T = (data) => data as T,
 ) {
   try {
-    const response = await apiPublic.get(endpoint, noRetryConfig);
-    const normalized = normalize(response.data, fallback);
+    const payload = await getPublicPayload(endpoint);
+    const normalized = normalize(payload, fallback);
     return isEmptyPublicPayload(normalized) && !isEmptyPublicPayload(fallback)
       ? fallback
       : normalized;

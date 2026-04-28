@@ -7,6 +7,7 @@ vi.mock("@/lib/api", () => ({
 }));
 
 import {
+  clearPublicStorefrontCacheForTests,
   getPublicCategories,
   getPublicFeaturedProducts,
   getPublicProductsPage,
@@ -17,6 +18,8 @@ describe("public storefront fallbacks", () => {
   const apiPublicGet = vi.mocked(apiPublic.get);
 
   beforeEach(() => {
+    clearPublicStorefrontCacheForTests();
+    apiPublicGet.mockReset();
     apiPublicGet.mockRejectedValue(new Error("backend unavailable"));
   });
 
@@ -66,5 +69,19 @@ describe("public storefront fallbacks", () => {
         expect.objectContaining({ name: "Atomic Habits" }),
       ]),
     );
+  });
+
+  it("deduplicates repeated public endpoint requests during the cache window", async () => {
+    apiPublicGet.mockResolvedValue({
+      data: [{ id: 1, name: "Cached category" }],
+    });
+
+    const [first, second] = await Promise.all([
+      getPublicCategories(),
+      getPublicCategories(),
+    ]);
+
+    expect(apiPublicGet).toHaveBeenCalledTimes(1);
+    expect(first).toEqual(second);
   });
 });
