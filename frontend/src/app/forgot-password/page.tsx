@@ -7,7 +7,13 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { buildLoginRedirect } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/language-provider";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AlertCircle, ArrowLeft, CheckCircle, Lock, Mail } from "lucide-react";
 
 type Locale = "vi" | "en";
@@ -60,7 +66,8 @@ const copy: Record<
     backHome: "Quay lại trang chủ",
     brand: "BookStore",
     requestTitle: "Quên Mật Khẩu?",
-    requestDescription: "Nhập địa chỉ email của bạn để nhận mã đặt lại mật khẩu",
+    requestDescription:
+      "Nhập địa chỉ email của bạn để nhận mã đặt lại mật khẩu",
     emailLabel: "Email",
     emailPlaceholder: "Nhập email của bạn",
     sendCode: "Gửi Mã Xác Thực",
@@ -93,7 +100,8 @@ const copy: Record<
     backHome: "Back to home",
     brand: "BookStore",
     requestTitle: "Forgot Password?",
-    requestDescription: "Enter your email address to receive a password reset code",
+    requestDescription:
+      "Enter your email address to receive a password reset code",
     emailLabel: "Email",
     emailPlaceholder: "Enter your email",
     sendCode: "Send Verification Code",
@@ -101,7 +109,8 @@ const copy: Record<
     remember: "Remember your password?",
     loginNow: "Sign in now",
     resetTitle: "Reset Password",
-    resetDescription: (email) => `The verification code has been sent to ${email}`,
+    resetDescription: (email) =>
+      `The verification code has been sent to ${email}`,
     tokenLabel: "Verification code",
     tokenPlaceholder: "Enter the code from email",
     newPasswordLabel: "New password",
@@ -115,7 +124,8 @@ const copy: Record<
     resetSuccess: "Password reset successfully!",
     genericError: "Something went wrong",
     tokenRequired: "Verification code is required",
-    tokenExpired: "The verification code has expired. Please request a new one.",
+    tokenExpired:
+      "The verification code has expired. Please request a new one.",
     emailRequired: "Email is required",
     emailInvalid: "Invalid email",
     passwordRequired: "New password is required",
@@ -137,7 +147,10 @@ export default function ForgotPasswordPage() {
 
   const pageCopy = copy[locale];
   const redirectTarget = resolveRedirectTarget(searchParams.get("redirect"));
-  const loginHref = useMemo(() => buildLoginRedirect(redirectTarget), [redirectTarget]);
+  const loginHref = useMemo(
+    () => buildLoginRedirect(redirectTarget),
+    [redirectTarget],
+  );
 
   const validateEmail = (value: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -244,13 +257,18 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                 <Mail className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl">{pageCopy.requestTitle}</CardTitle>
+              <CardTitle className="text-2xl">
+                {pageCopy.requestTitle}
+              </CardTitle>
               <CardDescription>{pageCopy.requestDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleRequestSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     {pageCopy.emailLabel}
                   </label>
                   <div className="relative">
@@ -283,7 +301,10 @@ export default function ForgotPasswordPage() {
 
                 <div className="text-center text-sm text-gray-500">
                   {pageCopy.remember}{" "}
-                  <Link href={loginHref} className="text-red-600 hover:underline">
+                  <Link
+                    href={loginHref}
+                    className="text-red-600 hover:underline"
+                  >
                     {pageCopy.loginNow}
                   </Link>
                 </div>
@@ -297,12 +318,17 @@ export default function ForgotPasswordPage() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <CardTitle className="text-2xl">{pageCopy.resetTitle}</CardTitle>
-              <CardDescription>{pageCopy.resetDescription(email)}</CardDescription>
+              <CardDescription>
+                {pageCopy.resetDescription(email)}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleResetSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="token" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="token"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     {pageCopy.tokenLabel}
                   </label>
                   <input
@@ -323,7 +349,10 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="newPassword"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     {pageCopy.newPasswordLabel}
                   </label>
                   <div className="relative">
@@ -347,7 +376,10 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     {pageCopy.confirmPasswordLabel}
                   </label>
                   <div className="relative">

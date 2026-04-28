@@ -155,7 +155,10 @@ export default function RegisterPage() {
 
   const redirectTarget = resolveRedirectTarget(searchParams.get("redirect"));
   const pageCopy = copy[locale];
-  const loginHref = useMemo(() => buildLoginHref(redirectTarget), [redirectTarget]);
+  const loginHref = useMemo(
+    () => buildLoginHref(redirectTarget),
+    [redirectTarget],
+  );
 
   const registerMutation = useMutation({
     mutationFn: async (data: Record<string, string>) => {
@@ -209,10 +212,15 @@ export default function RegisterPage() {
         <div className="max-w-md text-center text-white">
           <BookOpen className="mx-auto mb-6 h-24 w-24 opacity-80" />
           <h2 className="mb-4 text-3xl font-bold">{pageCopy.bannerTitle}</h2>
-          <p className="mb-8 text-lg text-white/80">{pageCopy.bannerSubtitle}</p>
+          <p className="mb-8 text-lg text-white/80">
+            {pageCopy.bannerSubtitle}
+          </p>
           <div className="mx-auto max-w-sm space-y-3 text-left">
             {pageCopy.benefits.map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-lg bg-white/10 p-3">
+              <div
+                key={item}
+                className="flex items-center gap-3 rounded-lg bg-white/10 p-3"
+              >
                 <CheckCircle className="h-5 w-5 flex-shrink-0 text-yellow-300" />
                 <span>{item}</span>
               </div>
@@ -230,14 +238,19 @@ export default function RegisterPage() {
               </div>
               <span className="text-xl font-bold text-primary">BookStore</span>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">{pageCopy.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {pageCopy.title}
+            </h1>
             <p className="mt-2 text-gray-600">{pageCopy.subtitle}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="firstName"
+                  className="text-sm font-medium text-gray-700"
+                >
                   {pageCopy.firstNameLabel}
                 </label>
                 <input
@@ -252,7 +265,10 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="lastName"
+                  className="text-sm font-medium text-gray-700"
+                >
                   {pageCopy.lastNameLabel}
                 </label>
                 <input
@@ -269,7 +285,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700"
+              >
                 {pageCopy.emailLabel}
               </label>
               <input
@@ -286,7 +305,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="phoneNumber"
+                className="text-sm font-medium text-gray-700"
+              >
                 {pageCopy.phoneLabel}
               </label>
               <input
@@ -301,7 +323,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
                 {pageCopy.passwordLabel}
               </label>
               <div className="relative">
@@ -320,15 +345,24 @@ export default function RegisterPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
-                  aria-label={showPassword ? pageCopy.hidePassword : pageCopy.showPassword}
+                  aria-label={
+                    showPassword ? pageCopy.hidePassword : pageCopy.showPassword
+                  }
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirmPassword"
+                className="text-sm font-medium text-gray-700"
+              >
                 {pageCopy.confirmPasswordLabel}
               </label>
               <input
@@ -344,7 +378,9 @@ export default function RegisterPage() {
               />
             </div>
 
-            {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
+            {passwordError && (
+              <p className="text-sm text-red-500">{passwordError}</p>
+            )}
 
             <div className="text-sm text-gray-500">
               {pageCopy.termsPrefix}{" "}
@@ -398,7 +434,10 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               {pageCopy.hasAccount}{" "}
-              <Link href={loginHref} className="font-semibold text-primary hover:underline">
+              <Link
+                href={loginHref}
+                className="font-semibold text-primary hover:underline"
+              >
                 {pageCopy.loginNow}
               </Link>
             </p>

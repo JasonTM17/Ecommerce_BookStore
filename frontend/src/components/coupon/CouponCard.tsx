@@ -12,7 +12,10 @@ interface AvailableCouponsProps {
   className?: string;
 }
 
-export function AvailableCoupons({ onSelect, className }: AvailableCouponsProps) {
+export function AvailableCoupons({
+  onSelect,
+  className,
+}: AvailableCouponsProps) {
   const { data: coupons = [], isLoading } = useQuery({
     queryKey: ["available-coupons"],
     queryFn: couponApi.getAvailableCoupons,
@@ -50,7 +53,11 @@ interface CouponCardProps {
   showDetails?: boolean;
 }
 
-export function CouponCard({ coupon, onSelect, showDetails = true }: CouponCardProps) {
+export function CouponCard({
+  coupon,
+  onSelect,
+  showDetails = true,
+}: CouponCardProps) {
   const [copied, setCopied] = useState(false);
 
   const getTypeIcon = (type: string) => {
@@ -101,27 +108,38 @@ export function CouponCard({ coupon, onSelect, showDetails = true }: CouponCardP
       onClick={onSelect ? () => onSelect(coupon) : undefined}
       className={cn(
         "relative bg-white border border-gray-200 rounded-xl p-4 transition-all",
-        onSelect ? "cursor-pointer hover:border-red-300 hover:shadow-md" : "cursor-default",
-        onSelect && "pr-12"
+        onSelect
+          ? "cursor-pointer hover:border-red-300 hover:shadow-md"
+          : "cursor-default",
+        onSelect && "pr-12",
       )}
     >
       <div className="flex gap-4">
         {/* Icon */}
-        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white", getTypeColor(coupon.type))}>
+        <div
+          className={cn(
+            "w-12 h-12 rounded-xl flex items-center justify-center text-white",
+            getTypeColor(coupon.type),
+          )}
+        >
           {getTypeIcon(coupon.type)}
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-bold text-lg text-red-600">{coupon.code}</span>
+            <span className="font-bold text-lg text-red-600">
+              {coupon.code}
+            </span>
             {copied && <Check className="h-4 w-4 text-green-500" />}
           </div>
           <p className="text-sm text-gray-600 mb-1">{coupon.description}</p>
           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
             <span>{coupon.discountDisplay}</span>
             {coupon.minOrderAmount > 0 && (
-              <span>Đơn tối thiểu {coupon.minOrderAmount.toLocaleString("vi-VN")}đ</span>
+              <span>
+                Đơn tối thiểu {coupon.minOrderAmount.toLocaleString("vi-VN")}đ
+              </span>
             )}
           </div>
           {showDetails && (

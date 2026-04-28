@@ -11,11 +11,18 @@ import { notifyToast } from "@/lib/toast";
 
 interface ChatConversationsProps {
   currentConversationId: number | null;
-  onSelectConversation: (conversationId: number, messages: ChatMessage[]) => void;
+  onSelectConversation: (
+    conversationId: number,
+    messages: ChatMessage[],
+  ) => void;
   onClose: () => void;
 }
 
-export function ChatConversations({ currentConversationId, onSelectConversation, onClose }: ChatConversationsProps) {
+export function ChatConversations({
+  currentConversationId,
+  onSelectConversation,
+  onClose,
+}: ChatConversationsProps) {
   const { toast } = useToast();
   const { locale } = useLanguage();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -68,7 +75,9 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
           setConversations(data);
         }
       } catch {
-        notifyToast(toast, "error", copy.loadError, { description: copy.error });
+        notifyToast(toast, "error", copy.loadError, {
+          description: copy.error,
+        });
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -96,7 +105,9 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
       }));
       onSelectConversation(conversation.id, messages);
     } catch {
-      notifyToast(toast, "error", copy.loadDetailError, { description: copy.error });
+      notifyToast(toast, "error", copy.loadDetailError, {
+        description: copy.error,
+      });
     }
   };
 
@@ -105,10 +116,16 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
 
     try {
       await chatbotApi.deleteConversation(id);
-      setConversations((prev) => prev.filter((conversation) => conversation.id !== id));
-      notifyToast(toast, "success", copy.deleteSuccess, { description: copy.success });
+      setConversations((prev) =>
+        prev.filter((conversation) => conversation.id !== id),
+      );
+      notifyToast(toast, "success", copy.deleteSuccess, {
+        description: copy.success,
+      });
     } catch {
-      notifyToast(toast, "error", copy.deleteError, { description: copy.error });
+      notifyToast(toast, "error", copy.deleteError, {
+        description: copy.error,
+      });
     }
   };
 
@@ -131,7 +148,12 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
     <div className="w-64 bg-white border-r border-gray-100 flex flex-col">
       <div className="p-3 border-b border-gray-100 flex items-center justify-between">
         <h3 className="font-semibold text-gray-900 text-sm">{copy.history}</h3>
-        <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-7 w-7"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -153,21 +175,24 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
                 key={conversation.id}
                 className={cn(
                   "w-full rounded-xl transition-all group",
-                  currentConversationId === conversation.id && "bg-red-50"
+                  currentConversationId === conversation.id && "bg-red-50",
                 )}
               >
                 <button
                   onClick={() => handleSelectConversation(conversation)}
-                  className={cn("w-full p-3 rounded-xl text-left transition-all hover:bg-gray-50")}
+                  className={cn(
+                    "w-full p-3 rounded-xl text-left transition-all hover:bg-gray-50",
+                  )}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p
                         className={cn(
                           "text-sm font-medium truncate",
-                          currentConversationId === conversation.id || selectedId === conversation.id
+                          currentConversationId === conversation.id ||
+                            selectedId === conversation.id
                             ? "text-red-700"
-                            : "text-gray-900"
+                            : "text-gray-900",
                         )}
                       >
                         {conversation.title}
@@ -176,14 +201,18 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
                         {conversation.lastMessage || copy.newConversation}
                       </p>
                     </div>
-                    <span className="text-[10px] text-gray-400 shrink-0">{formatDate(conversation.updatedAt)}</span>
+                    <span className="text-[10px] text-gray-400 shrink-0">
+                      {formatDate(conversation.updatedAt)}
+                    </span>
                   </div>
                 </button>
 
                 <div className="px-3 pb-2">
                   <button
                     type="button"
-                    onClick={(e) => handleDeleteConversation(e, conversation.id)}
+                    onClick={(e) =>
+                      handleDeleteConversation(e, conversation.id)
+                    }
                     className="text-[10px] text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     {copy.delete}

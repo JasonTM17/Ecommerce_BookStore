@@ -24,16 +24,13 @@ export function SearchBar({
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const debouncedSearch = useDebouncedCallback(
-    (value: string) => {
-      if (onSearch) {
-        onSearch(value);
-      } else if (value.trim()) {
-        router.push(`/products?keyword=${encodeURIComponent(value.trim())}`);
-      }
-    },
-    400
-  );
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    if (onSearch) {
+      onSearch(value);
+    } else if (value.trim()) {
+      router.push(`/products?keyword=${encodeURIComponent(value.trim())}`);
+    }
+  }, 400);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -65,7 +62,7 @@ export function SearchBar({
       className={cn(
         "relative flex items-center transition-all duration-300",
         isFocused && "ring-2 ring-red-500/30",
-        className
+        className,
       )}
     >
       <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -86,7 +83,7 @@ export function SearchBar({
           "border border-gray-200 rounded-xl text-sm",
           "placeholder:text-gray-400 focus:outline-none focus:border-red-500",
           "transition-all duration-300",
-          "dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-100"
+          "dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-100",
         )}
       />
       {keyword && (

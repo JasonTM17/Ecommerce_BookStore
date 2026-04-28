@@ -15,7 +15,11 @@ interface CouponInputProps {
   className?: string;
 }
 
-export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputProps) {
+export function CouponInput({
+  onApply,
+  orderTotal = 0,
+  className,
+}: CouponInputProps) {
   const { toast } = useToast();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +27,9 @@ export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputP
 
   const handleApply = async () => {
     if (!code.trim()) {
-      notifyToast(toast, "error", "Vui lòng nhập mã coupon", { description: "Lỗi" });
+      notifyToast(toast, "error", "Vui lòng nhập mã coupon", {
+        description: "Lỗi",
+      });
       return;
     }
 
@@ -43,15 +49,21 @@ export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputP
       }
 
       onApply?.(coupon, discount);
-      notifyToast(toast, "success", `Áp dụng coupon ${coupon.code} thành công!`, {
-        description: "Thành công",
-      });
+      notifyToast(
+        toast,
+        "success",
+        `Áp dụng coupon ${coupon.code} thành công!`,
+        {
+          description: "Thành công",
+        },
+      );
     } catch (error: any) {
       notifyToast(
         toast,
         "error",
-        error?.response?.data?.message || "Mã coupon không đúng hoặc đã hết hạn",
-        { description: "Coupon không hợp lệ" }
+        error?.response?.data?.message ||
+          "Mã coupon không đúng hoặc đã hết hạn",
+        { description: "Coupon không hợp lệ" },
       );
     } finally {
       setLoading(false);
@@ -79,18 +91,30 @@ export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputP
 
   if (appliedCoupon) {
     return (
-      <div className={cn("p-4 bg-green-50 border border-green-200 rounded-xl", className)}>
+      <div
+        className={cn(
+          "p-4 bg-green-50 border border-green-200 rounded-xl",
+          className,
+        )}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white">
               {getTypeIcon(appliedCoupon.type)}
             </div>
             <div>
-              <p className="font-semibold text-green-700">{appliedCoupon.code}</p>
-              <p className="text-sm text-green-600">{appliedCoupon.description}</p>
+              <p className="font-semibold text-green-700">
+                {appliedCoupon.code}
+              </p>
+              <p className="text-sm text-green-600">
+                {appliedCoupon.description}
+              </p>
             </div>
           </div>
-          <button onClick={handleRemove} className="text-sm text-green-600 hover:text-green-700 font-medium">
+          <button
+            onClick={handleRemove}
+            className="text-sm text-green-600 hover:text-green-700 font-medium"
+          >
             Xóa
           </button>
         </div>
@@ -110,7 +134,11 @@ export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputP
           disabled={loading}
         />
       </div>
-      <Button onClick={handleApply} disabled={!code.trim() || loading} className="bg-red-600 hover:bg-red-700">
+      <Button
+        onClick={handleApply}
+        disabled={!code.trim() || loading}
+        className="bg-red-600 hover:bg-red-700"
+      >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Áp dụng"}
       </Button>
     </div>

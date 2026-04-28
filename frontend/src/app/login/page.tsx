@@ -17,11 +17,15 @@ function resolveRedirectTarget(raw: string | null) {
 }
 
 function buildRegisterHref(target: string | null) {
-  return target ? `/register?redirect=${encodeURIComponent(target)}` : "/register";
+  return target
+    ? `/register?redirect=${encodeURIComponent(target)}`
+    : "/register";
 }
 
 function buildForgotPasswordHref(target: string | null) {
-  return target ? `/forgot-password?redirect=${encodeURIComponent(target)}` : "/forgot-password";
+  return target
+    ? `/forgot-password?redirect=${encodeURIComponent(target)}`
+    : "/forgot-password";
 }
 
 const copy: Record<
@@ -167,7 +171,9 @@ function LoginContent() {
       setAuthTokens(data.accessToken, data.refreshToken);
       useAuthStore.getState().setUser(data.user);
 
-      const isAdmin = data.user?.roles?.includes("ADMIN") || data.user?.roles?.includes("MANAGER");
+      const isAdmin =
+        data.user?.roles?.includes("ADMIN") ||
+        data.user?.roles?.includes("MANAGER");
       const destination = redirectTarget || (isAdmin ? "/admin" : "/");
       router.replace(destination);
       router.refresh();
@@ -198,7 +204,9 @@ function LoginContent() {
               </div>
               <span className="font-bold text-xl text-red-600">BookStore</span>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">{pageCopy.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {pageCopy.title}
+            </h1>
             <p className="text-gray-600 mt-2">{pageCopy.subtitle}</p>
           </div>
 
@@ -219,7 +227,10 @@ function LoginContent() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 {pageCopy.emailLabel}
               </label>
               <input
@@ -235,7 +246,10 @@ function LoginContent() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 {pageCopy.passwordLabel}
               </label>
               <div className="relative">
@@ -254,9 +268,15 @@ function LoginContent() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed"
                   disabled={isLoading}
-                  aria-label={showPassword ? pageCopy.hidePassword : pageCopy.showPassword}
+                  aria-label={
+                    showPassword ? pageCopy.hidePassword : pageCopy.showPassword
+                  }
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -303,7 +323,9 @@ function LoginContent() {
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-red-600 to-orange-700 items-center justify-center p-12">
         <div className="max-w-md text-center text-white">
           <h2 className="text-3xl font-bold mb-4">{pageCopy.bannerTitle}</h2>
-          <p className="text-white/80 text-lg mb-8">{pageCopy.bannerSubtitle}</p>
+          <p className="text-white/80 text-lg mb-8">
+            {pageCopy.bannerSubtitle}
+          </p>
         </div>
       </div>
     </div>

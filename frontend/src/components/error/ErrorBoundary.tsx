@@ -12,7 +12,10 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -51,7 +54,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               Đã xảy ra lỗi
             </h2>
             <p className="text-gray-500 mb-6">
-              {this.state.error?.message || "Vui lòng tải lại trang để tiếp tục."}
+              {this.state.error?.message ||
+                "Vui lòng tải lại trang để tiếp tục."}
             </p>
             <button
               onClick={() => this.setState({ hasError: false })}
