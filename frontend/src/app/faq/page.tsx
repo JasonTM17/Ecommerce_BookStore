@@ -178,7 +178,7 @@ export default async function FaqPage() {
 
   return (
     <StaticInfoPageShell
-      accentClassName="from-violet-900 via-purple-800 to-indigo-900"
+      accentClassName="from-stone-950 via-red-900 to-orange-900"
       badgeText={page.shell.badgeText}
       breadcrumbs={page.shell.breadcrumbs}
       description={page.shell.description}
@@ -192,7 +192,7 @@ export default async function FaqPage() {
               key={card.title}
               className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-700">
                 <card.icon className="h-6 w-6" />
               </div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -219,10 +219,10 @@ export default async function FaqPage() {
           ))}
         </section>
 
-        <section className="rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-8 shadow-sm">
+        <section className="rounded-3xl border border-red-100 bg-gradient-to-r from-red-50 via-white to-orange-50 p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-600">
                 {page.ctaHeading}
               </p>
               <h2 className="mt-2 text-2xl font-bold text-gray-900">

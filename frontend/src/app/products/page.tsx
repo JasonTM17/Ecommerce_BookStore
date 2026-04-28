@@ -244,7 +244,7 @@ function ProductsContent() {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/" className="transition-colors hover:text-blue-600">
+            <Link href="/" className="transition-colors hover:text-red-600">
               {copy.home}
             </Link>
             <span>/</span>
@@ -255,7 +255,7 @@ function ProductsContent() {
           </h1>
           <p className="text-gray-500">
             {collectionHeading.description}{" "}
-            <span className="font-semibold text-blue-600">{totalElements}</span>{" "}
+            <span className="font-semibold text-red-600">{totalElements}</span>{" "}
             {locale === "vi" ? "cuốn sách chất lượng" : "books"}
           </p>
         </div>
@@ -271,7 +271,7 @@ function ProductsContent() {
             onClick={() => setIsFilterOpen(!isFilterOpen)}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/30">
                 <SlidersHorizontal className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -279,7 +279,7 @@ function ProductsContent() {
                   {copy.filterTitle}
                 </span>
                 {hasActiveFilters && (
-                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">
+                  <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
                     {copy.activeFilter}
                   </span>
                 )}
@@ -319,7 +319,7 @@ function ProductsContent() {
                     value={searchKeyword}
                     onChange={(e) => setSearchKeyword(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && setCurrentPage(0)}
-                    className="h-12 rounded-xl border-gray-200 bg-gray-50 pl-12 transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                    className="h-12 rounded-xl border-gray-200 bg-gray-50 pl-12 transition-all focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-500/20"
                   />
                 </div>
 
@@ -388,10 +388,10 @@ function ProductsContent() {
                     {copy.activeFilters}
                   </span>
                   {searchKeyword && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-600">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-sm text-red-600">
                       &ldquo;{searchKeyword}&rdquo;
                       <X
-                        className="h-3 w-3 cursor-pointer hover:text-blue-800"
+                        className="h-3 w-3 cursor-pointer hover:text-red-800"
                         onClick={() => setSearchKeyword("")}
                       />
                     </span>
@@ -595,7 +595,7 @@ function ProductsContent() {
                       className={cn(
                         "h-10 w-10 rounded-xl transition-all",
                         currentPage === pageNum &&
-                          "shadow-lg shadow-blue-500/30",
+                          "shadow-lg shadow-red-500/30",
                       )}
                     >
                       {pageNum + 1}

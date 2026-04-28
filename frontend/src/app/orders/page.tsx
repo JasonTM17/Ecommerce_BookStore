@@ -63,8 +63,8 @@ const STATUS_CONFIG: Record<
   PENDING: { icon: Clock, color: "text-yellow-600", bgColor: "bg-yellow-100" },
   CONFIRMED: {
     icon: CheckCircle,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: "text-red-600",
+    bgColor: "bg-red-100",
   },
   PROCESSING: {
     icon: Package,

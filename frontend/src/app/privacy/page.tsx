@@ -176,9 +176,9 @@ export default async function PrivacyPage() {
           </section>
         ))}
 
-        <section className="rounded-2xl border border-blue-100 bg-blue-50 p-8">
+        <section className="rounded-2xl border border-red-100 bg-red-50 p-8">
           <div className="flex items-start gap-4">
-            <AlertCircle className="mt-0.5 h-6 w-6 shrink-0 text-blue-600" />
+            <AlertCircle className="mt-0.5 h-6 w-6 shrink-0 text-red-600" />
             <div>
               <h2 className="text-xl font-bold text-gray-900">
                 {page.contactTitle}
@@ -187,11 +187,11 @@ export default async function PrivacyPage() {
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <div className="rounded-xl bg-white p-4 shadow-sm">
                   <p className="font-medium text-gray-900">Email</p>
-                  <p className="text-blue-600">privacy@bookstore.com</p>
+                  <p className="text-red-600">privacy@bookstore.com</p>
                 </div>
                 <div className="rounded-xl bg-white p-4 shadow-sm">
                   <p className="font-medium text-gray-900">Hotline</p>
-                  <p className="text-blue-600">0901 234 567</p>
+                  <p className="text-red-600">0901 234 567</p>
                 </div>
               </div>
             </div>

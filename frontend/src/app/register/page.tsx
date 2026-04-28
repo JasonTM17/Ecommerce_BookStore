@@ -248,7 +248,7 @@ export default function RegisterPage() {
                   placeholder={pageCopy.firstNamePlaceholder}
                   required
                   disabled={registerMutation.isPending}
-                  className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
               <div className="space-y-1.5">
@@ -263,7 +263,7 @@ export default function RegisterPage() {
                   placeholder={pageCopy.lastNamePlaceholder}
                   required
                   disabled={registerMutation.isPending}
-                  className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
             </div>
@@ -281,7 +281,7 @@ export default function RegisterPage() {
                 required
                 autoComplete="email"
                 disabled={registerMutation.isPending}
-                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
@@ -296,7 +296,7 @@ export default function RegisterPage() {
                 onChange={(e) => updateForm("phoneNumber", e.target.value)}
                 placeholder={pageCopy.phonePlaceholder}
                 disabled={registerMutation.isPending}
-                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
@@ -314,7 +314,7 @@ export default function RegisterPage() {
                   required
                   autoComplete="new-password"
                   disabled={registerMutation.isPending}
-                  className="w-full h-10 px-3 pr-10 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full h-10 px-3 pr-10 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -340,7 +340,7 @@ export default function RegisterPage() {
                 required
                 autoComplete="new-password"
                 disabled={registerMutation.isPending}
-                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
@@ -348,11 +348,11 @@ export default function RegisterPage() {
 
             <div className="text-sm text-gray-500">
               {pageCopy.termsPrefix}{" "}
-              <Link href="/terms" className="text-blue-600 hover:underline">
+              <Link href="/terms" className="text-red-600 hover:underline">
                 {pageCopy.termsLink}
               </Link>{" "}
               {locale === "vi" ? "và" : "and"}{" "}
-              <Link href="/privacy" className="text-blue-600 hover:underline">
+              <Link href="/privacy" className="text-red-600 hover:underline">
                 {pageCopy.privacyLink}
               </Link>
             </div>
@@ -360,7 +360,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={registerMutation.isPending}
-              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-blue-600 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-red-600 font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-400"
             >
               {registerMutation.isPending ? (
                 <>

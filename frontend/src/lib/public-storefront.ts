@@ -65,6 +65,23 @@ function normalizePublicPage<T>(
   return fallback;
 }
 
+function isEmptyPublicPayload(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "content" in value &&
+    Array.isArray((value as PageResponse<unknown>).content)
+  ) {
+    return (value as PageResponse<unknown>).content.length === 0;
+  }
+
+  return false;
+}
+
 function normalizeText(value?: string) {
   return (value || "")
     .normalize("NFD")
@@ -129,7 +146,10 @@ async function getWithFallback<T>(
 ) {
   try {
     const response = await apiPublic.get(endpoint, noRetryConfig);
-    return normalize(response.data, fallback);
+    const normalized = normalize(response.data, fallback);
+    return isEmptyPublicPayload(normalized) && !isEmptyPublicPayload(fallback)
+      ? fallback
+      : normalized;
   } catch {
     return fallback;
   }

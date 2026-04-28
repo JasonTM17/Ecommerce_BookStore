@@ -539,7 +539,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                       </div>
                       <h3 className="mb-2 flex items-center justify-center gap-2 text-lg font-semibold text-slate-900">
                         {copy.guestTitle}{" "}
-                        <Hand className="h-4 w-4 text-blue-500" />
+                        <Hand className="h-4 w-4 text-red-500" />
                       </h3>
                       <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">
                         {copy.guestDescription}

@@ -93,7 +93,7 @@ export function WishlistPage() {
         <p className="mb-6 text-gray-500">{copy.loginRequiredDescription}</p>
         <Button
           onClick={() => router.push(buildLoginRedirect("/wishlist"))}
-          className="bg-blue-600"
+          className="bg-red-600"
         >
           {copy.loginButton}
         </Button>
@@ -114,7 +114,7 @@ export function WishlistPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-red-600" />
           <span className="sr-only">{copy.loading}</span>
         </div>
       ) : wishlistItems.length === 0 ? (
@@ -125,7 +125,7 @@ export function WishlistPage() {
           </h2>
           <p className="mb-6 text-gray-500">{copy.emptyDescription}</p>
           <Link href="/products">
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-red-600 hover:bg-red-700">
               {copy.browseProducts}
             </Button>
           </Link>
@@ -184,7 +184,7 @@ export function WishlistPage() {
 
               <div className="p-4">
                 <Link href={`/products/${item.product.id}`}>
-                  <h3 className="mb-1 line-clamp-2 font-semibold text-gray-900 transition-colors hover:text-blue-600">
+                  <h3 className="mb-1 line-clamp-2 font-semibold text-gray-900 transition-colors hover:text-red-600">
                     {item.product.name}
                   </h3>
                 </Link>
@@ -206,7 +206,7 @@ export function WishlistPage() {
 
                 <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <span className="text-lg font-bold text-blue-600">
+                    <span className="text-lg font-bold text-red-600">
                       {formatPrice(
                         item.product.currentPrice || item.product.price,
                       )}
@@ -222,7 +222,7 @@ export function WishlistPage() {
 
                 <div className="flex gap-2">
                   <Button
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    className="flex-1 bg-red-600 hover:bg-red-700"
                     disabled={!item.isInStock || isAddingToCart}
                     data-testid="wishlist-add-to-cart"
                     onClick={() =>

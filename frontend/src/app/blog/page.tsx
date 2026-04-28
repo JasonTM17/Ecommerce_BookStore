@@ -117,7 +117,7 @@ export default async function BlogPage() {
 
   return (
     <StaticInfoPageShell
-      accentClassName="from-slate-900 via-slate-800 to-indigo-900"
+      accentClassName="from-stone-950 via-stone-800 to-red-900"
       badgeText={page.shell.badgeText}
       breadcrumbs={page.shell.breadcrumbs}
       description={page.shell.description}
@@ -145,7 +145,7 @@ export default async function BlogPage() {
               className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="mb-4 flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700">
+                <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-700">
                   <Tag className="h-3 w-3" />
                   {article.tag}
                 </span>
@@ -165,10 +165,10 @@ export default async function BlogPage() {
           ))}
         </section>
 
-        <section className="rounded-3xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-slate-50 p-8 shadow-sm">
+        <section className="rounded-3xl border border-red-100 bg-gradient-to-r from-red-50 via-white to-stone-50 p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-600">
                 {page.ctaHeading}
               </p>
               <h2 className="mt-2 text-2xl font-bold text-gray-900">

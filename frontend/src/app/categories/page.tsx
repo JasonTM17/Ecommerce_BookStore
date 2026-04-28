@@ -42,13 +42,13 @@ interface PageResponse<T> {
 }
 
 const CATEGORY_GRADIENTS = [
-  "from-blue-600 to-blue-700",
+  "from-red-600 to-orange-600",
   "from-purple-600 to-pink-600",
   "from-green-600 to-emerald-600",
   "from-orange-600 to-amber-600",
   "from-red-600 to-rose-600",
-  "from-indigo-600 to-violet-600",
-  "from-teal-600 to-cyan-600",
+  "from-stone-700 to-gray-900",
+  "from-rose-600 to-red-600",
   "from-yellow-600 to-orange-600",
 ];
 
@@ -145,7 +145,7 @@ function CategoriesContent() {
 
       <main className="container mx-auto flex-1 px-4 py-8">
         <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
-          <Link href="/" className="transition-colors hover:text-blue-600">
+          <Link href="/" className="transition-colors hover:text-red-600">
             {copy.home}
           </Link>
           <ChevronRight className="h-4 w-4" />
@@ -156,7 +156,7 @@ function CategoriesContent() {
           <div className="lg:col-span-1">
             <div className="sticky top-24 rounded-2xl border border-white/50 bg-white/70 p-6 shadow-sm backdrop-blur-md">
               <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/30">
                   <BookOpen className="h-5 w-5 text-white" />
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">
@@ -180,7 +180,7 @@ function CategoriesContent() {
                     className={cn(
                       "flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300",
                       !selectedCategoryId
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
+                        ? "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/30"
                         : "text-gray-700 hover:bg-gray-50",
                     )}
                   >
@@ -195,7 +195,7 @@ function CategoriesContent() {
                         className={cn(
                           "flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300",
                           selectedCategoryId === category.id.toString()
-                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
+                            ? "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/30"
                             : "text-gray-700 hover:bg-gray-50",
                         )}
                       >
@@ -246,7 +246,7 @@ function CategoriesContent() {
                                   "flex w-full items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm transition-all duration-300",
                                   selectedCategoryId ===
                                     subcategory.id.toString()
-                                    ? "bg-blue-100 font-medium text-blue-700"
+                                    ? "bg-red-100 font-medium text-red-700"
                                     : "text-gray-600 hover:bg-gray-50",
                                 )}
                               >
@@ -263,7 +263,7 @@ function CategoriesContent() {
                                         "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium",
                                         selectedCategoryId ===
                                           subcategory.id.toString()
-                                          ? "bg-blue-200 text-blue-700"
+                                          ? "bg-red-200 text-red-700"
                                           : "bg-gray-100 text-gray-500",
                                       )}
                                     >
@@ -299,7 +299,7 @@ function CategoriesContent() {
                   <button
                     key={category.id}
                     onClick={() => handleCategoryClick(category.id)}
-                    className="group relative h-40 overflow-hidden rounded-2xl transition-all duration-300 hover:ring-2 hover:ring-blue-500/50 hover:shadow-lg"
+                    className="group relative h-40 overflow-hidden rounded-2xl transition-all duration-300 hover:ring-2 hover:ring-red-500/50 hover:shadow-lg"
                   >
                     <div
                       className={`absolute inset-0 bg-gradient-to-br ${
@@ -418,7 +418,7 @@ function CategoriesContent() {
                                   className={cn(
                                     "h-10 w-10 rounded-xl",
                                     currentPage === pageNumber &&
-                                      "shadow-lg shadow-blue-500/30",
+                                      "shadow-lg shadow-red-500/30",
                                   )}
                                 >
                                   {pageNumber + 1}
@@ -442,8 +442,8 @@ function CategoriesContent() {
                 )}
               </>
             ) : (
-              <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 text-center">
-                <Filter className="mx-auto mb-4 h-12 w-12 text-blue-400" />
+              <div className="rounded-2xl border border-red-100 bg-gradient-to-r from-red-50 to-orange-50 p-8 text-center">
+                <Filter className="mx-auto mb-4 h-12 w-12 text-red-400" />
                 <h3 className="mb-2 text-xl font-semibold text-gray-900">
                   {copy.chooseCategory}
                 </h3>

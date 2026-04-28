@@ -193,10 +193,10 @@ function LoginContent() {
         <div className="w-full max-w-md">
           <div className="mb-8">
             <Link href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">B</span>
               </div>
-              <span className="font-bold text-xl text-blue-600">BookStore</span>
+              <span className="font-bold text-xl text-red-600">BookStore</span>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">{pageCopy.title}</h1>
             <p className="text-gray-600 mt-2">{pageCopy.subtitle}</p>
@@ -211,7 +211,7 @@ function LoginContent() {
           {redirectNotice && (
             <div
               data-testid="login-redirect-notice"
-              className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
             >
               {redirectNotice}
             </div>
@@ -230,7 +230,7 @@ function LoginContent() {
                 placeholder={pageCopy.emailPlaceholder}
                 required
                 disabled={isLoading}
-                className="w-full h-11 px-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full h-11 px-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -247,7 +247,7 @@ function LoginContent() {
                   placeholder={pageCopy.passwordPlaceholder}
                   required
                   disabled={isLoading}
-                  className="w-full h-11 px-3 pr-10 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full h-11 px-3 pr-10 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
                 <button
                   type="button"
@@ -264,7 +264,7 @@ function LoginContent() {
             <div className="flex items-center justify-end">
               <Link
                 href={buildForgotPasswordHref(redirectTarget)}
-                className="text-sm text-blue-600 hover:text-blue-700"
+                className="text-sm text-red-600 hover:text-red-700"
               >
                 {pageCopy.forgotPassword}
               </Link>
@@ -273,7 +273,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-md transition-colors disabled:cursor-not-allowed"
+              className="w-full h-12 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold rounded-md transition-colors disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <span>{pageCopy.submitting}</span>
@@ -291,7 +291,7 @@ function LoginContent() {
               {pageCopy.noAccount}{" "}
               <Link
                 href={buildRegisterHref(redirectTarget)}
-                className="text-blue-600 font-semibold hover:text-blue-700"
+                className="text-red-600 font-semibold hover:text-red-700"
               >
                 {pageCopy.signUp}
               </Link>
@@ -300,7 +300,7 @@ function LoginContent() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-600 to-blue-800 items-center justify-center p-12">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-red-600 to-orange-700 items-center justify-center p-12">
         <div className="max-w-md text-center text-white">
           <h2 className="text-3xl font-bold mb-4">{pageCopy.bannerTitle}</h2>
           <p className="text-white/80 text-lg mb-8">{pageCopy.bannerSubtitle}</p>

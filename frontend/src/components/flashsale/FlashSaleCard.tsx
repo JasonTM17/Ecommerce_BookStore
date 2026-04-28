@@ -50,11 +50,11 @@ export function FlashSaleSection() {
   }
 
   return (
-    <section className="bg-[#f6f6f6] py-16">
+    <section className="bg-gradient-to-b from-red-50 to-white py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="eleven-pill-black flex h-12 w-12 items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/30">
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -145,11 +145,11 @@ export function FlashSaleCard({
       href={buildFlashSaleHref(sale.product.id, sale.id)}
       data-testid="flash-sale-card"
       className={cn(
-        "eleven-surface group overflow-hidden rounded-[26px] bg-white",
-        "transition-transform duration-300 hover:-translate-y-1",
+        "group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm",
+        "transition-all duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-xl",
       )}
     >
-      <div className="relative aspect-[3/4] bg-[#f5f2ef]">
+      <div className="relative aspect-[3/4] bg-gradient-to-b from-red-50/60 to-gray-100">
         <ProductImage
           src={sale.product.imageUrl || undefined}
           fallbackSrc={resolveProductFallbackImage({

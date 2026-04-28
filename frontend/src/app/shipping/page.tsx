@@ -115,7 +115,7 @@ export default async function ShippingPage() {
 
   return (
     <StaticInfoPageShell
-      accentClassName="from-sky-900 via-blue-800 to-cyan-900"
+      accentClassName="from-red-900 via-orange-800 to-amber-900"
       badgeText={page.shell.badgeText}
       breadcrumbs={page.shell.breadcrumbs}
       description={page.shell.description}
@@ -129,7 +129,7 @@ export default async function ShippingPage() {
               key={option.title}
               className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-700">
                 {index === 0 ? (
                   <Truck className="h-6 w-6" />
                 ) : index === 1 ? (
@@ -142,7 +142,7 @@ export default async function ShippingPage() {
                 {option.title}
               </h2>
               <p className="mt-3 leading-7 text-gray-600">{option.desc}</p>
-              <p className="mt-4 text-sm font-medium text-sky-700">
+              <p className="mt-4 text-sm font-medium text-orange-700">
                 {option.meta}
               </p>
             </article>
@@ -152,7 +152,7 @@ export default async function ShippingPage() {
         <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
           <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
             <div className="flex items-center gap-3">
-              <ShieldCheck className="h-6 w-6 text-sky-700" />
+              <ShieldCheck className="h-6 w-6 text-orange-700" />
               <h2 className="text-2xl font-bold text-gray-900">
                 {locale === "en" ? "Things to know" : "Điều cần biết"}
               </h2>
@@ -169,9 +169,9 @@ export default async function ShippingPage() {
             </ul>
           </div>
 
-          <div className="rounded-3xl border border-gray-100 bg-gradient-to-br from-sky-50 to-white p-8 shadow-sm">
+          <div className="rounded-3xl border border-gray-100 bg-gradient-to-br from-orange-50 to-white p-8 shadow-sm">
             <div className="flex items-center gap-3">
-              <BadgePercent className="h-6 w-6 text-sky-700" />
+              <BadgePercent className="h-6 w-6 text-orange-700" />
               <h2 className="text-2xl font-bold text-gray-900">
                 {page.thresholdHeading}
               </h2>

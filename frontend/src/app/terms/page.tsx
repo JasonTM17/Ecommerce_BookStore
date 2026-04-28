@@ -152,7 +152,7 @@ export default async function TermsPage() {
 
   return (
     <StaticInfoPageShell
-      accentClassName="from-blue-900 via-blue-800 to-indigo-900"
+      accentClassName="from-red-900 via-orange-800 to-amber-900"
       badgeText={page.shell.badgeText}
       breadcrumbs={page.shell.breadcrumbs}
       description={page.shell.description}
@@ -166,7 +166,7 @@ export default async function TermsPage() {
             className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
                 <Scale className="h-5 w-5" />
               </div>
               <h2 className="text-xl font-bold text-gray-900">{entry.title}</h2>
@@ -184,9 +184,9 @@ export default async function TermsPage() {
           </section>
         ))}
 
-        <section className="rounded-2xl border border-blue-100 bg-blue-50 p-8">
+        <section className="rounded-2xl border border-red-100 bg-red-50 p-8">
           <div className="flex items-start gap-4">
-            <AlertCircle className="mt-0.5 h-6 w-6 shrink-0 text-blue-600" />
+            <AlertCircle className="mt-0.5 h-6 w-6 shrink-0 text-red-600" />
             <div>
               <h2 className="text-xl font-bold text-gray-900">
                 {page.contactTitle}

@@ -110,7 +110,7 @@ export function CouponInput({ onApply, orderTotal = 0, className }: CouponInputP
           disabled={loading}
         />
       </div>
-      <Button onClick={handleApply} disabled={!code.trim() || loading} className="bg-blue-600 hover:bg-blue-700">
+      <Button onClick={handleApply} disabled={!code.trim() || loading} className="bg-red-600 hover:bg-red-700">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Áp dụng"}
       </Button>
     </div>

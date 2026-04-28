@@ -262,7 +262,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={isLoading}
                       placeholder={pageCopy.emailPlaceholder}
-                      className={`w-full h-10 rounded-md border bg-white pl-10 pr-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.email ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
+                      className={`w-full h-10 rounded-md border bg-white pl-10 pr-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.email ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
                     />
                   </div>
                   {errors.email && (
@@ -276,14 +276,14 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex h-10 w-full items-center justify-center rounded-md bg-blue-600 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+                  className="flex h-10 w-full items-center justify-center rounded-md bg-red-600 font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-400"
                 >
                   {isLoading ? pageCopy.sending : pageCopy.sendCode}
                 </button>
 
                 <div className="text-center text-sm text-gray-500">
                   {pageCopy.remember}{" "}
-                  <Link href={loginHref} className="text-blue-600 hover:underline">
+                  <Link href={loginHref} className="text-red-600 hover:underline">
                     {pageCopy.loginNow}
                   </Link>
                 </div>
@@ -312,7 +312,7 @@ export default function ForgotPasswordPage() {
                     onChange={(e) => setToken(e.target.value)}
                     disabled={isLoading}
                     placeholder={pageCopy.tokenPlaceholder}
-                    className={`w-full h-10 rounded-md border bg-white px-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.token ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
+                    className={`w-full h-10 rounded-md border bg-white px-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.token ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
                   />
                   {errors.token && (
                     <p className="mt-1 flex items-center text-sm text-red-500">
@@ -335,7 +335,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setNewPassword(e.target.value)}
                       disabled={isLoading}
                       placeholder={pageCopy.newPasswordPlaceholder}
-                      className={`w-full h-10 rounded-md border bg-white pl-10 pr-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.newPassword ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
+                      className={`w-full h-10 rounded-md border bg-white pl-10 pr-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.newPassword ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
                     />
                   </div>
                   {errors.newPassword && (
@@ -359,7 +359,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       disabled={isLoading}
                       placeholder={pageCopy.confirmPasswordPlaceholder}
-                      className={`w-full h-10 rounded-md border bg-white pl-10 pr-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.confirmPassword ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
+                      className={`w-full h-10 rounded-md border bg-white pl-10 pr-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${errors.confirmPassword ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-gray-200"}`}
                     />
                   </div>
                   {errors.confirmPassword && (
@@ -373,7 +373,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex h-10 w-full items-center justify-center rounded-md bg-blue-600 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+                  className="flex h-10 w-full items-center justify-center rounded-md bg-red-600 font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-400"
                 >
                   {isLoading ? pageCopy.resetting : pageCopy.submitReset}
                 </button>
@@ -382,7 +382,7 @@ export default function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={() => setStep("request")}
-                    className="text-blue-600 hover:underline"
+                    className="text-red-600 hover:underline"
                   >
                     {pageCopy.resendCode}
                   </button>

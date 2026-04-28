@@ -64,7 +64,7 @@ export function SearchBar({
     <div
       className={cn(
         "relative flex items-center transition-all duration-300",
-        isFocused && "ring-2 ring-blue-500/30",
+        isFocused && "ring-2 ring-red-500/30",
         className
       )}
     >
@@ -84,7 +84,7 @@ export function SearchBar({
         className={cn(
           "w-full pl-10 pr-10 py-2.5 bg-white/80 backdrop-blur-sm",
           "border border-gray-200 rounded-xl text-sm",
-          "placeholder:text-gray-400 focus:outline-none focus:border-blue-500",
+          "placeholder:text-gray-400 focus:outline-none focus:border-red-500",
           "transition-all duration-300",
           "dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-100"
         )}

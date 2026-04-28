@@ -153,7 +153,7 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
                 key={conversation.id}
                 className={cn(
                   "w-full rounded-xl transition-all group",
-                  currentConversationId === conversation.id && "bg-blue-50"
+                  currentConversationId === conversation.id && "bg-red-50"
                 )}
               >
                 <button
@@ -166,7 +166,7 @@ export function ChatConversations({ currentConversationId, onSelectConversation,
                         className={cn(
                           "text-sm font-medium truncate",
                           currentConversationId === conversation.id || selectedId === conversation.id
-                            ? "text-blue-700"
+                            ? "text-red-700"
                             : "text-gray-900"
                         )}
                       >

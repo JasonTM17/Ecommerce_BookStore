@@ -129,33 +129,33 @@ export default function FlashSalePage() {
     !isLoading && activeSales.length === 0 && upcomingSales.length === 0;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-red-50 via-white to-white">
       <Header />
 
       <main className="flex-1">
-        <section className="border-b border-black/[0.05] bg-[#fffdfb] py-16 md:py-20">
-          <div className="container mx-auto max-w-7xl px-4">
+        <section className="relative overflow-hidden border-b border-red-100 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 py-16 text-white md:py-20">
+          <div className="container relative z-10 mx-auto max-w-7xl px-4">
             <div className="max-w-3xl">
-              <div className="eleven-pill-stone mb-5 inline-flex items-center gap-2 px-4 py-2">
-                <Zap className="h-4 w-4 text-black" />
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white shadow-sm backdrop-blur">
+                <Zap className="h-4 w-4 text-yellow-200" />
                 {copy.heroBadge}
               </div>
-              <h1 className="eleven-display text-5xl leading-tight md:text-6xl">
+              <h1 className="text-4xl font-bold leading-tight tracking-normal text-white sm:text-5xl md:text-6xl">
                 Flash Sale
               </h1>
-              <p className="eleven-body mt-5 max-w-2xl text-lg leading-8">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-red-50">
                 {copy.heroDescription}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/products">
-                  <Button className="eleven-pill-black border-0 px-5">
+                  <Button className="rounded-full bg-white px-5 font-semibold text-red-600 shadow-sm hover:bg-red-50">
                     {copy.browseBooks}
                   </Button>
                 </Link>
                 <Link href="/promotions">
                   <Button
                     variant="outline"
-                    className="eleven-pill-white border-0 px-5"
+                    className="rounded-full border-white/60 bg-transparent px-5 font-semibold text-white hover:bg-white/10 hover:text-white"
                   >
                     {copy.browsePromotions}
                   </Button>
@@ -208,10 +208,17 @@ export default function FlashSalePage() {
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link href="/products">
-                  <Button>{copy.emptyCatalog}</Button>
+                  <Button className="bg-red-600 hover:bg-red-700">
+                    {copy.emptyCatalog}
+                  </Button>
                 </Link>
                 <Link href="/promotions">
-                  <Button variant="outline">{copy.emptyCoupon}</Button>
+                  <Button
+                    variant="outline"
+                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    {copy.emptyCoupon}
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -252,7 +259,7 @@ export default function FlashSalePage() {
 
               <section>
                 <div className="mb-6">
-                  <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+                  <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-700">
                     <CalendarClock className="h-4 w-4" />
                     {copy.upcomingBadge}
                   </div>
@@ -273,7 +280,7 @@ export default function FlashSalePage() {
                       >
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div>
-                            <p className="text-sm font-medium text-blue-600">
+                            <p className="text-sm font-medium text-orange-600">
                               {copy.startsAt}{" "}
                               {formatDate(sale.startTime, locale)}
                             </p>
@@ -304,7 +311,10 @@ export default function FlashSalePage() {
                         </div>
                         <div className="mt-5">
                           <Link href={`/products/${sale.product.id}`}>
-                            <Button variant="outline">
+                            <Button
+                              variant="outline"
+                              className="border-red-200 text-red-600 hover:bg-red-50"
+                            >
                               {copy.previewProduct}
                             </Button>
                           </Link>

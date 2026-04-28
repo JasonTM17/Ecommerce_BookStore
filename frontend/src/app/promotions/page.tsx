@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 
 export default function PromotionsPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50/70 via-white to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-red-50/70 via-white to-white">
       <Header />
 
       <main className="flex-1">
-        <section className="border-b border-blue-100 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 py-16 text-white">
+        <section className="border-b border-red-100 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 py-16 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur">
@@ -21,12 +21,12 @@ export default function PromotionsPage() {
                 Mã giảm giá công khai có thể sao chép ngay
               </div>
               <h1 className="text-4xl font-bold sm:text-5xl">Khuyến mãi</h1>
-              <p className="mt-4 text-lg text-blue-50">
+              <p className="mt-4 text-lg text-red-50">
                 Xem các mã giảm giá đang hoạt động, sao chép mã phù hợp và áp dụng ngay ở giỏ hàng hoặc bước thanh toán như luồng mua sắm hiện tại.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/cart">
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50">Đến giỏ hàng</Button>
+                  <Button className="bg-white text-red-600 hover:bg-red-50">Đến giỏ hàng</Button>
                 </Link>
                 <Link href="/checkout">
                   <Button variant="outline" className="border-white/60 bg-transparent text-white hover:bg-white/10">
@@ -42,7 +42,7 @@ export default function PromotionsPage() {
           <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
             <section className="rounded-3xl bg-white p-6 shadow-sm">
               <div className="mb-6 flex items-start gap-4">
-                <div className="rounded-2xl bg-blue-100 p-3 text-blue-600">
+                <div className="rounded-2xl bg-red-100 p-3 text-red-600">
                   <Gift className="h-6 w-6" />
                 </div>
                 <div>
@@ -76,7 +76,7 @@ export default function PromotionsPage() {
 
               <section className="rounded-3xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 text-white shadow-sm">
                 <div className="flex items-start gap-3">
-                  <ShoppingBag className="mt-1 h-5 w-5 text-blue-300" />
+                  <ShoppingBag className="mt-1 h-5 w-5 text-red-300" />
                   <div>
                     <h2 className="text-xl font-semibold">Sẵn sàng dùng mã giảm giá?</h2>
                     <p className="mt-2 text-sm leading-6 text-gray-300">

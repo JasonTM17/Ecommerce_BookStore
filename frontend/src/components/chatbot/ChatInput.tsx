@@ -54,7 +54,7 @@ export function ChatInput({
             rows={1}
             className={cn(
               "w-full resize-none rounded-[24px] border border-transparent bg-[#f5f5f5] px-4 py-3 pr-12 text-sm tracking-[0.14px] text-black shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-all duration-200",
-              "focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-300/50",
+              "focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-300/50",
               "placeholder:text-[#777169]",
               "disabled:cursor-not-allowed disabled:opacity-60",
             )}

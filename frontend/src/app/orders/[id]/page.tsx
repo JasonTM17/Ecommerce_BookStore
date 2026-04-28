@@ -114,8 +114,8 @@ const STATUS_CONFIG: Record<
   PENDING: { icon: Clock, color: "text-yellow-600", bgColor: "bg-yellow-100" },
   CONFIRMED: {
     icon: CheckCircle,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: "text-red-600",
+    bgColor: "bg-red-100",
   },
   PROCESSING: {
     icon: Package,
@@ -311,7 +311,7 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="rounded-2xl bg-gray-50 p-4">
                     <p className="text-sm text-gray-500">{copy.totalAmount}</p>
-                    <p className="mt-1 text-xl font-bold text-blue-600">
+                    <p className="mt-1 text-xl font-bold text-red-600">
                       {formatCurrency(order.totalAmount)}
                     </p>
                     <p className="mt-1 text-sm text-gray-500">
@@ -364,7 +364,7 @@ export default function OrderDetailPage() {
                         </p>
                         <Link
                           href={`/products/${item.product.id}`}
-                          className="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700"
+                          className="mt-2 inline-block text-sm text-red-600 hover:text-red-700"
                         >
                           {copy.viewProduct}
                         </Link>
@@ -382,7 +382,7 @@ export default function OrderDetailPage() {
                 </h2>
                 <div className="space-y-4 text-sm text-gray-600">
                   <div className="flex items-start gap-3">
-                    <MapPin className="mt-0.5 h-4 w-4 text-blue-600" />
+                    <MapPin className="mt-0.5 h-4 w-4 text-red-600" />
                     <div>
                       <p className="font-medium text-gray-900">
                         {order.shippingReceiverName}
@@ -391,14 +391,14 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Phone className="mt-0.5 h-4 w-4 text-blue-600" />
+                    <Phone className="mt-0.5 h-4 w-4 text-red-600" />
                     <div>
                       <p className="font-medium text-gray-900">{copy.phone}</p>
                       <p>{order.shippingPhone}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CreditCard className="mt-0.5 h-4 w-4 text-blue-600" />
+                    <CreditCard className="mt-0.5 h-4 w-4 text-red-600" />
                     <div>
                       <p className="font-medium text-gray-900">
                         {copy.paymentMethod}

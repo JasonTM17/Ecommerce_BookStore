@@ -21,7 +21,7 @@ export function AvailableCoupons({ onSelect, className }: AvailableCouponsProps)
   if (isLoading) {
     return (
       <div className={cn("flex items-center justify-center py-8", className)}>
-        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+        <Loader2 className="h-6 w-6 animate-spin text-red-600" />
       </div>
     );
   }
@@ -71,7 +71,7 @@ export function CouponCard({ coupon, onSelect, showDetails = true }: CouponCardP
       case "PERCENTAGE":
         return "bg-red-500";
       case "FIXED_AMOUNT":
-        return "bg-blue-500";
+        return "bg-red-500";
       case "FREE_SHIPPING":
         return "bg-green-500";
       default:
@@ -101,7 +101,7 @@ export function CouponCard({ coupon, onSelect, showDetails = true }: CouponCardP
       onClick={onSelect ? () => onSelect(coupon) : undefined}
       className={cn(
         "relative bg-white border border-gray-200 rounded-xl p-4 transition-all",
-        onSelect ? "cursor-pointer hover:border-blue-300 hover:shadow-md" : "cursor-default",
+        onSelect ? "cursor-pointer hover:border-red-300 hover:shadow-md" : "cursor-default",
         onSelect && "pr-12"
       )}
     >
@@ -114,7 +114,7 @@ export function CouponCard({ coupon, onSelect, showDetails = true }: CouponCardP
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-bold text-lg text-blue-600">{coupon.code}</span>
+            <span className="font-bold text-lg text-red-600">{coupon.code}</span>
             {copied && <Check className="h-4 w-4 text-green-500" />}
           </div>
           <p className="text-sm text-gray-600 mb-1">{coupon.description}</p>

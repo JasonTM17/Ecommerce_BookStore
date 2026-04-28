@@ -22,7 +22,7 @@ export function FlashSaleBanner() {
   }
 
   return (
-    <div className="border-b border-black/[0.06] bg-black py-3">
+    <div className="bg-gradient-to-r from-red-500 to-orange-500 py-3">
       <div className="container mx-auto px-4">
         <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
           <div className="shrink-0 flex items-center gap-2 text-white">
@@ -84,9 +84,9 @@ function FlashSaleQuickView({
     <Link
       href={`/products/${sale.product.id}`}
       data-testid="flash-sale-banner-item"
-      className="flex shrink-0 items-center gap-3 rounded-xl bg-white/10 px-3 py-2 transition-colors hover:bg-white/20"
+      className="flex shrink-0 items-center gap-3 rounded-lg bg-white/10 px-3 py-2 transition-colors hover:bg-white/20"
     >
-      <div className="relative h-14 w-10 overflow-hidden rounded bg-[#f5f2ef]">
+      <div className="relative h-14 w-10 overflow-hidden rounded bg-white">
         <ProductImage
           src={sale.product.imageUrl || undefined}
           fallbackSrc={resolveProductFallbackImage({

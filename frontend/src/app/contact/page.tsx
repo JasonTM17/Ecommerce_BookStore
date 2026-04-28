@@ -118,7 +118,7 @@ export default async function ContactPage() {
 
   return (
     <StaticInfoPageShell
-      accentClassName="from-emerald-900 via-teal-800 to-cyan-900"
+      accentClassName="from-stone-950 via-red-900 to-orange-900"
       badgeText={page.shell.badgeText}
       breadcrumbs={page.shell.breadcrumbs}
       description={page.shell.description}
