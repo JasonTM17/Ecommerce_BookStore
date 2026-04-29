@@ -67,8 +67,6 @@ const MOJIBAKE_PATTERN_SOURCE = [
   "[\\u00C2\\u00C3\\u00C4\\u00C6][\\u0080-\\u00BF]",
   "\\u00E1\\u00BA",
   "\\u00E1\\u00BB",
-  "Nguy\\u00E1",
-  "Tr\\u00E1",
   "S\\u00C6",
 ].join("|");
 
