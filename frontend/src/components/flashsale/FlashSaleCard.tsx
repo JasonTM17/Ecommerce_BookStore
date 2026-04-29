@@ -7,7 +7,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { flashSaleApi, FlashSale } from "@/lib/flashsale";
-import { resolveProductFallbackImage } from "@/lib/product-images";
+import {
+  resolveProductFallbackImage,
+  resolveProductImageSource,
+} from "@/lib/product-images";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -69,34 +72,34 @@ export function FlashSaleSection() {
   }
 
   return (
-    <section className="bg-[#f4f7ff] py-12">
+    <section className="bg-[#fffdf7] py-12">
       <div className="mx-auto w-full max-w-7xl px-4">
-        <div className="overflow-hidden rounded-[28px] border border-[#d8e8ff] bg-white shadow-[rgba(11,116,229,0.08)_0_18px_42px]">
-          <div className="flex flex-col gap-5 bg-[#0b74e5] px-5 py-5 text-white md:flex-row md:items-center md:justify-between md:px-7">
+        <div className="overflow-hidden rounded-[28px] border border-[#eadfce] bg-white shadow-[rgba(130,72,20,0.09)_0_18px_42px]">
+          <div className="flex flex-col gap-5 bg-gradient-to-r from-[#1f1a17] via-[#4a1712] to-[#991b1b] px-5 py-5 text-white md:flex-row md:items-center md:justify-between md:px-7">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#ff424e] shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#b42318] shadow-sm">
                 <Flame className="h-6 w-6 fill-[#ffdd57]" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#cde7ff]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#fed7aa]">
                   Flash Sale
                 </p>
                 <h2 className="text-2xl font-bold tracking-normal text-white md:text-3xl">
                   {copy.sectionTitle}
                 </h2>
-                <p className="mt-1 max-w-2xl text-sm text-[#e8f5ff]">
+                <p className="mt-1 max-w-2xl text-sm text-[#ffe7d6]">
                   {copy.sectionSubtitle}
                 </p>
               </div>
             </div>
             <Link href="/flash-sale">
-              <Button className="w-full rounded-full bg-white px-5 font-semibold text-[#0b74e5] hover:bg-[#eef7ff] md:w-auto">
+              <Button className="w-full rounded-full bg-white px-5 font-semibold text-[#7c2d12] hover:bg-[#fff8ed] md:w-auto">
                 {copy.sectionAction}
               </Button>
             </Link>
           </div>
 
-          <div className="grid justify-center gap-4 bg-[#f7fbff] p-4 [grid-template-columns:repeat(auto-fit,minmax(220px,280px))] lg:p-5">
+          <div className="grid gap-4 bg-[#fff8ed] p-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] lg:p-5">
             {activeSales.slice(0, 8).map((sale, index) => (
               <FlashSaleCard
                 key={sale.id}
@@ -164,14 +167,18 @@ export function FlashSaleCard({
       href={buildFlashSaleHref(sale.product.id, sale.id)}
       data-testid="flash-sale-card"
       className={cn(
-        "group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#dbeaff] bg-white shadow-sm",
-        "transition-all duration-300 hover:-translate-y-1 hover:border-[#9ed2ff] hover:shadow-[rgba(11,116,229,0.18)_0_18px_32px]",
+        "group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#eadfce] bg-white shadow-sm",
+        "transition-all duration-300 hover:-translate-y-1 hover:border-[#ef9a6b] hover:shadow-[rgba(180,35,24,0.14)_0_18px_32px]",
         className,
       )}
     >
-      <div className="relative aspect-[3/4] bg-gradient-to-b from-[#f4f9ff] to-white">
+      <div className="relative aspect-[3/4] bg-gradient-to-b from-[#fff8ed] to-white">
         <ProductImage
-          src={sale.product.imageUrl || undefined}
+          src={resolveProductImageSource({
+            id: sale.product.id,
+            imageUrl: sale.product.imageUrl,
+            images: [],
+          })}
           fallbackSrc={resolveProductFallbackImage({
             id: sale.product.id,
             imageUrl: sale.product.imageUrl,
@@ -184,17 +191,17 @@ export function FlashSaleCard({
           className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
         />
 
-        <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-[#ff424e] px-2.5 py-1 text-xs font-bold text-white shadow-sm">
-          <Zap className="h-3.5 w-3.5 fill-[#ffdd57] text-[#ffdd57]" />-
-          {sale.discountPercent}%
+        <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-[#b42318] px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+          <Zap className="h-3.5 w-3.5 fill-[#ffdd57] text-[#ffdd57]" />
+          <span>-{sale.discountPercent}%</span>
         </div>
-        <div className="absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-[#0b74e5] shadow-sm">
+        <div className="absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-[#7c2d12] shadow-sm ring-1 ring-[#eadfce]">
           {copy.dealBadge}
         </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="line-clamp-2 min-h-[44px] text-sm font-semibold leading-5 text-gray-900 transition-colors group-hover:text-[#0b74e5]">
+        <h3 className="line-clamp-2 min-h-[44px] text-sm font-semibold leading-5 text-gray-900 transition-colors group-hover:text-[#b42318]">
           {sale.product.name}
         </h3>
         <p className="mt-1 truncate text-sm text-gray-500">
@@ -202,7 +209,7 @@ export function FlashSaleCard({
         </p>
 
         <div className="mt-3 flex flex-wrap items-end gap-x-2 gap-y-1">
-          <span className="text-xl font-bold leading-none text-[#ff424e]">
+          <span className="text-xl font-bold leading-none text-[#b42318]">
             {formatPrice(sale.salePrice, locale)}
           </span>
           <span className="text-sm text-gray-400 line-through">
@@ -221,7 +228,7 @@ export function FlashSaleCard({
           </div>
           <div className="mt-1.5 h-3 overflow-hidden rounded-full bg-[#ffe6d8]">
             <div
-              className="relative h-full rounded-full bg-gradient-to-r from-[#ff424e] via-[#ff7a00] to-[#ffd43b]"
+              className="relative h-full rounded-full bg-gradient-to-r from-[#b42318] via-[#f97316] to-[#fbbf24]"
               style={{ width: `${soldPercent}%` }}
             >
               <span className="absolute right-1 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white/90" />
@@ -229,12 +236,12 @@ export function FlashSaleCard({
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-[#eef7ff] px-3 py-2 text-xs">
-          <div className="flex min-w-0 items-center gap-1.5 text-[#0b74e5]">
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-[#fff7ed] px-3 py-2 text-xs ring-1 ring-[#f3d8c0]">
+          <div className="flex min-w-0 items-center gap-1.5 text-[#9a3412]">
             <Clock className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate font-medium">{copy.timeLeft}</span>
           </div>
-          <span className="shrink-0 font-mono font-bold tabular-nums text-[#ff424e]">
+          <span className="shrink-0 font-mono font-bold tabular-nums text-[#b42318]">
             {mounted
               ? `${String(timeLeft.hours).padStart(2, "0")}:${String(
                   timeLeft.minutes,
@@ -246,7 +253,7 @@ export function FlashSaleCard({
           </span>
         </div>
 
-        <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#ff424e] px-3 py-2 text-sm font-semibold text-white transition-colors group-hover:bg-[#e83843]">
+        <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#b42318] px-3 py-2 text-sm font-semibold text-white transition-colors group-hover:bg-[#8f1d16]">
           <ShoppingCart className="h-4 w-4" />
           {copy.buyNow}
         </div>

@@ -39,7 +39,7 @@
     @apply bg-background text-foreground;
     background: linear-gradient(180deg, #ffffff 0%, #fffdfb 48%, #f7f5f2 100%);
     color: #0f0f0f;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }

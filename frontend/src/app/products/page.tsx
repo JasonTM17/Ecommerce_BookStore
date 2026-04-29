@@ -240,9 +240,7 @@ function ProductsContent() {
         : copy.allHeading;
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden bg-gradient-to-b from-gray-50/50 to-white">
-      <Header />
-      <main className="flex-1 container mx-auto px-4 py-8">
+    <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
             <Link href="/" className="transition-colors hover:text-red-600">
@@ -631,18 +629,16 @@ function ProductsContent() {
               </Button>
             </div>
           )}
-      </main>
-      <Footer />
-    </div>
+    </main>
   );
 }
 
 export default function ProductsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50/50 to-white">
-          <Header />
+    <div className="min-h-screen flex flex-col overflow-x-hidden bg-gradient-to-b from-gray-50/50 to-white">
+      <Header />
+      <Suspense
+        fallback={
           <main className="flex-1 container mx-auto px-4 py-8">
             <Skeleton className="mb-2 h-10 w-64" />
             <Skeleton className="mb-8 h-5 w-48" />
@@ -662,11 +658,11 @@ export default function ProductsPage() {
               ))}
             </div>
           </main>
-          <Footer />
-        </div>
-      }
-    >
-      <ProductsContent />
-    </Suspense>
+        }
+      >
+        <ProductsContent />
+      </Suspense>
+      <Footer />
+    </div>
   );
 }

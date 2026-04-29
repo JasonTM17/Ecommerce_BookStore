@@ -169,7 +169,7 @@ describe("ChatbotWidget", () => {
       "Demo portfolio",
     );
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Hỏi về sách, coupon, flash sale hoặc giỏ hàng...",
+      "Hỏi về sách, coupon hoặc giỏ hàng...",
     );
     expectNoMojibake();
 
@@ -211,7 +211,7 @@ describe("ChatbotWidget", () => {
       "Portfolio demo",
     );
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Ask about books, coupons, flash sales, or the cart...",
+      "Ask about books, coupons, or cart...",
     );
     expectNoMojibake();
   });
@@ -236,7 +236,7 @@ describe("ChatbotWidget", () => {
       "Grok ready · grok-3",
     );
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Ask about books, orders, or promotions...",
+      "Ask about books, orders, or deals...",
     );
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
       "Enter to send, Shift + Enter for a new line",
@@ -268,7 +268,7 @@ describe("ChatbotWidget", () => {
       );
     });
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Hỏi về sách, coupon, flash sale hoặc giỏ hàng...",
+      "Hỏi về sách, coupon hoặc giỏ hàng...",
     );
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
       "Demo chỉ trả lời hướng dẫn chung, không truy vấn đơn hàng thật.",

@@ -7,7 +7,10 @@ import Link from "next/link";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { useLanguage } from "@/components/providers/language-provider";
 import { flashSaleApi, FlashSale } from "@/lib/flashsale";
-import { resolveProductFallbackImage } from "@/lib/product-images";
+import {
+  resolveProductFallbackImage,
+  resolveProductImageSource,
+} from "@/lib/product-images";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
 
 const SALE_SLOTS = ["08:00", "10:00", "12:00", "16:00", "20:00"];
@@ -53,16 +56,16 @@ export function FlashSaleBanner() {
     <section
       aria-label={copy.aria}
       data-testid="footer-flash-sale-banner"
-      className="border-t border-[#d8e8ff] bg-gradient-to-b from-white to-[#f4f8ff] pb-[env(safe-area-inset-bottom)]"
+      className="border-t border-[#eadfce] bg-gradient-to-b from-white to-[#fff8ed] pb-[env(safe-area-inset-bottom)]"
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-4">
-        <div className="grid min-w-0 gap-3 rounded-[24px] border border-[#d8e8ff] bg-white/95 p-3 shadow-[rgba(11,116,229,0.12)_0_-8px_32px] backdrop-blur md:grid-cols-[minmax(220px,0.72fr)_minmax(0,1.45fr)_auto] md:items-center">
+        <div className="grid min-w-0 gap-3 rounded-[24px] border border-[#eadfce] bg-white/95 p-3 shadow-[rgba(130,72,20,0.10)_0_-8px_32px] backdrop-blur md:grid-cols-[minmax(220px,0.72fr)_minmax(0,1.45fr)_auto] md:items-center">
           <Link
             href="/flash-sale"
-            className="flex min-w-0 items-center gap-3 rounded-2xl bg-gradient-to-r from-[#f0f8ff] to-[#fff6eb] p-2.5 text-gray-950 transition-colors hover:from-[#e8f5ff] hover:to-[#fff1dd]"
+            className="flex min-w-0 items-center gap-3 rounded-2xl bg-gradient-to-r from-[#fff8ed] to-[#fff1e6] p-2.5 text-gray-950 transition-colors hover:from-[#fff1e6] hover:to-[#ffead5]"
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#ff424e] shadow-sm ring-1 ring-[#ffe1ca]">
-              <Flame className="h-5 w-5 fill-[#ffdd57] text-[#ff424e]" />
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#b42318] shadow-sm ring-1 ring-[#ffe1ca]">
+              <Flame className="h-5 w-5 fill-[#ffdd57] text-[#b42318]" />
             </span>
             <span className="min-w-0">
               <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-[#ff6a00]">
@@ -76,7 +79,7 @@ export function FlashSaleBanner() {
 
           <div className="min-w-0">
             <div className="mb-2 flex min-w-0 flex-wrap items-center gap-2">
-              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d8e8ff] bg-[#f4f9ff] px-3 py-1.5 text-xs font-semibold text-[#0b74e5]">
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#eadfce] bg-[#fff8ed] px-3 py-1.5 text-xs font-semibold text-[#7c2d12]">
                 <Clock className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">{copy.slotLabel}</span>
                 <span className="font-bold">{SALE_SLOTS.join(" - ")}</span>
@@ -107,7 +110,7 @@ export function FlashSaleBanner() {
 
           <Link
             href="/flash-sale"
-            className="hidden items-center justify-center gap-1.5 rounded-full bg-[#ff424e] px-5 py-2.5 text-sm font-bold text-white shadow-[rgba(255,66,78,0.24)_0_10px_20px] transition-colors hover:bg-[#e83843] md:inline-flex"
+            className="hidden items-center justify-center gap-1.5 rounded-full bg-[#b42318] px-5 py-2.5 text-sm font-bold text-white shadow-[rgba(180,35,24,0.22)_0_10px_20px] transition-colors hover:bg-[#8f1d16] md:inline-flex"
           >
             {copy.cta}
             <ChevronRight className="h-4 w-4" />
@@ -131,7 +134,7 @@ function FlashSaleCountdownPill({
     <div className="flex min-w-0 items-center gap-1.5 rounded-full border border-[#ffe1ca] bg-[#fff8ed] px-3 py-1.5 text-xs font-semibold text-[#b45309]">
       <BadgePercent className="h-3.5 w-3.5 shrink-0" />
       <span className="hidden sm:inline">{label}</span>
-      <span className="font-mono font-bold tabular-nums text-[#ff424e]">
+      <span className="font-mono font-bold tabular-nums text-[#b42318]">
         {formatCountdown(timeLeft)}
       </span>
     </div>
@@ -153,11 +156,15 @@ function FlashSaleQuickView({
     <Link
       href={`/products/${sale.product.id}?source=flash-sale&saleId=${sale.id}`}
       data-testid="flash-sale-banner-item"
-      className="group flex min-w-0 items-center gap-2 rounded-2xl border border-[#e3efff] bg-[#fbfdff] px-2.5 py-2 text-gray-900 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#9ed2ff] hover:bg-white"
+      className="group flex min-w-0 items-center gap-2 rounded-2xl border border-[#eadfce] bg-[#fffaf3] px-2.5 py-2 text-gray-900 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#ef9a6b] hover:bg-white"
     >
-      <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-[#e5eefb]">
+      <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-[#eadfce]">
         <ProductImage
-          src={sale.product.imageUrl || undefined}
+          src={resolveProductImageSource({
+            id: sale.product.id,
+            imageUrl: sale.product.imageUrl,
+            images: [],
+          })}
           fallbackSrc={resolveProductFallbackImage({
             id: sale.product.id,
             imageUrl: sale.product.imageUrl,
@@ -171,11 +178,11 @@ function FlashSaleQuickView({
         />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-bold transition-colors group-hover:text-[#0b74e5]">
+        <p className="truncate text-xs font-bold transition-colors group-hover:text-[#b42318]">
           {sale.product.name}
         </p>
         <div className="mt-1 flex items-center gap-2">
-          <span className="text-sm font-extrabold text-[#ff424e]">
+          <span className="text-sm font-extrabold text-[#b42318]">
             {formatPrice(sale.salePrice, locale)}
           </span>
           <span className="rounded-full bg-[#fff0d5] px-1.5 py-0.5 text-[10px] font-bold text-[#b45309]">
@@ -184,7 +191,7 @@ function FlashSaleQuickView({
         </div>
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#ffe6d8]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#ff424e] via-[#ff7a00] to-[#ffd43b]"
+            className="h-full rounded-full bg-gradient-to-r from-[#b42318] via-[#f97316] to-[#fbbf24]"
             style={{ width: `${soldPercent}%` }}
           />
         </div>
@@ -207,11 +214,15 @@ function FlashSaleMobileDeal({
   return (
     <Link
       href={`/products/${sale.product.id}?source=flash-sale&saleId=${sale.id}`}
-      className="mt-2 grid min-w-0 grid-cols-[48px_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-[#e3efff] bg-[#fbfdff] p-2.5 pr-16 md:hidden"
+      className="mt-2 grid min-w-0 grid-cols-[48px_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-[#eadfce] bg-[#fffaf3] p-2.5 pr-16 md:hidden"
     >
-      <div className="relative h-16 w-12 overflow-hidden rounded-xl bg-white ring-1 ring-[#e5eefb]">
+      <div className="relative h-16 w-12 overflow-hidden rounded-xl bg-white ring-1 ring-[#eadfce]">
         <ProductImage
-          src={sale.product.imageUrl || undefined}
+          src={resolveProductImageSource({
+            id: sale.product.id,
+            imageUrl: sale.product.imageUrl,
+            images: [],
+          })}
           fallbackSrc={resolveProductFallbackImage({
             id: sale.product.id,
             imageUrl: sale.product.imageUrl,
@@ -230,7 +241,7 @@ function FlashSaleMobileDeal({
           {sale.product.name}
         </span>
         <span className="mt-1 flex items-center gap-2">
-          <span className="text-base font-extrabold text-[#ff424e]">
+          <span className="text-base font-extrabold text-[#b42318]">
             {formatPrice(sale.salePrice, locale)}
           </span>
           <span className="rounded-full bg-[#fff0d5] px-1.5 py-0.5 text-[10px] font-bold text-[#b45309]">
@@ -238,11 +249,11 @@ function FlashSaleMobileDeal({
           </span>
         </span>
         <span className="mt-1.5 flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-1 text-[11px] font-semibold text-[#0b74e5]">
+          <span className="flex items-center gap-1 text-[11px] font-semibold text-[#7c2d12]">
             <Clock className="h-3 w-3" />
             {formatCountdown(timeLeft)}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#ff424e] px-2.5 py-1 text-[11px] font-bold text-white">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#b42318] px-2.5 py-1 text-[11px] font-bold text-white">
             {ctaLabel}
             <ChevronRight className="h-3 w-3" />
           </span>

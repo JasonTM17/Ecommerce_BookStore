@@ -15,7 +15,7 @@ import type { Brand, Category, PageResponse, Product } from "@/lib/types";
 type RetryAwareConfig = AxiosRequestConfig & { _retry?: boolean };
 
 const PUBLIC_STOREFRONT_TIMEOUT_MS = Number(
-  process.env.NEXT_PUBLIC_STOREFRONT_TIMEOUT_MS || "12000",
+  process.env.NEXT_PUBLIC_STOREFRONT_TIMEOUT_MS || "6000",
 );
 const PUBLIC_STOREFRONT_CACHE_TTL_MS = Number(
   process.env.NEXT_PUBLIC_STOREFRONT_CACHE_TTL_MS || "30000",

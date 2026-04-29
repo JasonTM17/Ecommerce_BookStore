@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
@@ -28,28 +27,38 @@ type ShowcaseGenre = {
   key: string;
   labelKey: string;
   aliases: string[];
+  fallbackHref: string;
 };
 
 const showcaseGenres: ShowcaseGenre[] = [
   {
     key: "tieu-thuyet",
     labelKey: "home.genreNovel",
-    aliases: ["tieu-thuyet", "tieu-thuyet-van-hoc", "tieu-thuyet-kinh-dien"],
+    aliases: [
+      "van-hoc",
+      "tieu-thuyet",
+      "tieu-thuyet-van-hoc",
+      "tieu-thuyet-kinh-dien",
+    ],
+    fallbackHref: "/categories?id=1",
   },
   {
     key: "khoa-hoc",
     labelKey: "home.genreScience",
     aliases: ["khoa-hoc", "khoa-hoc-tu-nhien"],
+    fallbackHref: "/categories?id=2",
   },
   {
     key: "ky-nang",
     labelKey: "home.genreSkills",
     aliases: ["phat-trien-ban-than", "ky-nang-song"],
+    fallbackHref: "/categories?id=4",
   },
   {
     key: "lich-su",
     labelKey: "home.genreHistory",
     aliases: ["lich-su"],
+    fallbackHref: "/products?keyword=lich%20su",
   },
 ];
 
@@ -88,16 +97,11 @@ function flattenCategories(categories: Category[]): Category[] {
 
 export default function HomePage() {
   const { t, locale } = useLanguage();
-  const [mounted, setMounted] = useState(false);
   const { data: categories = [] } = useQuery({
     ...publicWarmupQueryOptions,
     queryKey: ["home-showcase-categories"],
     queryFn: getPublicCategories,
   });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const flattenedCategories = flattenCategories(categories);
   const showcaseCards = showcaseGenres.map((genre) => {
@@ -110,7 +114,7 @@ export default function HomePage() {
       label: t(genre.labelKey),
       href: matchedCategory
         ? `/categories?id=${matchedCategory.id}`
-        : "/categories",
+        : genre.fallbackHref,
       countLabel:
         typeof matchedCategory?.productCount === "number" &&
         matchedCategory.productCount > 0
@@ -152,13 +156,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden border-b border-black/[0.05] bg-[#fffdfb]">
           <div className="relative mx-auto w-full max-w-7xl px-4 py-16 md:py-24">
             <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr]">
-              <div
-                className={`w-full min-w-0 max-w-full transition-all duration-700 ${
-                  mounted
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-6 opacity-0"
-                }`}
-              >
+              <div className="w-full min-w-0 max-w-full">
                 <div className="eleven-pill-stone mb-7 inline-flex items-center gap-2 px-4 py-2">
                   <Sparkles className="h-4 w-4 text-black" />
                   <span className="text-sm font-medium text-black">
@@ -212,13 +210,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div
-                className={`w-full min-w-0 max-w-full transition-all delay-150 duration-700 ${
-                  mounted
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-6 opacity-0"
-                }`}
-              >
+              <div className="w-full min-w-0 max-w-full">
                 <div className="eleven-surface overflow-hidden rounded-[28px]">
                   <div className="border-b border-black/[0.06] bg-[#f5f2ef]/80 px-6 py-5">
                     <p className="eleven-kicker">{t("nav.categories")}</p>

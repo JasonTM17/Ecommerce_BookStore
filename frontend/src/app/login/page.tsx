@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -142,16 +142,11 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale } = useLanguage();
-  const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const pageCopy = copy[locale];
   const redirectTarget = resolveRedirectTarget(searchParams.get("redirect"));
@@ -186,28 +181,20 @@ function LoginContent() {
     }
   };
 
-  if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-500">{pageCopy.loading}</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="relative min-h-screen flex">
+    <div className="relative flex min-h-screen bg-[#fffdf7]">
       <div className="absolute right-4 top-4 z-10">
         <LanguageSwitcher />
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="w-full max-w-md">
+      <div className="flex flex-1 items-start justify-center bg-[#fffdf7] px-4 pb-10 pt-24 sm:px-6 lg:items-center lg:bg-white lg:px-8 lg:py-12">
+        <div className="w-full max-w-md rounded-[28px] border border-[#eadfce] bg-white p-6 shadow-[rgba(78,50,23,0.06)_0_18px_42px] sm:p-8 lg:border-0 lg:p-0 lg:shadow-none">
           <div className="mb-8">
             <Link href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1f1a17]">
                 <span className="text-white font-bold text-xl">B</span>
               </div>
-              <span className="font-bold text-xl text-red-600">BookStore</span>
+              <span className="font-bold text-xl text-[#1f1a17]">BookStore</span>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">
               {pageCopy.title}
@@ -246,7 +233,7 @@ function LoginContent() {
                 placeholder={pageCopy.emailPlaceholder}
                 required
                 disabled={isLoading}
-                className="w-full h-11 px-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="h-12 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-4 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:bg-gray-100"
               />
             </div>
 
@@ -266,7 +253,7 @@ function LoginContent() {
                   placeholder={pageCopy.passwordPlaceholder}
                   required
                   disabled={isLoading}
-                  className="w-full h-11 px-3 pr-10 rounded-md border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="h-12 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-4 pr-10 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:bg-gray-100"
                 />
                 <button
                   type="button"
@@ -289,7 +276,7 @@ function LoginContent() {
             <div className="flex items-center justify-end">
               <Link
                 href={buildForgotPasswordHref(redirectTarget)}
-                className="text-sm text-red-600 hover:text-red-700"
+                className="text-sm font-medium text-[#b42318] hover:text-[#8f1d16]"
               >
                 {pageCopy.forgotPassword}
               </Link>
@@ -299,7 +286,7 @@ function LoginContent() {
               type="submit"
               data-testid="login-submit"
               disabled={isLoading}
-              className="w-full h-12 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold rounded-md transition-colors disabled:cursor-not-allowed"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#1f1a17] font-semibold text-white transition-colors hover:bg-[#3a2c25] disabled:cursor-not-allowed disabled:bg-black/45"
             >
               {isLoading ? (
                 <span>{pageCopy.submitting}</span>
@@ -317,7 +304,7 @@ function LoginContent() {
               {pageCopy.noAccount}{" "}
               <Link
                 href={buildRegisterHref(redirectTarget)}
-                className="text-red-600 font-semibold hover:text-red-700"
+                className="font-semibold text-[#b42318] hover:text-[#8f1d16]"
               >
                 {pageCopy.signUp}
               </Link>
@@ -326,7 +313,7 @@ function LoginContent() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-red-600 to-orange-700 items-center justify-center p-12">
+      <div className="hidden flex-1 items-center justify-center bg-gradient-to-br from-[#211714] via-[#4a1712] to-[#991b1b] p-12 lg:flex">
         <div className="max-w-md text-center text-white">
           <h2 className="text-3xl font-bold mb-4">{pageCopy.bannerTitle}</h2>
           <p className="text-white/80 text-lg mb-8">

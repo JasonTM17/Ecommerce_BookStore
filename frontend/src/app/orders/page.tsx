@@ -2,7 +2,6 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
@@ -20,6 +19,7 @@ import {
   Truck,
   RotateCcw,
   ChevronRight,
+  LogIn,
   ShoppingBag,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -31,6 +31,11 @@ import {
 
 const COPY = {
   vi: {
+    loginRequiredTitle: "Đăng nhập để xem đơn hàng",
+    loginRequiredDescription:
+      "Đăng nhập để theo dõi trạng thái giao hàng, xem lịch sử mua sách và mở nhanh chi tiết từng đơn.",
+    loginButton: "Đăng nhập xem đơn hàng",
+    guestBrowseProducts: "Khám phá sách",
     title: "Đơn Hàng Của Tôi",
     emptyTitle: "Chưa Có Đơn Hàng",
     emptyDescription: "Bạn chưa có đơn hàng nào. Hãy bắt đầu mua sắm!",
@@ -43,6 +48,11 @@ const COPY = {
     noImage: "Ảnh",
   },
   en: {
+    loginRequiredTitle: "Sign in to view orders",
+    loginRequiredDescription:
+      "Sign in to track delivery status, review your book purchases, and open order details quickly.",
+    loginButton: "Sign in to orders",
+    guestBrowseProducts: "Browse books",
     title: "My Orders",
     emptyTitle: "No Orders Yet",
     emptyDescription: "You have not placed any orders yet. Start shopping now!",
@@ -115,14 +125,42 @@ export default function OrdersPage() {
     enabled: isAuthenticated,
   });
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace(buildLoginRedirect("/orders"));
-    }
-  }, [isAuthenticated, router]);
-
   if (!isAuthenticated) {
-    return null;
+    return (
+      <div className="flex min-h-screen flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1 px-4 py-16">
+          <section className="mx-auto flex max-w-2xl flex-col items-center rounded-2xl border border-gray-100 bg-white px-6 py-12 text-center shadow-sm sm:px-10">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <LogIn className="h-7 w-7" aria-hidden="true" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-950 sm:text-3xl">
+              {copy.loginRequiredTitle}
+            </h1>
+            <p className="mt-4 max-w-xl text-base leading-7 text-gray-600">
+              {copy.loginRequiredDescription}
+            </p>
+            <div className="mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+              <Button
+                onClick={() => router.push(buildLoginRedirect("/orders"))}
+                className="bg-red-600 px-6 hover:bg-red-700"
+              >
+                {copy.loginButton}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/products")}
+                className="px-6"
+              >
+                {copy.guestBrowseProducts}
+              </Button>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   const orders = ordersData?.content || ordersData || [];

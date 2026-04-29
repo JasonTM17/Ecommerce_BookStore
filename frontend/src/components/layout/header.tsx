@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   ChevronDown,
+  ChevronRight,
+  Clock,
+  Flame,
   LogOut,
   Search,
   ShoppingCart,
@@ -16,8 +19,27 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useLanguage } from "@/components/providers/language-provider";
 import { Button } from "@/components/ui/button";
 import { clearAuthTokens } from "@/lib/api";
+import { flashSaleApi, type FlashSale } from "@/lib/flashsale";
+import { getDemoActiveFlashSales } from "@/lib/demo-storefront";
 import { useCartStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+
+const HEADER_FLASH_SALE_COPY = {
+  vi: {
+    label: "Flash sale",
+    prefix: "Sách hot giảm đến",
+    slot: "5 khung giờ hôm nay",
+    endsIn: "Còn",
+    cta: "Xem deal",
+  },
+  en: {
+    label: "Flash sale",
+    prefix: "Hot books up to",
+    slot: "5 daily slots",
+    endsIn: "Left",
+    cta: "View deals",
+  },
+} as const;
 
 export function Header() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -27,6 +49,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +69,8 @@ export function Header() {
   };
 
   useEffect(() => {
+    setHasMounted(true);
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -100,11 +125,11 @@ export function Header() {
     >
       <div className="container mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center justify-between md:h-20">
-          <Link href="/" className="group flex items-center">
+          <Link href="/" className="group flex min-w-0 shrink-0 items-center">
             <div className="eleven-warm-surface relative flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-105">
               <BookOpen className="h-5 w-5 text-black" />
             </div>
-            <span className="ml-3 text-xl font-semibold tracking-normal text-black">
+            <span className="ml-3 text-lg font-semibold tracking-normal text-black sm:text-xl">
               BookStore
             </span>
           </Link>
@@ -165,7 +190,7 @@ export function Header() {
                 aria-label={t("nav.cart")}
               >
                 <ShoppingCart className="h-5 w-5 text-[#4e4e4e] transition-colors group-hover:text-black" />
-                {totalItems > 0 && (
+                {hasMounted && totalItems > 0 && (
                   <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black text-[10px] font-bold text-white shadow-[rgba(0,0,0,0.18)_0_4px_12px]">
                     {totalItems > 9 ? "9+" : totalItems}
                   </span>
@@ -176,7 +201,7 @@ export function Header() {
             <LanguageSwitcher />
 
             {isAuthenticated ? (
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative hidden sm:block" ref={userMenuRef}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -355,6 +380,161 @@ export function Header() {
           </div>
         )}
       </div>
+      <HeaderFlashSaleStrip />
     </header>
   );
+}
+
+function HeaderFlashSaleStrip() {
+  const { locale } = useLanguage();
+  const copy = HEADER_FLASH_SALE_COPY[locale];
+  const [flashSales, setFlashSales] = useState<FlashSale[]>(
+    () => getDemoActiveFlashSales() as FlashSale[],
+  );
+  const [hasMounted, setHasMounted] = useState(false);
+
+  const featuredSale = useMemo(
+    () =>
+      [...flashSales].sort(
+        (left, right) =>
+          (right.discountPercent || 0) - (left.discountPercent || 0),
+      )[0],
+    [flashSales],
+  );
+  const timeLeft = useHeaderFlashSaleCountdown(featuredSale?.endTime);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "test") {
+      return;
+    }
+
+    let isActive = true;
+
+    flashSaleApi
+      .getActiveFlashSales()
+      .then((sales) => {
+        if (isActive && sales.length > 0) {
+          setFlashSales(sales);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setFlashSales(getDemoActiveFlashSales() as FlashSale[]);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  if (!featuredSale) {
+    return null;
+  }
+
+  return (
+    <div
+      data-testid="header-flash-sale-strip"
+      className="border-t border-[#eadfce] bg-gradient-to-r from-[#fff8ed] via-[#fffdf7] to-[#f7efe6]"
+    >
+      <div className="mx-auto flex h-auto min-h-10 w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 text-sm sm:h-11 sm:py-0">
+        <Link
+          href="/flash-sale"
+          className="group flex min-w-0 flex-1 items-center gap-2 text-gray-950"
+        >
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#b42318] text-white shadow-[rgba(180,35,24,0.18)_0_6px_14px]">
+            <Flame className="h-4 w-4 fill-[#fbbf24] text-white" />
+          </span>
+          <span className="hidden shrink-0 items-center rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#7c2d12] ring-1 ring-[#eadfce] sm:inline-flex">
+            {copy.label}
+          </span>
+          <span className="min-w-0 truncate font-medium">
+            {copy.prefix}{" "}
+            <span className="font-extrabold text-[#b42318]">
+              {featuredSale.discountPercent}%
+            </span>
+            <span className="hidden text-[#5f554c] md:inline">
+              {" "}
+              · {featuredSale.product.name}
+            </span>
+          </span>
+        </Link>
+
+        <div className="hidden items-center gap-2 text-xs font-semibold text-[#5f554c] md:flex">
+          <span className="rounded-full bg-white/75 px-3 py-1 ring-1 ring-[#eadfce]">
+            {copy.slot}
+          </span>
+          <span className="rounded-full bg-white/75 px-3 py-1 font-mono tabular-nums text-[#b42318] ring-1 ring-[#eadfce]">
+            {copy.endsIn}{" "}
+            {hasMounted ? formatHeaderCountdown(timeLeft) : "--:--:--"}
+          </span>
+          <span className="rounded-full bg-black px-3 py-1 text-white">
+            {formatHeaderPrice(featuredSale.salePrice, locale)}
+          </span>
+        </div>
+
+        <Link
+          href="/flash-sale"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#1f1a17] px-3 py-1.5 text-xs font-bold text-white shadow-[rgba(31,26,23,0.16)_0_8px_18px] transition-colors hover:bg-[#3a2c25]"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          <span>{copy.cta}</span>
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function useHeaderFlashSaleCountdown(endTime?: string) {
+  const [timeLeft, setTimeLeft] = useState(() =>
+    calculateHeaderCountdown(endTime),
+  );
+
+  useEffect(() => {
+    setTimeLeft(calculateHeaderCountdown(endTime));
+
+    if (!endTime) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setTimeLeft(calculateHeaderCountdown(endTime));
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [endTime]);
+
+  return timeLeft;
+}
+
+function calculateHeaderCountdown(endTime?: string) {
+  if (!endTime) {
+    return 0;
+  }
+
+  return Math.max(0, new Date(endTime).getTime() - Date.now());
+}
+
+function formatHeaderCountdown(milliseconds: number) {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map((value) => value.toString().padStart(2, "0"))
+    .join(":");
+}
+
+function formatHeaderPrice(amount: number, locale: "vi" | "en") {
+  return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }

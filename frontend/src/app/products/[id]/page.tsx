@@ -37,7 +37,7 @@ import { useAddToCart } from "@/hooks/useAddToCart";
 import { useWishlist } from "@/hooks/useWishlist";
 import { apiPublic } from "@/lib/api";
 import {
-  getCategoryPlaceholderImage,
+  resolveProductFallbackImage,
   resolveProductImageSource,
 } from "@/lib/product-images";
 import { publicWarmupQueryOptions } from "@/lib/public-query-options";
@@ -307,18 +307,30 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#fffdf7]">
         <Header />
         <main className="flex-1 py-8">
           <div className="container mx-auto px-4">
-            <div className="animate-pulse">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#7c2d12] shadow-sm ring-1 ring-[#eadfce]">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-[#b42318]" />
+              {copy.loading}
+            </div>
+            <div className="animate-pulse rounded-[28px] border border-[#eadfce] bg-white p-4 shadow-[rgba(78,50,23,0.06)_0_18px_42px] md:p-6">
               <div className="grid gap-8 md:grid-cols-2">
-                <div className="aspect-square rounded-3xl bg-gray-200" />
-                <div className="space-y-4">
-                  <div className="h-6 w-32 rounded bg-gray-200" />
-                  <div className="h-10 w-3/4 rounded bg-gray-200" />
-                  <div className="h-8 w-1/2 rounded bg-gray-200" />
-                  <div className="h-40 rounded-3xl bg-gray-200" />
+                <div className="aspect-[4/3] rounded-3xl bg-[#f1ece4] md:aspect-square" />
+                <div className="space-y-5">
+                  <div className="h-6 w-32 rounded-full bg-[#f1ece4]" />
+                  <div className="h-10 w-3/4 rounded-2xl bg-[#f1ece4]" />
+                  <div className="h-6 w-1/2 rounded-2xl bg-[#f1ece4]" />
+                  <div className="rounded-3xl bg-[#fff8ed] p-5">
+                    <div className="h-9 w-48 rounded-2xl bg-[#eadfce]" />
+                    <div className="mt-3 h-4 w-40 rounded-full bg-[#eadfce]" />
+                  </div>
+                  <div className="grid gap-3">
+                    <div className="h-4 w-full rounded-full bg-[#f1ece4]" />
+                    <div className="h-4 w-5/6 rounded-full bg-[#f1ece4]" />
+                    <div className="h-4 w-2/3 rounded-full bg-[#f1ece4]" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -386,14 +398,20 @@ export default function ProductDetailPage() {
   );
   const isWishlistPending = isAdding || isRemoving;
   const isWishlisted = isAuthenticated && isInWishlist(product.id);
-  const galleryImages =
+  const resolvedProductImage = resolveProductImageSource(product);
+  const galleryCandidates =
     product.images && product.images.length > 0
       ? product.images
-      : product.imageUrl
-        ? [product.imageUrl]
-        : [resolveProductImageSource(product)];
+      : [resolvedProductImage];
+  const galleryImages = galleryCandidates.some(
+    (image) => !image.includes("/images/books/placeholders/"),
+  )
+    ? galleryCandidates.filter(
+        (image) => !image.includes("/images/books/placeholders/"),
+      )
+    : [resolvedProductImage];
   const selectedGalleryImage = galleryImages[selectedImage] || galleryImages[0];
-  const fallbackSrc = getCategoryPlaceholderImage(product.category?.name);
+  const fallbackSrc = resolveProductFallbackImage(product);
   const hasActiveFlashSale =
     Boolean(product.activeFlashSale) &&
     product.currentPrice < product.price &&
@@ -462,14 +480,14 @@ export default function ProductDetailPage() {
 
           <div className="mb-12 grid gap-8 md:grid-cols-2">
             <div className="space-y-4">
-              <div className="relative aspect-square overflow-hidden rounded-3xl bg-gray-100 shadow-sm">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#f7f2ea] shadow-sm md:aspect-square">
                 <ProductImage
                   src={selectedGalleryImage}
                   fallbackSrc={fallbackSrc}
                   alt={product.name || copy.noImage}
                   fill
                   sizes="(min-width: 1280px) 42vw, (min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
+                  className="object-contain p-5 md:p-7"
                   loading="eager"
                   priority
                 />
@@ -508,7 +526,7 @@ export default function ProductDetailPage() {
                         alt=""
                         fill
                         sizes="80px"
-                        className="object-cover"
+                        className="object-contain p-2"
                       />
                     </button>
                   ))}

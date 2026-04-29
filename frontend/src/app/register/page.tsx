@@ -208,12 +208,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex">
+    <div className="relative flex min-h-screen bg-[#fffdf7]">
       <div className="absolute right-4 top-4 z-10">
         <LanguageSwitcher />
       </div>
 
-      <div className="hidden flex-1 items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-12 lg:flex">
+      <div className="hidden flex-1 items-center justify-center bg-gradient-to-br from-[#211714] via-[#4a1712] to-[#991b1b] p-12 lg:flex">
         <div className="max-w-md text-center text-white">
           <BookOpen className="mx-auto mb-6 h-24 w-24 opacity-80" />
           <h2 className="mb-4 text-3xl font-bold">{pageCopy.bannerTitle}</h2>
@@ -224,7 +224,7 @@ export default function RegisterPage() {
             {pageCopy.benefits.map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-3 rounded-lg bg-white/10 p-3"
+                className="flex items-center gap-3 rounded-2xl bg-white/10 p-3 ring-1 ring-white/10"
               >
                 <CheckCircle className="h-5 w-5 flex-shrink-0 text-yellow-300" />
                 <span>{item}</span>
@@ -234,27 +234,29 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <Link href="/" className="mb-6 flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <span className="text-xl font-bold text-white">B</span>
+      <div className="flex flex-1 items-start justify-center px-4 pb-8 pt-12 sm:px-6 lg:items-center lg:px-8 lg:py-12">
+        <div className="w-full max-w-md rounded-[28px] border border-[#eadfce] bg-white p-4 shadow-[rgba(78,50,23,0.06)_0_18px_42px] sm:p-8 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+          <div className="mb-5">
+            <Link href="/" className="mb-5 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#1f1a17]">
+                <span className="text-lg font-bold text-white">B</span>
               </div>
-              <span className="text-xl font-bold text-primary">BookStore</span>
+              <span className="text-xl font-bold text-[#1f1a17]">BookStore</span>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
               {pageCopy.title}
             </h1>
-            <p className="mt-2 text-gray-600">{pageCopy.subtitle}</p>
+            <p className="mt-1.5 text-sm leading-5 text-gray-600 sm:text-base sm:leading-6">
+              {pageCopy.subtitle}
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label
                   htmlFor="firstName"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-[13px] font-medium text-gray-700 sm:text-sm"
                 >
                   {pageCopy.firstNameLabel}
                 </label>
@@ -266,13 +268,13 @@ export default function RegisterPage() {
                   placeholder={pageCopy.firstNamePlaceholder}
                   required
                   disabled={registerMutation.isPending}
-                  className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-10 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-3.5 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:px-4"
                 />
               </div>
               <div className="space-y-1.5">
                 <label
                   htmlFor="lastName"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-[13px] font-medium text-gray-700 sm:text-sm"
                 >
                   {pageCopy.lastNameLabel}
                 </label>
@@ -284,7 +286,7 @@ export default function RegisterPage() {
                   placeholder={pageCopy.lastNamePlaceholder}
                   required
                   disabled={registerMutation.isPending}
-                  className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-10 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-3.5 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:px-4"
                 />
               </div>
             </div>
@@ -292,7 +294,7 @@ export default function RegisterPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="email"
-                className="text-sm font-medium text-gray-700"
+                className="text-[13px] font-medium text-gray-700 sm:text-sm"
               >
                 {pageCopy.emailLabel}
               </label>
@@ -305,14 +307,14 @@ export default function RegisterPage() {
                 required
                 autoComplete="email"
                 disabled={registerMutation.isPending}
-                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-3.5 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:px-4"
               />
             </div>
 
             <div className="space-y-1.5">
               <label
                 htmlFor="phoneNumber"
-                className="text-sm font-medium text-gray-700"
+                className="text-[13px] font-medium text-gray-700 sm:text-sm"
               >
                 {pageCopy.phoneLabel}
               </label>
@@ -323,14 +325,14 @@ export default function RegisterPage() {
                 onChange={(e) => updateForm("phoneNumber", e.target.value)}
                 placeholder={pageCopy.phonePlaceholder}
                 disabled={registerMutation.isPending}
-                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-3.5 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:px-4"
               />
             </div>
 
             <div className="space-y-1.5">
               <label
                 htmlFor="password"
-                className="text-sm font-medium text-gray-700"
+                className="text-[13px] font-medium text-gray-700 sm:text-sm"
               >
                 {pageCopy.passwordLabel}
               </label>
@@ -344,7 +346,7 @@ export default function RegisterPage() {
                   required
                   autoComplete="new-password"
                   disabled={registerMutation.isPending}
-                  className="w-full h-10 px-3 pr-10 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-10 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-3.5 pr-10 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:px-4"
                 />
                 <button
                   type="button"
@@ -366,7 +368,7 @@ export default function RegisterPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="confirmPassword"
-                className="text-sm font-medium text-gray-700"
+                className="text-[13px] font-medium text-gray-700 sm:text-sm"
               >
                 {pageCopy.confirmPasswordLabel}
               </label>
@@ -379,7 +381,7 @@ export default function RegisterPage() {
                 required
                 autoComplete="new-password"
                 disabled={registerMutation.isPending}
-                className="w-full h-10 px-3 rounded-md border border-gray-200 bg-white/70 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 w-full rounded-2xl border border-[#e4ddd4] bg-[#fffdf9] px-3.5 text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#b42318] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#b42318]/15 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:px-4"
               />
             </div>
 
@@ -387,13 +389,13 @@ export default function RegisterPage() {
               <p className="text-sm text-red-500">{passwordError}</p>
             )}
 
-            <div className="text-sm text-gray-500">
+            <div className="text-xs leading-5 text-gray-500 sm:text-sm">
               {pageCopy.termsPrefix}{" "}
-              <Link href="/terms" className="text-red-600 hover:underline">
+              <Link href="/terms" className="font-medium text-[#b42318] hover:underline">
                 {pageCopy.termsLink}
               </Link>{" "}
               {locale === "vi" ? "và" : "and"}{" "}
-              <Link href="/privacy" className="text-red-600 hover:underline">
+              <Link href="/privacy" className="font-medium text-[#b42318] hover:underline">
                 {pageCopy.privacyLink}
               </Link>
             </div>
@@ -401,7 +403,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={registerMutation.isPending}
-              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-red-600 font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-400"
+              className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#1f1a17] font-semibold text-white transition-colors hover:bg-[#3a2c25] disabled:cursor-not-allowed disabled:bg-black/45 sm:h-12"
             >
               {registerMutation.isPending ? (
                 <>
@@ -436,8 +438,8 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
+          <div className="mt-4 text-center sm:mt-6">
+            <p className="text-sm text-gray-600 sm:text-base">
               {pageCopy.hasAccount}{" "}
               <Link
                 href={loginHref}

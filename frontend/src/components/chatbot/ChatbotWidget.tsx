@@ -115,7 +115,7 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     demoHeadline: "Trợ lý demo sẵn sàng",
     demoMessage:
       "Bạn có thể thử hỏi về sách, coupon, flash sale hoặc giỏ hàng. Chế độ demo không gửi dữ liệu cá nhân.",
-    demoPlaceholder: "Hỏi về sách, coupon, flash sale hoặc giỏ hàng...",
+    demoPlaceholder: "Hỏi về sách, coupon hoặc giỏ hàng...",
     demoHelperText:
       "Demo chỉ trả lời hướng dẫn chung, không truy vấn đơn hàng thật.",
     demoNotice: "Chế độ demo portfolio.",
@@ -129,7 +129,7 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     readyHeadline: "Chatbot sẵn sàng hỗ trợ",
     readyMessage:
       "Hỏi về sách, đơn hàng, khuyến mãi hoặc gợi ý sản phẩm phù hợp.",
-    readyPlaceholder: "Nhập câu hỏi về sách, đơn hàng hoặc khuyến mãi...",
+    readyPlaceholder: "Hỏi về sách, đơn hàng hoặc ưu đãi...",
     readySuccess: "Grok đã phản hồi thành công.",
     helperText: "Enter để gửi, Shift + Enter để xuống dòng",
     disabledHelperText:
@@ -194,7 +194,7 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     demoHeadline: "Demo assistant is ready",
     demoMessage:
       "You can ask about books, coupons, flash sales, or the cart. Demo mode does not send personal data.",
-    demoPlaceholder: "Ask about books, coupons, flash sales, or the cart...",
+    demoPlaceholder: "Ask about books, coupons, or cart...",
     demoHelperText:
       "Demo mode gives general guidance and does not query real orders.",
     demoNotice: "Portfolio demo mode.",
@@ -208,7 +208,7 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     readyHeadline: "Chatbot is ready to help",
     readyMessage:
       "Ask about books, orders, promotions, or product recommendations.",
-    readyPlaceholder: "Ask about books, orders, or promotions...",
+    readyPlaceholder: "Ask about books, orders, or deals...",
     readySuccess: "Grok replied successfully.",
     helperText: "Enter to send, Shift + Enter for a new line",
     disabledHelperText:
@@ -412,6 +412,9 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
     if (!isOpen) {
       return;
     }
+    if (messages.length === 0) {
+      return;
+    }
 
     const latestMessage = messages[messages.length - 1];
     if (latestMessage?.role === "assistant") {
@@ -552,8 +555,11 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           setIsMinimized(false);
         }}
         className={cn(
-          "fixed bottom-5 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black shadow-[0_14px_34px_rgba(0,0,0,0.22)] transition-all duration-200 active:scale-95 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
+          "fixed bottom-4 right-3 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-black shadow-[0_14px_34px_rgba(0,0,0,0.22)] transition-all duration-200 active:scale-95 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
           "hover:scale-105 hover:bg-black/85",
+          isOpen &&
+            !isMinimized &&
+            "pointer-events-none translate-y-4 scale-90 opacity-0",
         )}
         aria-label={isOpen ? copy.closeAriaLabel : copy.openAriaLabel}
       >
@@ -576,14 +582,10 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
         )}
       </button>
 
+      {isOpen && !isMinimized ? (
       <div
         data-testid="chatbot-panel"
-        className={cn(
-          "fixed bottom-[76px] left-3 right-3 z-50 flex max-h-[min(440px,calc(100dvh-6.25rem))] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.20)] transition-all duration-200 ease-out sm:bottom-[88px] sm:left-auto sm:right-6 sm:w-[22rem]",
-          isOpen && !isMinimized
-            ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
-            : "pointer-events-none translate-y-3 scale-95 opacity-0",
-        )}
+        className="fixed bottom-3 left-3 right-3 z-50 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white opacity-100 shadow-[0_24px_70px_rgba(15,23,42,0.20)] transition-all duration-200 ease-out sm:bottom-6 sm:left-auto sm:right-6 sm:max-h-[min(620px,calc(100dvh-3rem))] sm:w-[24rem]"
       >
         <ChatHeader
           onClose={() => setIsOpen(false)}
@@ -697,14 +699,14 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                     </div>
 
                     {!isAuthenticated ? (
-                      <div className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-xs leading-5 text-red-800">
-                        <p>{copy.signInHint}</p>
+                      <div className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs leading-5 text-red-800">
+                        <p className="hidden sm:block">{copy.signInHint}</p>
                         <Button
                           type="button"
                           data-testid="chatbot-login-cta"
                           onClick={goToLogin}
                           variant="ghost"
-                          className="mt-1 h-7 rounded-full px-0 text-xs font-semibold text-red-700 hover:bg-transparent hover:text-red-800"
+                          className="h-7 rounded-full px-0 text-xs font-semibold text-red-700 hover:bg-transparent hover:text-red-800 sm:mt-1"
                         >
                           <LogIn className="mr-1.5 h-3.5 w-3.5" />
                           {copy.guestLoginCta}
@@ -776,6 +778,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           </div>
         ) : null}
       </div>
+      ) : null}
     </>
   );
 }

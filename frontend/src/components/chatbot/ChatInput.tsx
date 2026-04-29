@@ -55,12 +55,12 @@ export function ChatInput({
             disabled={disabled || isTyping}
             rows={1}
             className={cn(
-              "w-full resize-none rounded-[22px] border border-transparent bg-[#f4f4f4] px-3.5 py-2.5 pr-4 text-sm text-black shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] transition-all duration-200",
+              "w-full resize-none rounded-[22px] border border-transparent bg-[#f4f4f4] px-4 py-2.5 pr-4 text-sm leading-5 text-black shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] transition-all duration-200",
               "placeholder:text-[#777169] focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-300/50",
               "disabled:cursor-not-allowed disabled:opacity-60",
             )}
             style={{
-              minHeight: "42px",
+              minHeight: "44px",
               maxHeight: "96px",
             }}
             onInput={(e) => {
@@ -78,7 +78,7 @@ export function ChatInput({
           size="icon"
           disabled={!message.trim() || isTyping || disabled}
           className={cn(
-            "h-[42px] w-[42px] shrink-0 rounded-full bg-black text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition-all duration-200 hover:bg-black/85",
+            "h-11 w-11 shrink-0 rounded-full bg-black text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition-all duration-200 hover:bg-black/85",
             (!message.trim() || isTyping || disabled) &&
               "cursor-not-allowed opacity-50",
           )}

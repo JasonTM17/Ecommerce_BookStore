@@ -8,10 +8,12 @@ import {
   demoBrands,
   demoCategories,
   demoRootCategories,
+  demoProducts,
   getDemoActiveFlashSales,
   getDemoFeaturedProducts,
   getDemoNewProducts,
   getDemoProductsPage,
+  getDemoUpcomingFlashSales,
 } from "@/lib/demo-storefront";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.API_PROXY_TIMEOUT_MS || "65000");
@@ -133,6 +135,34 @@ function buildApiSuccessPayload(data: unknown, message: string) {
   };
 }
 
+function buildDemoProductDetail(productId: number) {
+  const product = demoProducts.find((item) => item.id === productId);
+  if (!product) {
+    return null;
+  }
+
+  const activeSale = getDemoActiveFlashSales().find(
+    (sale) => sale.product.id === product.id,
+  );
+
+  if (!activeSale) {
+    return product;
+  }
+
+  return {
+    ...product,
+    activeFlashSale: {
+      id: activeSale.id,
+      endTime: activeSale.endTime,
+      remainingStock: activeSale.remainingStock,
+      stockLimit: activeSale.stockLimit,
+      soldCount: activeSale.soldCount,
+    },
+    currentPrice: activeSale.salePrice,
+    discountPercent: activeSale.discountPercent,
+  };
+}
+
 function getDemoCoupons() {
   const startDate = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const endDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
@@ -191,6 +221,7 @@ function buildPublicFallbackEntry(
   const size = Number(params.get("size") || "12");
   const fallbackTtlMs = Math.max(PUBLIC_PROXY_CACHE_TTL_MS, 30000);
   let data: unknown;
+  let wrapInApiSuccess = true;
 
   switch (joinedPath) {
     case "products":
@@ -202,6 +233,7 @@ function buildPublicFallbackEntry(
         page,
         size,
       });
+      wrapInApiSuccess = false;
       break;
     case "products/featured":
       data = getDemoFeaturedProducts();
@@ -221,18 +253,92 @@ function buildPublicFallbackEntry(
     case "flash-sales/active":
       data = getDemoActiveFlashSales();
       break;
+    case "flash-sales/upcoming":
+      data = getDemoUpcomingFlashSales();
+      break;
     case "coupons/available":
       data = getDemoCoupons();
       break;
+    case "chatbot/health":
+      data = {
+        status: "DISABLED",
+        service: "BookStore Demo Assistant",
+        model: "portfolio-demo",
+        message: "Demo assistant is available while the AI provider is offline.",
+        providerEnabled: "false",
+      };
+      break;
     default:
-      return null;
+      {
+        const productDetailMatch = joinedPath.match(/^products\/(\d+)$/);
+        if (productDetailMatch) {
+          const product = buildDemoProductDetail(Number(productDetailMatch[1]));
+          if (!product) {
+            return null;
+          }
+          data = product;
+          wrapInApiSuccess = false;
+          break;
+        }
+
+        const categoryProductsMatch = joinedPath.match(
+          /^products\/category\/(\d+)$/,
+        );
+        if (categoryProductsMatch) {
+          data = getDemoProductsPage({
+            categoryId: categoryProductsMatch[1],
+            page,
+            size,
+            sortBy: params.get("sortBy") || "newest",
+          });
+          wrapInApiSuccess = false;
+          break;
+        }
+
+        const relatedMatch = joinedPath.match(/^products\/(\d+)\/related$/);
+        if (relatedMatch) {
+          const currentProduct = demoProducts.find(
+            (item) => item.id === Number(relatedMatch[1]),
+          );
+          data = demoProducts
+            .filter(
+              (item) =>
+                item.id !== currentProduct?.id &&
+                item.category?.id === currentProduct?.category?.id,
+            )
+            .slice(0, 5);
+          wrapInApiSuccess = false;
+          break;
+        }
+
+        const reviewsMatch = joinedPath.match(/^reviews\/product\/(\d+)$/);
+        if (reviewsMatch) {
+          data = {
+            content: [],
+            page,
+            size,
+            totalElements: 0,
+            totalPages: 0,
+            first: true,
+            last: true,
+            hasNext: false,
+            hasPrevious: false,
+          };
+          wrapInApiSuccess = false;
+          break;
+        }
+
+        return null;
+      }
   }
 
   return buildJsonCacheEntry(
-    buildApiSuccessPayload(
-      data,
-      "Using portfolio fallback data while the backend warms up.",
-    ),
+    wrapInApiSuccess
+      ? buildApiSuccessPayload(
+          data,
+          "Using portfolio fallback data while the backend warms up.",
+        )
+      : data,
     fallbackTtlMs,
   );
 }

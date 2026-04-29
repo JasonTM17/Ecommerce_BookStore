@@ -79,10 +79,10 @@ export default function PaymentReturnPage() {
   const orderHref = payment?.orderId ? `/orders/${payment.orderId}` : "/orders";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fffdf7]">
       <Header />
-      <main className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-2xl rounded-3xl bg-white p-8 shadow-sm">
+      <main className="container mx-auto px-4 pb-24 pt-12 md:py-16">
+        <div className="mx-auto max-w-2xl rounded-[28px] border border-[#eadfce] bg-white p-6 shadow-[rgba(78,50,23,0.08)_0_18px_42px] md:p-8">
           {paymentQuery.isLoading ? (
             <div className="flex flex-col items-center gap-4 py-10 text-center">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -96,8 +96,8 @@ export default function PaymentReturnPage() {
                 <div
                   className={`flex h-20 w-20 items-center justify-center rounded-full ${
                     isSuccess
-                      ? "bg-green-100 text-green-600"
-                      : "bg-red-100 text-red-600"
+                      ? "bg-emerald-100 text-emerald-600"
+                      : "bg-[#fff1e6] text-[#b42318]"
                   }`}
                 >
                   {isSuccess ? (
@@ -107,7 +107,7 @@ export default function PaymentReturnPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 className="text-3xl font-bold text-[#1f1a17]">
                     {isSuccess ? copy.successTitle : copy.failedTitle}
                   </h1>
                   <p className="text-gray-600">
@@ -118,7 +118,7 @@ export default function PaymentReturnPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+              <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf3] p-5">
                 <dl className="grid gap-4 text-sm sm:grid-cols-2">
                   <div>
                     <dt className="text-gray-500">{copy.statusLabel}</dt>
@@ -154,14 +154,17 @@ export default function PaymentReturnPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button
-                  className="flex-1"
+                  className="flex-1 rounded-full bg-[#1f1a17] font-semibold text-white hover:bg-[#3a2c25]"
                   onClick={() => router.push(orderHref)}
                 >
                   {payment?.orderId ? copy.viewOrder : copy.viewOrders}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Link href="/" className="flex-1">
-                  <Button variant="outline" className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-full border-[#e2c9ac] bg-white font-semibold text-[#1f1a17] hover:bg-[#fff8ed]"
+                  >
                     {copy.backToHome}
                   </Button>
                 </Link>

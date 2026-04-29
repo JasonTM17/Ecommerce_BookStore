@@ -8,7 +8,7 @@ import {
 type RetryAwareConfig = AxiosRequestConfig & { _retry?: boolean };
 
 const FLASH_SALE_PUBLIC_TIMEOUT_MS = Number(
-  process.env.NEXT_PUBLIC_FLASH_SALE_TIMEOUT_MS || "12000",
+  process.env.NEXT_PUBLIC_FLASH_SALE_TIMEOUT_MS || "6000",
 );
 const FLASH_SALE_PUBLIC_CACHE_TTL_MS = Number(
   process.env.NEXT_PUBLIC_FLASH_SALE_CACHE_TTL_MS || "30000",

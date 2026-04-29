@@ -11,6 +11,7 @@ import {
   Building2,
   CheckCircle,
   CreditCard,
+  LogIn,
   Package,
   Tag,
   Truck,
@@ -58,6 +59,11 @@ const COPY: Record<
   Record<string, string | string[] | ((value?: string) => string)>
 > = {
   vi: {
+    loginRequiredTitle: "Đăng nhập để tiếp tục thanh toán",
+    loginRequiredDescription:
+      "Giỏ hàng của bạn sẽ được giữ lại. Đăng nhập để xác nhận địa chỉ, ưu đãi và hoàn tất đơn hàng an toàn.",
+    loginButton: "Đăng nhập thanh toán",
+    guestBrowseProducts: "Tiếp tục mua sách",
     emptyTitle: "Giỏ hàng trống",
     emptyDescription: "Vui lòng thêm sản phẩm vào giỏ hàng trước khi đặt hàng.",
     browseProducts: "Khám phá sách",
@@ -119,6 +125,11 @@ const COPY: Record<
     steps: ["Thông tin giao hàng", "Thanh toán", "Xác nhận"],
   },
   en: {
+    loginRequiredTitle: "Sign in to continue checkout",
+    loginRequiredDescription:
+      "Your cart will stay ready. Sign in to confirm shipping, apply offers, and place the order securely.",
+    loginButton: "Sign in to checkout",
+    guestBrowseProducts: "Keep browsing books",
     emptyTitle: "Your cart is empty",
     emptyDescription: "Please add items to your cart before placing an order.",
     browseProducts: "Browse books",
@@ -244,12 +255,6 @@ export default function CheckoutPage() {
     queryFn: async () => (await api.get("/cart")).data as CartResponse,
     enabled: isAuthenticated,
   });
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace(buildLoginRedirect("/checkout"));
-    }
-  }, [isAuthenticated, router]);
 
   useEffect(() => {
     if (addresses.length > 0 && selectedAddressId == null) {
@@ -398,7 +403,43 @@ export default function CheckoutPage() {
     }
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1 px-4 py-16">
+          <section className="mx-auto flex max-w-2xl flex-col items-center rounded-2xl border border-gray-100 bg-white px-6 py-12 text-center shadow-sm sm:px-10">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <LogIn className="h-7 w-7" aria-hidden="true" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-950 sm:text-3xl">
+              {t("loginRequiredTitle")}
+            </h1>
+            <p className="mt-4 max-w-xl text-base leading-7 text-gray-600">
+              {t("loginRequiredDescription")}
+            </p>
+            <div className="mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+              <Button
+                onClick={() => router.push(buildLoginRedirect("/checkout"))}
+                className="bg-red-600 px-6 hover:bg-red-700"
+              >
+                {t("loginButton")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/products")}
+                className="px-6"
+              >
+                {t("guestBrowseProducts")}
+              </Button>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (isCartLoading && items.length === 0 && !orderSuccess) {
     return (

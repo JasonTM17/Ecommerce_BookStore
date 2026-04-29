@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 
 const ChatbotWidget = dynamic(
   () =>
@@ -13,21 +14,20 @@ const ChatbotWidget = dynamic(
   },
 );
 
-const FlashSaleBanner = dynamic(
-  () =>
-    import("@/components/flashsale").then((module) => ({
-      default: module.FlashSaleBanner,
-    })),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-);
-
 export function ClientChrome() {
+  const pathname = usePathname();
+  const shouldHideChatbot =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password" ||
+    pathname === "/payment/return";
+
+  if (shouldHideChatbot) {
+    return null;
+  }
+
   return (
     <>
-      <FlashSaleBanner />
       <ChatbotWidget />
     </>
   );

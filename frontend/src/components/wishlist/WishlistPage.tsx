@@ -85,18 +85,24 @@ export function WishlistPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <Heart className="mx-auto mb-4 h-16 w-16 text-gray-300" />
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">
-          {copy.loginRequiredTitle}
-        </h1>
-        <p className="mb-6 text-gray-500">{copy.loginRequiredDescription}</p>
-        <Button
-          onClick={() => router.push(buildLoginRedirect("/wishlist"))}
-          className="bg-red-600"
-        >
-          {copy.loginButton}
-        </Button>
+      <div className="bg-[#f8f5f1]">
+        <div className="container mx-auto flex min-h-[360px] items-center justify-center px-4 py-12 text-center">
+          <div className="w-full max-w-lg rounded-[28px] border border-[#eadfce] bg-white px-6 py-10 shadow-[rgba(78,50,23,0.06)_0_18px_42px]">
+            <Heart className="mx-auto mb-5 h-20 w-20 rounded-3xl bg-[#fff1e6] p-4 text-[#b42318]" />
+            <h1 className="mb-3 text-2xl font-bold text-gray-950">
+              {copy.loginRequiredTitle}
+            </h1>
+            <p className="mx-auto mb-7 max-w-sm text-gray-600">
+              {copy.loginRequiredDescription}
+            </p>
+            <Button
+              onClick={() => router.push(buildLoginRedirect("/wishlist"))}
+              className="rounded-full bg-[#1f1a17] px-6 font-semibold text-white hover:bg-[#3a2c25]"
+            >
+              {copy.loginButton}
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

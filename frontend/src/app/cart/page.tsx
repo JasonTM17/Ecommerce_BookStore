@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/language-provider";
 import { ProductImage } from "@/components/ui/ProductImage";
 import {
-  getCategoryPlaceholderImage,
+  resolveProductFallbackImage,
   resolveProductImageSource,
 } from "@/lib/product-images";
 
@@ -174,16 +174,19 @@ export default function CartPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#f8f5f1]">
         <Header />
-        <main className="flex-1 container mx-auto px-4 py-16 text-center">
-          <ShoppingBag className="mx-auto mb-6 h-24 w-24 text-gray-300" />
+        <main className="flex-1 container mx-auto flex flex-col items-center justify-center px-4 py-12 text-center">
+          <ShoppingBag className="mx-auto mb-6 h-20 w-20 rounded-3xl bg-[#fff1e6] p-4 text-[#b42318]" />
           <h1 className="mb-4 text-2xl font-bold text-gray-900">
             {copy.emptyTitle}
           </h1>
           <p className="mb-8 text-gray-600">{copy.emptyDescription}</p>
           <Link href="/login?redirect=%2Fcart">
-            <Button size="lg">
+            <Button
+              size="lg"
+              className="rounded-full bg-[#1f1a17] px-6 hover:bg-[#3a2c25]"
+            >
               {locale === "vi" ? "Đăng Nhập" : "Sign in"}
             </Button>
           </Link>
@@ -195,7 +198,7 @@ export default function CartPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#f8f5f1]">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
@@ -218,10 +221,10 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-[#f8f5f1]">
         <Header />
-        <main className="flex-1 container mx-auto px-4 py-16 text-center">
-          <ShoppingBag className="mx-auto mb-6 h-24 w-24 text-gray-300" />
+        <main className="flex-1 container mx-auto flex flex-col items-center justify-center px-4 py-12 text-center">
+          <ShoppingBag className="mx-auto mb-6 h-20 w-20 rounded-3xl bg-[#fff1e6] p-4 text-[#b42318]" />
           <h1 className="mb-4 text-2xl font-bold text-gray-900">
             {copy.emptyTitle}
           </h1>
@@ -231,7 +234,10 @@ export default function CartPage() {
               : "You have no items in your cart yet"}
           </p>
           <Link href="/products">
-            <Button size="lg">
+            <Button
+              size="lg"
+              className="rounded-full bg-[#1f1a17] px-6 hover:bg-[#3a2c25]"
+            >
               {copy.emptyBrowse}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -247,8 +253,8 @@ export default function CartPage() {
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <h1 className="min-w-0 text-3xl font-bold text-gray-900">
             {copy.title(totalItems)}
           </h1>
           <Button
@@ -266,19 +272,20 @@ export default function CartPage() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex gap-4 rounded-lg bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                className="grid min-w-0 gap-4 rounded-lg bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:grid-cols-[6rem_minmax(0,1fr)]"
               >
-                <Link href={`/products/${item.product.id}`}>
-                  <div className="relative h-32 w-24 flex-shrink-0 overflow-hidden rounded bg-gray-100">
+                <Link
+                  href={`/products/${item.product.id}`}
+                  className="w-fit max-w-full"
+                >
+                  <div className="relative h-32 w-24 overflow-hidden rounded bg-gray-100">
                     <ProductImage
                       src={resolveProductImageSource(item.product)}
-                      fallbackSrc={getCategoryPlaceholderImage(
-                        item.product.category?.name,
-                      )}
+                      fallbackSrc={resolveProductFallbackImage(item.product)}
                       alt={item.product.name}
                       fill
                       sizes="96px"
-                      className="object-cover"
+                      className="object-contain p-2"
                     />
                   </div>
                 </Link>
@@ -295,7 +302,7 @@ export default function CartPage() {
                     </p>
                   )}
 
-                  <div className="mb-3 flex items-center gap-2">
+                  <div className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                     <span className="text-lg font-bold text-primary">
                       {formatCurrency(item.product.currentPrice)}
                     </span>
@@ -307,7 +314,7 @@ export default function CartPage() {
                     ) : null}
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
@@ -351,8 +358,8 @@ export default function CartPage() {
                       </Button>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <span className="font-semibold text-gray-900">
+                    <div className="flex min-w-0 items-center justify-between gap-3 sm:justify-end sm:gap-4">
+                      <span className="min-w-0 break-words text-right font-semibold text-gray-900">
                         {formatCurrency(item.subtotal)}
                       </span>
                       <Button

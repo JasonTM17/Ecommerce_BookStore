@@ -100,7 +100,9 @@ describe("FlashSalePage", () => {
   it("renders active and upcoming flash sale sections", async () => {
     renderWithQueryClient(<FlashSalePage />);
 
-    expect(await screen.findByText("Active Deal")).toBeInTheDocument();
+    expect((await screen.findAllByText("Active Deal")).length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getByText("Upcoming Deal")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /deal đang cháy hàng/i }),
