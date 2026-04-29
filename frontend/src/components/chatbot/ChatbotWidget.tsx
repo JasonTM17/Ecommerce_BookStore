@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle,
   BookOpen,
   Compass,
   Hand,
@@ -35,7 +34,7 @@ interface ChatbotWidgetProps {
   defaultOpen?: boolean;
 }
 
-type HealthKind = "checking" | "ready" | "degraded" | "disabled";
+type HealthKind = "checking" | "ready" | "degraded" | "demo";
 type WidgetLocale = "vi" | "en";
 
 interface WidgetCopy {
@@ -48,6 +47,12 @@ interface WidgetCopy {
   disabledHeadline: string;
   disabledMessage: string;
   disabledPlaceholder: string;
+  demoBadge: string;
+  demoHeadline: string;
+  demoMessage: string;
+  demoPlaceholder: string;
+  demoHelperText: string;
+  demoNotice: string;
   degradedBadge: string;
   degradedHeadline: string;
   degradedMessage: string;
@@ -66,6 +71,7 @@ interface WidgetCopy {
   startConversationTitle: string;
   startConversationDescription: string;
   serviceLabel: string;
+  demoServiceLabel: string;
   sendError: string;
   sendErrorDescription: string;
   fallbackReply: string;
@@ -77,6 +83,19 @@ interface WidgetCopy {
     path: string;
   }>;
   authenticatedSuggestions: string[];
+  demoSuggestions: string[];
+  demoQuickActions: Array<{
+    action: string;
+    label: string;
+    icon: string;
+  }>;
+  demoReplies: {
+    default: string;
+    promotion: string;
+    order: string;
+    cart: string;
+    book: string;
+  };
 }
 
 interface HealthMeta {
@@ -101,6 +120,15 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     disabledMessage:
       "Bạn vẫn có thể khám phá sách, flash sale và coupon trực tiếp trên giao diện cửa hàng.",
     disabledPlaceholder: "Chatbot đang tạm tắt",
+    demoBadge: "Demo portfolio",
+    demoHeadline: "Trợ lý demo đang sẵn sàng",
+    demoMessage:
+      "Grok đang tắt ở môi trường này, nên BookStore dùng chế độ demo an toàn để bạn vẫn thử được luồng tư vấn.",
+    demoPlaceholder: "Hỏi thử về sách, coupon, flash sale hoặc giỏ hàng...",
+    demoHelperText:
+      "Chế độ demo không gửi dữ liệu cá nhân và không truy vấn đơn hàng thật.",
+    demoNotice:
+      "Mình đang ở chế độ demo portfolio, nên chỉ đưa gợi ý chung và điều hướng nhanh trong cửa hàng.",
     degradedBadge: "Chế độ dự phòng",
     degradedHeadline: "Grok đã được cấu hình nhưng chưa ổn định",
     degradedMessage:
@@ -125,6 +153,7 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     startConversationDescription:
       "Hỏi về sách đang bán, lịch sử đơn hàng, mã giảm giá hoặc nhờ gợi ý một tủ sách phù hợp với bạn.",
     serviceLabel: "BookStore Assistant",
+    demoServiceLabel: "BookStore Demo Assistant",
     sendError: "Không thể gửi tin nhắn. Vui lòng thử lại.",
     sendErrorDescription: "Lỗi",
     fallbackReply:
@@ -142,6 +171,27 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
       "Đơn hàng của tôi đang ở đâu?",
       "Có mã giảm giá nào đang dùng được?",
     ],
+    demoSuggestions: [
+      "Có mã giảm giá nào?",
+      "Gợi ý sách kỹ năng sống",
+      "Flash sale hôm nay có gì?",
+      "Tôi muốn xem giỏ hàng",
+    ],
+    demoQuickActions: [
+      { action: "search", label: "Duyệt sách", icon: "search" },
+      { action: "view_promotions", label: "Xem khuyến mãi", icon: "tag" },
+      { action: "view_cart", label: "Mở giỏ hàng", icon: "cart" },
+    ],
+    demoReplies: {
+      default:
+        "Mình đang chạy chế độ demo portfolio. Bạn có thể thử hỏi về sách, coupon, flash sale hoặc mở nhanh các trang mua sắm bằng các nút bên dưới.",
+      promotion:
+        "BookStore đang có trang Khuyến mãi để xem coupon công khai. Hãy mở mục khuyến mãi, sao chép mã phù hợp rồi áp dụng ở giỏ hàng hoặc checkout.",
+      order:
+        "Trong chế độ demo, mình không đọc dữ liệu đơn hàng thật. Để kiểm tra đơn, hãy đăng nhập rồi mở trang Đơn hàng.",
+      cart: "Bạn có thể mở giỏ hàng để xem sản phẩm đã chọn, nhập coupon và tiếp tục checkout theo luồng mua sắm hiện tại.",
+      book: "Bạn có thể bắt đầu ở trang Sản phẩm hoặc Danh mục để lọc sách theo chủ đề. Với portfolio demo, mình ưu tiên gợi ý hướng duyệt thay vì gọi AI provider.",
+    },
   },
   en: {
     checkingBadge: "Checking",
@@ -155,6 +205,15 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     disabledMessage:
       "You can still explore books, flash sales, and coupons directly in the store.",
     disabledPlaceholder: "Chatbot is temporarily off",
+    demoBadge: "Portfolio demo",
+    demoHeadline: "Demo assistant is ready",
+    demoMessage:
+      "Grok is disabled in this environment, so BookStore is using a safe demo mode that still lets you test the assistant flow.",
+    demoPlaceholder: "Ask about books, coupons, flash sales, or the cart...",
+    demoHelperText:
+      "Demo mode does not send personal data or query real order records.",
+    demoNotice:
+      "I am running in portfolio demo mode, so I can give general guidance and quick store navigation.",
     degradedBadge: "Fallback mode",
     degradedHeadline: "Grok is configured, but not fully stable",
     degradedMessage:
@@ -179,6 +238,7 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     startConversationDescription:
       "Ask about books on sale, order history, coupon codes, or get recommendations for a shelf that fits your taste.",
     serviceLabel: "BookStore Assistant",
+    demoServiceLabel: "BookStore Demo Assistant",
     sendError: "Unable to send the message. Please try again.",
     sendErrorDescription: "Error",
     fallbackReply:
@@ -196,6 +256,27 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
       "Where is my order?",
       "Any coupon codes I can use right now?",
     ],
+    demoSuggestions: [
+      "Any active coupon codes?",
+      "Recommend self-help books",
+      "What is in flash sale today?",
+      "I want to view my cart",
+    ],
+    demoQuickActions: [
+      { action: "search", label: "Browse books", icon: "search" },
+      { action: "view_promotions", label: "View promotions", icon: "tag" },
+      { action: "view_cart", label: "Open cart", icon: "cart" },
+    ],
+    demoReplies: {
+      default:
+        "I am running in portfolio demo mode. You can ask about books, coupons, flash sales, or jump to the shopping pages with the quick actions below.",
+      promotion:
+        "BookStore has a Promotions page for public coupons. Open promotions, copy a matching code, then apply it in cart or checkout.",
+      order:
+        "In demo mode I do not access real order data. Sign in and open Orders to check an actual order.",
+      cart: "Open the cart to review selected books, enter a coupon, and continue through checkout.",
+      book: "Start from Products or Categories to filter books by topic. In portfolio demo mode I provide browsing guidance instead of calling the AI provider.",
+    },
   },
 };
 
@@ -218,24 +299,24 @@ function resolveHealthMeta(
 
   if (healthError) {
     return {
-      kind: "degraded",
-      badgeLabel: copy.degradedBadge,
-      badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
-      headline: copy.degradedHeadline,
-      message: copy.degradedMessage,
-      inputPlaceholder: copy.degradedPlaceholder,
+      kind: "demo",
+      badgeLabel: copy.demoBadge,
+      badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+      headline: copy.demoHeadline,
+      message: copy.demoMessage,
+      inputPlaceholder: copy.demoPlaceholder,
     };
   }
 
   switch (health?.status) {
     case "DISABLED":
       return {
-        kind: "disabled",
-        badgeLabel: copy.disabledBadge,
-        badgeClassName: "border-stone-200 bg-stone-50 text-stone-600",
-        headline: copy.disabledHeadline,
-        message: copy.disabledMessage,
-        inputPlaceholder: copy.disabledPlaceholder,
+        kind: "demo",
+        badgeLabel: copy.demoBadge,
+        badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+        headline: copy.demoHeadline,
+        message: copy.demoMessage,
+        inputPlaceholder: copy.demoPlaceholder,
       };
     case "DEGRADED":
       return {
@@ -256,6 +337,31 @@ function resolveHealthMeta(
         inputPlaceholder: copy.readyPlaceholder,
       };
   }
+}
+
+function buildDemoAssistantMessage(
+  message: string,
+  copy: WidgetCopy,
+): Pick<ChatMessageType, "content" | "quickActions"> {
+  const normalizedMessage = message
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase();
+
+  const content = normalizedMessage.match(/coupon|promo|khuyen|ma giam|sale/)
+    ? copy.demoReplies.promotion
+    : normalizedMessage.match(/order|don hang|tracking|van chuyen/)
+      ? copy.demoReplies.order
+      : normalizedMessage.match(/cart|gio hang|checkout|thanh toan/)
+        ? copy.demoReplies.cart
+        : normalizedMessage.match(/book|sach|category|danh muc|goi y|recommend/)
+          ? copy.demoReplies.book
+          : copy.demoReplies.default;
+
+  return {
+    content: `${copy.demoNotice}\n\n${content}`,
+    quickActions: copy.demoQuickActions,
+  };
 }
 
 export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
@@ -281,7 +387,22 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
     () => resolveHealthMeta(health, isCheckingHealth, healthError, copy),
     [copy, health, healthError, isCheckingHealth],
   );
-  const canSendMessages = isAuthenticated && healthMeta.kind !== "disabled";
+  const displayHealthMeta = useMemo<HealthMeta>(() => {
+    if (!isAuthenticated && !isAuthLoading && healthMeta.kind !== "checking") {
+      return {
+        kind: "demo",
+        badgeLabel: copy.demoBadge,
+        badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+        headline: copy.demoHeadline,
+        message: copy.demoMessage,
+        inputPlaceholder: copy.demoPlaceholder,
+      };
+    }
+
+    return healthMeta;
+  }, [copy, healthMeta, isAuthLoading, isAuthenticated]);
+  const isDemoMode = displayHealthMeta.kind === "demo";
+  const canSendMessages = isDemoMode || isAuthenticated;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView?.({ behavior: "smooth" });
@@ -327,7 +448,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !isDemoMode) {
       goToLogin();
       return;
     }
@@ -340,6 +461,21 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
     };
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
+
+    if (isDemoMode) {
+      const demoReply = buildDemoAssistantMessage(message, copy);
+      const demoMsg: ChatMessageType = {
+        id: Date.now() + 1,
+        role: "assistant",
+        content: demoReply.content,
+        createdAt: new Date().toISOString(),
+        quickActions: demoReply.quickActions,
+      };
+
+      setMessages((prev) => [...prev, demoMsg]);
+      setIsTyping(false);
+      return;
+    }
 
     try {
       const response: ChatbotResponse = await chatbotApi.sendMessage({
@@ -431,7 +567,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           setIsMinimized(false);
         }}
         className={cn(
-          "fixed bottom-5 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] transition-all duration-300 active:scale-95 sm:bottom-6 sm:right-6",
+          "fixed bottom-5 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] transition-all duration-300 active:scale-95 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
           "hover:scale-105 hover:bg-black/85",
         )}
         aria-label={isOpen ? copy.closeAriaLabel : copy.openAriaLabel}
@@ -444,10 +580,10 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
             <span
               className={cn(
                 "absolute -right-1 -top-1 h-4 w-4 rounded-full border-2 border-white",
-                healthMeta.kind === "ready"
+                displayHealthMeta.kind === "ready"
                   ? "bg-emerald-400"
-                  : healthMeta.kind === "disabled"
-                    ? "bg-slate-300"
+                  : displayHealthMeta.kind === "demo"
+                    ? "bg-sky-400"
                     : "bg-amber-400",
               )}
             />
@@ -458,7 +594,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
       <div
         data-testid="chatbot-panel"
         className={cn(
-          "fixed bottom-24 left-2 right-2 z-50 flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[24px] bg-white shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px,rgba(0,0,0,0.04)_0px_2px_4px] transition-all duration-300 ease-out sm:left-auto sm:right-6 sm:w-[420px]",
+          "fixed bottom-20 left-3 right-3 z-50 flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[22px] bg-white shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.08)_0px_18px_42px] transition-all duration-300 ease-out sm:bottom-24 sm:left-auto sm:right-6 sm:max-h-[560px] sm:w-[360px]",
           isOpen && !isMinimized
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none translate-y-4 scale-95 opacity-0",
@@ -468,16 +604,16 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           onClose={() => setIsOpen(false)}
           onMinimize={() => setIsMinimized((prev) => !prev)}
           onShowConversations={
-            isAuthenticated
+            isAuthenticated && !isDemoMode
               ? () => setShowConversations((prev) => !prev)
               : undefined
           }
-          onNewChat={isAuthenticated ? handleNewChat : undefined}
+          onNewChat={isAuthenticated && !isDemoMode ? handleNewChat : undefined}
           isMinimized={isMinimized}
-          statusLabel={healthMeta.badgeLabel}
-          statusClassName={healthMeta.badgeClassName}
+          statusLabel={displayHealthMeta.badgeLabel}
+          statusClassName={displayHealthMeta.badgeClassName}
           subtitle={copy.subtitle}
-          canManageConversations={isAuthenticated}
+          canManageConversations={isAuthenticated && !isDemoMode}
         />
 
         {!isMinimized ? (
@@ -491,23 +627,23 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
             ) : null}
 
             <div className="flex flex-1 flex-col bg-[#f5f5f5]">
-              <div className="border-b border-black/[0.05] bg-white px-4 py-3">
+              <div className="border-b border-black/[0.05] bg-white px-3 py-2.5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      {healthMeta.kind === "ready" ? (
+                      {displayHealthMeta.kind === "ready" ? (
                         <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                      ) : healthMeta.kind === "disabled" ? (
-                        <AlertTriangle className="h-4 w-4 text-slate-500" />
+                      ) : displayHealthMeta.kind === "demo" ? (
+                        <Sparkles className="h-4 w-4 text-sky-500" />
                       ) : (
                         <Sparkles className="h-4 w-4 text-amber-500" />
                       )}
-                      <p className="text-sm font-semibold text-black">
-                        {healthMeta.headline}
+                      <p className="text-xs font-semibold text-black sm:text-sm">
+                        {displayHealthMeta.headline}
                       </p>
                     </div>
-                    <p className="mt-1 text-xs leading-5 tracking-[0.14px] text-[#777169]">
-                      {healthMeta.message}
+                    <p className="mt-1 max-h-10 overflow-hidden text-xs leading-5 tracking-[0.14px] text-[#777169]">
+                      {displayHealthMeta.message}
                     </p>
                   </div>
 
@@ -516,7 +652,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => void loadHealth()}
-                    className="shrink-0 rounded-full bg-[rgba(245,242,239,0.8)] text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] hover:bg-[#eee8e2]"
+                    className="h-8 shrink-0 rounded-full bg-[rgba(245,242,239,0.8)] px-3 text-[11px] text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] hover:bg-[#eee8e2]"
                   >
                     {locale === "vi" ? "Kiểm tra lại" : "Check again"}
                   </Button>
@@ -524,41 +660,39 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
               </div>
 
               <div
-                className="flex-1 space-y-4 overflow-y-auto p-4"
+                className="flex-1 space-y-3 overflow-y-auto p-3"
                 role="log"
                 aria-live="polite"
                 aria-label={
                   locale === "vi" ? "Tin nhắn chatbot" : "Chatbot messages"
                 }
               >
-                {!isAuthenticated ? (
-                  <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] bg-white p-6 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
+                {!isAuthenticated && !isDemoMode ? (
+                  <div className="flex min-h-[360px] flex-col justify-between gap-4 rounded-[20px] bg-white p-4 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
                     <div>
-                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
-                        <MessageCircle className="h-8 w-8 text-black" />
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
+                        <MessageCircle className="h-6 w-6 text-black" />
                       </div>
-                      <h3 className="mb-2 flex items-center justify-center gap-2 text-lg font-semibold text-slate-900">
+                      <h3 className="mb-1.5 flex items-center justify-center gap-2 text-base font-semibold text-slate-900">
                         {copy.guestTitle}{" "}
                         <Hand className="h-4 w-4 text-red-500" />
                       </h3>
-                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">
+                      <p className="text-xs leading-5 tracking-[0.14px] text-[#4e4e4e]">
                         {copy.guestDescription}
                       </p>
                     </div>
 
                     <div className="space-y-3">
-                      <div className="grid gap-2 sm:grid-cols-3">
+                      <div className="flex flex-wrap justify-center gap-2">
                         {copy.guestActions.map((action) => (
                           <button
                             key={action.path}
                             type="button"
                             onClick={() => handleGuestAction(action.path)}
-                            className="rounded-[18px] bg-[#f5f5f5] px-3 py-3 text-left shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-colors hover:bg-[#f5f2ef]"
+                            className="inline-flex items-center gap-2 rounded-full bg-[#f5f5f5] px-3 py-2 text-xs font-medium text-slate-800 shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-colors hover:bg-[#f5f2ef]"
                           >
-                            <action.icon className="mb-2 h-4 w-4 text-black" />
-                            <span className="block text-sm font-medium text-slate-800">
-                              {action.label}
-                            </span>
+                            <action.icon className="h-3.5 w-3.5 text-black" />
+                            <span>{action.label}</span>
                           </button>
                         ))}
                       </div>
@@ -567,7 +701,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                         type="button"
                         data-testid="chatbot-login-cta"
                         onClick={goToLogin}
-                        className="w-full rounded-full bg-black py-6 text-white shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] hover:bg-black/85"
+                        className="h-11 w-full rounded-full bg-black text-sm text-white shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] hover:bg-black/85"
                       >
                         <LogIn className="mr-2 h-4 w-4" />
                         {copy.guestLoginCta}
@@ -575,39 +709,29 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                     </div>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="flex h-full flex-col justify-between gap-6 rounded-[24px] bg-white p-6 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
+                  <div className="flex min-h-[360px] flex-col justify-between gap-4 rounded-[20px] bg-white p-4 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
                     <div>
-                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]">
-                        <MessageCircle className="h-8 w-8 text-white" />
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]">
+                        <MessageCircle className="h-6 w-6 text-white" />
                       </div>
-                      <h3 className="mb-2 text-lg font-semibold text-slate-900">
+                      <h3 className="mb-1.5 text-base font-semibold text-slate-900">
                         {copy.startConversationTitle}
                       </h3>
-                      <p className="text-sm leading-6 tracking-[0.14px] text-[#4e4e4e]">
+                      <p className="text-xs leading-5 tracking-[0.14px] text-[#4e4e4e]">
                         {copy.startConversationDescription}
                       </p>
                     </div>
 
                     <div className="space-y-3">
                       <div className="flex flex-wrap justify-center gap-2">
-                        {(healthMeta.kind === "disabled"
-                          ? copy.guestActions.map((action) => action.label)
+                        {(isDemoMode
+                          ? copy.demoSuggestions
                           : copy.authenticatedSuggestions
                         ).map((suggestion) => (
                           <button
                             key={suggestion}
                             type="button"
                             onClick={() => {
-                              if (healthMeta.kind === "disabled") {
-                                const matchingAction = copy.guestActions.find(
-                                  (item) => item.label === suggestion,
-                                );
-                                if (matchingAction) {
-                                  handleGuestAction(matchingAction.path);
-                                }
-                                return;
-                              }
-
                               void handleSendMessage(suggestion);
                             }}
                             className="rounded-full bg-[rgba(245,242,239,0.8)] px-3 py-1.5 text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] transition-colors hover:bg-[#eee8e2]"
@@ -619,7 +743,11 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
 
                       <div className="flex items-center justify-center gap-2 text-xs text-[#777169]">
                         <Sparkles className="h-3.5 w-3.5" />
-                        <span>{health?.service || copy.serviceLabel}</span>
+                        <span>
+                          {isDemoMode
+                            ? copy.demoServiceLabel
+                            : health?.service || copy.serviceLabel}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -649,14 +777,18 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                 <div ref={messagesEndRef} />
               </div>
 
-              {isAuthenticated ? (
+              {canSendMessages ? (
                 <ChatInput
                   onSendMessage={handleSendMessage}
                   isTyping={isTyping}
                   disabled={!canSendMessages || isAuthLoading}
-                  placeholder={healthMeta.inputPlaceholder}
+                  placeholder={displayHealthMeta.inputPlaceholder}
                   helperText={
-                    canSendMessages ? copy.helperText : copy.disabledHelperText
+                    isDemoMode
+                      ? copy.demoHelperText
+                      : canSendMessages
+                        ? copy.helperText
+                        : copy.disabledHelperText
                   }
                 />
               ) : null}

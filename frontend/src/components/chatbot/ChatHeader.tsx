@@ -57,22 +57,22 @@ export function ChatHeader({
         };
 
   return (
-    <div className="border-b border-black/[0.05] bg-white px-4 py-3 shadow-[rgba(0,0,0,0.04)_0px_1px_2px]">
+    <div className="border-b border-black/[0.05] bg-white px-3.5 py-2.5 shadow-[rgba(0,0,0,0.04)_0px_1px_2px]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
-            <MessageCircle className="h-5 w-5 text-black" />
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
+            <MessageCircle className="h-[18px] w-[18px] text-black" />
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-sm font-semibold text-black">
               {copy.assistant}
             </h2>
-            <p className="mt-0.5 text-xs leading-5 text-[#777169]">
+            <p className="mt-0.5 max-w-[210px] truncate text-xs leading-5 text-[#777169] sm:max-w-[235px]">
               {subtitle}
             </p>
             <div
               className={cn(
-                "mt-2 inline-flex items-center gap-1.5 rounded-full border border-black/[0.06] bg-[rgba(245,242,239,0.8)] px-2.5 py-1 text-[11px] font-medium text-black",
+                "mt-1.5 inline-flex max-w-[210px] items-center gap-1.5 rounded-full border border-black/[0.06] bg-[rgba(245,242,239,0.8)] px-2.5 py-0.5 text-[11px] font-medium text-black sm:max-w-[235px]",
                 statusClassName,
               )}
               data-testid="chatbot-status-badge"
@@ -112,7 +112,7 @@ export function ChatHeader({
             variant="ghost"
             size="icon"
             onClick={onMinimize}
-            className="h-8 w-8 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
+            className="h-7 w-7 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
             title={isMinimized ? copy.maximize : copy.minimize}
           >
             {isMinimized ? (
@@ -126,7 +126,7 @@ export function ChatHeader({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
+            className="h-7 w-7 rounded-full text-[#777169] transition-colors hover:bg-[#f5f2ef] hover:text-black"
             title={copy.close}
           >
             <X className="h-4 w-4" />

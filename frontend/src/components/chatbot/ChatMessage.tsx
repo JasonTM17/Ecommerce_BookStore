@@ -33,6 +33,8 @@ interface ChatMessageProps {
 }
 
 function BookSuggestionCard({ book }: { book: BookSuggestion }) {
+  const { locale } = useLanguage();
+
   return (
     <Link
       href={`/products/${book.productId}`}
@@ -61,7 +63,11 @@ function BookSuggestionCard({ book }: { book: BookSuggestion }) {
         <p className="text-xs text-gray-500 truncate">{book.author}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-sm font-semibold text-black">
-            {book.price?.toLocaleString("vi-VN")}đ
+            {new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {
+              currency: "VND",
+              maximumFractionDigits: 0,
+              style: "currency",
+            }).format(book.price || 0)}
           </span>
           {book.averageRating && book.averageRating > 0 && (
             <div className="flex items-center gap-0.5">

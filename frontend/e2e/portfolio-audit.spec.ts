@@ -25,6 +25,26 @@ const PUBLIC_ROUTES = [
   "/account",
 ];
 
+const LANGUAGE_SWITCH_ROUTES = [
+  "/",
+  "/products",
+  "/categories",
+  "/categories?id=1",
+  "/promotions",
+  "/flash-sale",
+  "/about",
+  "/contact",
+  "/faq",
+  "/blog",
+  "/login",
+  "/register",
+  "/cart",
+  "/checkout",
+  "/wishlist",
+  "/orders",
+  "/account",
+];
+
 const VIEWPORTS = [
   { height: 1000, name: "desktop", width: 1440 },
   { height: 844, name: "mobile", width: 390 },
@@ -52,7 +72,7 @@ const MOJIBAKE_PATTERN_SOURCE = [
   "S\\u00C6",
 ].join("|");
 
-test.setTimeout(60000);
+test.setTimeout(120000);
 
 async function waitForPageToSettle(page: Page) {
   await page.waitForLoadState("load", { timeout: 30000 }).catch(() => {
@@ -161,6 +181,99 @@ async function auditPage(page: Page, routeLabel: string) {
   ).toBeGreaterThan(50);
 }
 
+async function switchLanguage(page: Page, locale: "vi" | "en") {
+  await page
+    .getByRole("button", { name: /switch language/i })
+    .first()
+    .click();
+  await page
+    .getByRole("option", {
+      name: locale === "en" ? /english/i : /VN/,
+    })
+    .click();
+  await page.waitForTimeout(150);
+}
+
+async function expectChromeLocale(page: Page, locale: "vi" | "en") {
+  if (locale === "en") {
+    await expect(page.getByText("Join our newsletter").first()).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText("Quick links").first()).toBeVisible();
+    return;
+  }
+
+  await expect(page.getByText("Đăng ký nhận tin").first()).toBeVisible({
+    timeout: 10000,
+  });
+  await expect(page.getByText("Liên kết nhanh").first()).toBeVisible();
+}
+
+async function expectRouteLocale(
+  page: Page,
+  route: string,
+  locale: "vi" | "en",
+) {
+  const signInHeading = page
+    .getByRole("heading", {
+      name: locale === "en" ? "Sign In" : "Đăng nhập",
+    })
+    .first();
+
+  if (await signInHeading.isVisible().catch(() => false)) {
+    return;
+  }
+
+  if (route === "/login") {
+    await expect(signInHeading).toBeVisible({ timeout: 10000 });
+    return;
+  }
+
+  if (route === "/register") {
+    await expect(
+      page
+        .getByRole("heading", {
+          name: locale === "en" ? "Create Account" : "Tạo Tài Khoản",
+        })
+        .first(),
+    ).toBeVisible({ timeout: 10000 });
+    return;
+  }
+
+  await expectChromeLocale(page, locale);
+}
+
+async function expectPromotionsLocale(page: Page, locale: "vi" | "en") {
+  if (locale === "en") {
+    await expect(
+      page.getByRole("heading", { name: "Promotions" }).first(),
+    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Available coupons").first()).toBeVisible();
+    await expect(page.getByTitle("Copy code").first()).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText("Minimum order").first()).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByText("Coupon đang khả dụng")).toHaveCount(0);
+    await expect(page.getByText("Sao chép mã")).toHaveCount(0);
+    return;
+  }
+
+  await expect(
+    page.getByRole("heading", { name: "Khuyến mãi" }).first(),
+  ).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText("Coupon đang khả dụng").first()).toBeVisible();
+  await expect(page.getByTitle("Sao chép mã").first()).toBeVisible({
+    timeout: 10000,
+  });
+  await expect(page.getByText("Đơn tối thiểu").first()).toBeVisible({
+    timeout: 10000,
+  });
+  await expect(page.getByText("Available coupons")).toHaveCount(0);
+  await expect(page.getByText("Copy code")).toHaveCount(0);
+}
+
 async function getFirstProductHref(page: Page) {
   await page.goto("/products", { waitUntil: "domcontentloaded" });
   await expect
@@ -188,6 +301,7 @@ test.describe("portfolio public API contract", () => {
     test(`${endpoint} returns healthy public data`, async ({ request }) => {
       const response = await request.get(endpoint, {
         headers: { accept: "application/json" },
+        timeout: 30000,
       });
       expect(response.status(), endpoint).toBe(200);
 
@@ -325,6 +439,29 @@ for (const viewport of VIEWPORTS) {
           placeholderImages,
           `${route} visible placeholder covers`,
         ).toEqual([]);
+      }
+    });
+
+    test("language switch keeps public pages localized", async ({ page }) => {
+      for (const route of LANGUAGE_SWITCH_ROUTES) {
+        await page.goto(route, { waitUntil: "domcontentloaded" });
+        await waitForPageToSettle(page);
+
+        await switchLanguage(page, "en");
+        await expectRouteLocale(page, route, "en");
+        await auditPage(page, `${viewport.name} ${route} English locale`);
+
+        if (route === "/promotions") {
+          await expectPromotionsLocale(page, "en");
+        }
+
+        await switchLanguage(page, "vi");
+        await expectRouteLocale(page, route, "vi");
+        await auditPage(page, `${viewport.name} ${route} Vietnamese locale`);
+
+        if (route === "/promotions") {
+          await expectPromotionsLocale(page, "vi");
+        }
       }
     });
   });

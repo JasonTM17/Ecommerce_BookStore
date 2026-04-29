@@ -145,7 +145,13 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className={beVietnamPro.className}>
-        <SkipLink />
+        <SkipLink
+          label={
+            locale === "en"
+              ? "Skip to main content"
+              : "Chuyển đến nội dung chính"
+          }
+        />
         <OrganizationSchema />
         <WebSiteSchema />
         <WebVitals />

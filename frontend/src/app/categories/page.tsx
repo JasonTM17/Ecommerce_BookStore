@@ -379,14 +379,14 @@ function CategoriesContent() {
                     </div>
 
                     {totalPages > 1 && (
-                      <div className="mt-12 flex items-center justify-center gap-2">
+                      <div className="mt-12 flex max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2">
                         <Button
                           variant="outline"
                           onClick={() =>
                             setCurrentPage((page) => Math.max(0, page - 1))
                           }
                           disabled={currentPage === 0}
-                          className="h-10 rounded-xl px-4"
+                          className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:px-4 sm:text-sm"
                         >
                           {copy.previous}
                         </Button>
@@ -416,7 +416,7 @@ function CategoriesContent() {
                                   }
                                   onClick={() => setCurrentPage(pageNumber)}
                                   className={cn(
-                                    "h-10 w-10 rounded-xl",
+                                    "h-9 w-9 rounded-xl text-xs sm:h-10 sm:w-10 sm:text-sm",
                                     currentPage === pageNumber &&
                                       "shadow-lg shadow-red-500/30",
                                   )}
@@ -432,7 +432,7 @@ function CategoriesContent() {
                           variant="outline"
                           onClick={() => setCurrentPage((page) => page + 1)}
                           disabled={currentPage >= totalPages - 1}
-                          className="h-10 rounded-xl px-4"
+                          className="h-9 rounded-xl px-3 text-xs sm:h-10 sm:px-4 sm:text-sm"
                         >
                           {copy.next}
                         </Button>

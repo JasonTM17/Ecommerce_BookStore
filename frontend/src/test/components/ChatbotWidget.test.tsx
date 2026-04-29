@@ -70,10 +70,12 @@ vi.mock("@/components/chatbot/ChatHeader", () => ({
 
 vi.mock("@/components/chatbot/ChatInput", () => ({
   ChatInput: ({
+    onSendMessage,
     placeholder,
     helperText,
     disabled,
   }: {
+    onSendMessage: (message: string) => Promise<void>;
     placeholder?: string;
     helperText?: string;
     disabled?: boolean;
@@ -81,6 +83,14 @@ vi.mock("@/components/chatbot/ChatInput", () => ({
     <div data-testid="chat-input" data-disabled={String(Boolean(disabled))}>
       <span data-testid="chat-input-placeholder">{placeholder}</span>
       <span data-testid="chat-input-helper">{helperText}</span>
+      <button
+        type="button"
+        data-testid="chat-input-demo-send"
+        disabled={disabled}
+        onClick={() => void onSendMessage("Any active coupon codes?")}
+      >
+        send
+      </button>
     </div>
   ),
 }));
@@ -90,8 +100,20 @@ vi.mock("@/components/chatbot/ChatConversations", () => ({
 }));
 
 vi.mock("@/components/chatbot/ChatMessage", () => ({
-  ChatMessage: ({ message }: { message: { content: string } }) => (
-    <div data-testid="chat-message">{message.content}</div>
+  ChatMessage: ({
+    message,
+  }: {
+    message: {
+      content: string;
+      quickActions?: Array<{ label: string }>;
+    };
+  }) => (
+    <div data-testid="chat-message">
+      {message.content}
+      {message.quickActions?.map((action) => (
+        <span key={action.label}>{action.label}</span>
+      ))}
+    </div>
   ),
 }));
 
@@ -125,7 +147,7 @@ describe("ChatbotWidget", () => {
     window.history.replaceState({}, "", "/products?source=home");
   });
 
-  it("renders Vietnamese guest copy and preserves redirect targets", async () => {
+  it("renders Vietnamese portfolio demo copy for guest shoppers", async () => {
     vi.mocked(chatbotApi.checkHealth).mockResolvedValue({
       status: "UP",
       service: "Grok AI Chatbot",
@@ -137,24 +159,31 @@ describe("ChatbotWidget", () => {
 
     fireEvent.click(screen.getByTestId("chatbot-launcher"));
 
-    expect(await screen.findByText("Chào bạn!")).toBeInTheDocument();
-    expect(screen.getByText("Đăng nhập để bắt đầu chat")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Trợ lý demo đang sẵn sàng"),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("chat-header-subtitle")).toHaveTextContent(
       "Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng.",
     );
     expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent(
-      "Grok sẵn sàng · grok-3",
+      "Demo portfolio",
+    );
+    expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
+      "Hỏi thử về sách, coupon, flash sale hoặc giỏ hàng...",
     );
     expectNoMojibake();
 
-    fireEvent.click(screen.getByTestId("chatbot-login-cta"));
+    fireEvent.click(screen.getByTestId("chat-input-demo-send"));
 
-    expect(pushMock).toHaveBeenCalledWith(
-      "/login?redirect=%2Fproducts%3Fsource%3Dhome",
-    );
+    expect(
+      await screen.findByText(/chế độ demo portfolio/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Xem khuyến mãi")).toBeInTheDocument();
+    expect(chatbotApi.sendMessage).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("renders English guest copy and action labels when locale changes", async () => {
+  it("renders English portfolio demo copy and suggestions when locale changes", async () => {
     currentLocale = "en";
     vi.mocked(chatbotApi.checkHealth).mockResolvedValue({
       status: "UP",
@@ -167,16 +196,22 @@ describe("ChatbotWidget", () => {
 
     fireEvent.click(screen.getByTestId("chatbot-launcher"));
 
-    expect(await screen.findByText("Hello there!")).toBeInTheDocument();
-    expect(screen.getByText("Sign in to start chatting")).toBeInTheDocument();
-    expect(screen.getByText("Browse books")).toBeInTheDocument();
-    expect(screen.getByText("View promotions")).toBeInTheDocument();
-    expect(screen.getByText("Browse categories")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Demo assistant is ready"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Any active coupon codes?")).toBeInTheDocument();
+    expect(screen.getByText("Recommend self-help books")).toBeInTheDocument();
+    expect(
+      screen.getByText("What is in flash sale today?"),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("chat-header-subtitle")).toHaveTextContent(
       "Book suggestions, orders, and deals right inside the store.",
     );
     expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent(
-      "Grok ready · grok-3",
+      "Portfolio demo",
+    );
+    expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
+      "Ask about books, coupons, flash sales, or the cart...",
     );
     expectNoMojibake();
   });
@@ -210,8 +245,8 @@ describe("ChatbotWidget", () => {
     expectNoMojibake();
   });
 
-  it("renders the disabled state copy and keeps the input locked", async () => {
-    authState.isAuthenticated = true;
+  it("uses portfolio demo mode when the provider is disabled", async () => {
+    authState.isAuthenticated = false;
     vi.mocked(chatbotApi.checkHealth).mockResolvedValue({
       status: "DISABLED",
       service: "BookStore Chatbot",
@@ -224,20 +259,29 @@ describe("ChatbotWidget", () => {
     fireEvent.click(screen.getByTestId("chatbot-launcher"));
 
     expect(
-      await screen.findByText("Chatbot đang tạm tắt ở môi trường này"),
+      await screen.findByText("Trợ lý demo đang sẵn sàng"),
     ).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByTestId("chat-input")).toHaveAttribute(
         "data-disabled",
-        "true",
+        "false",
       );
     });
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Chatbot đang tạm tắt",
+      "Hỏi thử về sách, coupon, flash sale hoặc giỏ hàng...",
     );
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
-      "Chatbot đang tạm tắt. Bạn vẫn có thể duyệt sách và khuyến mãi trực tiếp.",
+      "Chế độ demo không gửi dữ liệu cá nhân và không truy vấn đơn hàng thật.",
     );
+
+    fireEvent.click(screen.getByTestId("chat-input-demo-send"));
+
+    expect(
+      await screen.findByText(/chế độ demo portfolio/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Xem khuyến mãi")).toBeInTheDocument();
+    expect(chatbotApi.sendMessage).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
     expectNoMojibake();
   });
 });

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { buildLoginRedirect } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/language-provider";
 import {
@@ -241,7 +242,11 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="relative min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+      <div className="absolute right-4 top-4 z-10">
+        <LanguageSwitcher />
+      </div>
+
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="mb-4 inline-flex items-center text-primary">

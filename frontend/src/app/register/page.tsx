@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff, BookOpen, ArrowRight, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { api, setAuthTokens } from "@/lib/api";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useAuthStore } from "@/lib/store";
 import { useLanguage } from "@/components/providers/language-provider";
 
@@ -207,7 +208,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="relative min-h-screen flex">
+      <div className="absolute right-4 top-4 z-10">
+        <LanguageSwitcher />
+      </div>
+
       <div className="hidden flex-1 items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-12 lg:flex">
         <div className="max-w-md text-center text-white">
           <BookOpen className="mx-auto mb-6 h-24 w-24 opacity-80" />
