@@ -1,29 +1,55 @@
 # BookStore Mobile
 
-This workspace is kept on an Expo-managed baseline so the mobile app can keep moving without forcing a premature production release.
+This Expo workspace is maintained as the mobile foundation for BookStore. It is not treated as the primary public deployment yet; the production portfolio surface is the Next.js web app.
 
-## Local development
+## Current Status
 
-1. Copy the environment file:
+- Expo-managed app baseline
+- React Native and React versions aligned with the upgraded dependency stack
+- Environment-driven API URL through `EXPO_PUBLIC_API_URL`
+- Intended for preview builds and future store-release hardening
+
+## Local Development
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Copy the environment file:
 
    ```bash
    copy .env.example .env
    ```
 
-2. Set `EXPO_PUBLIC_API_URL` to the backend you want to use.
+3. Set `EXPO_PUBLIC_API_URL` to the backend target.
 
-3. Start Expo:
+4. Start Expo:
 
    ```bash
-   npm install
    npx expo start
    ```
 
-## Recommended deployment path
+## Validation
+
+Run these checks before changing mobile dependencies:
+
+```bash
+npm run typecheck
+npx expo-doctor
+npm audit --audit-level=moderate
+```
+
+## Deployment Path
 
 - Local QA: `npx expo start`
-- Preview builds: `npx eas-cli build --platform android --profile preview`
-- Production builds: `npx eas-cli build --platform ios --profile production`
-- OTA updates: `npx eas-cli update`
+- Android preview: `npx eas-cli build --platform android --profile preview`
+- iOS production candidate: `npx eas-cli build --platform ios --profile production`
+- OTA update: `npx eas-cli update`
 
-Expo web is not the recommended deployment target for this folder because the app already depends on native capabilities such as secure storage, camera, location, and notifications.
+Expo web is not the recommended deployment target for this folder because the app is prepared for native capabilities such as secure storage, camera, location, and notifications.
+
+## Release Note
+
+Run a real Android/iOS EAS build before presenting the mobile app as store-release ready. Until then, this folder should be described as a maintained mobile workspace rather than a shipped production app.

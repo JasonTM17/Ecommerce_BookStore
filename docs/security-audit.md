@@ -1,64 +1,101 @@
-# Security audit notes
+# Security Audit Notes
 
-Last reviewed: 2026-04-28
+Last reviewed: 2026-04-29
 
-This project is a portfolio/demo bookstore, but the public deployment should still avoid avoidable leaks and fragile defaults.
+BookStore is a portfolio-oriented commerce project, but the public deployment is treated like a production surface: secrets stay outside Git, public responses are sanitized, dependency audits are run, and health checks avoid leaking operational detail.
 
-## Fixed in this hardening pass
+## Current Security Posture
 
-- Corrected mojibake in backend demo seed names so API/demo data no longer emits broken Vietnamese text.
-- Hardened Next.js SVG image handling with `contentDispositionType: "attachment"` and an image CSP that blocks scripts in served SVGs.
-- Replaced broad remote image patterns with exact local/dev upload hosts and the deployed backend upload host.
-- Stopped persisting the authenticated user object in `localStorage`; auth state now restores from cookies and `/users/me`.
-- Added `SameSite=Lax`, `path=/`, and HTTPS-only `Secure` cookie behavior for browser-managed auth cookies.
-- Added frontend security headers for CSP, frame blocking, HSTS, and browser permissions policy.
-- Aligned backend CSP and Permissions-Policy values across Spring Security and the global security header filter, including CORS preflight responses.
-- Replaced emoji-based backend log prefixes with ASCII text so Windows/CI logs do not render security events as broken glyphs.
-- Moved portfolio demo account passwords out of source defaults; Render now generates demo passwords and the app no longer logs them.
-- Disabled demo seeding by default outside explicit render/e2e settings; dev/local now require opt-in env vars and private demo passwords.
-- Restricted email test endpoints to admin-authenticated users even when the test controller is enabled.
-- Reduced public actuator and custom health detail exposure in production/render profiles while preserving liveness/readiness health checks.
-- Removed broad wildcard default CORS origins from backend security defaults.
+- Frontend dependency audit reports 0 known vulnerabilities at the moderate threshold and above.
+- Public catalog, promotions, flash sale, health, and chatbot paths are covered by Playwright smoke/audit tests.
+- Public health responses avoid raw provider exception text and private user data.
+- Render secrets are generated or configured through environment variables, not committed source defaults.
+- Same-origin `/api` proxy is used by the frontend to keep browser traffic consistent and reduce CORS exposure.
+
+## Hardened Areas
+
+### Secrets and configuration
+
+- Removed production-like secret defaults from public configuration.
 - Required `JWT_SECRET` explicitly in production/render profiles.
-- Required production `DB_PASSWORD` and `APP_BASE_URL` explicitly so the prod profile no longer falls back to local demo values.
-- Removed production-like default database passwords from `docker-compose.yml`; compose now requires private DB passwords from environment variables.
+- Required production `DB_PASSWORD` and `APP_BASE_URL` so the prod profile cannot silently fall back to local demo values.
+- Moved portfolio demo account passwords out of source defaults; Render generates demo passwords through environment values.
+- Kept `.env`, provider keys, database credentials, mail credentials, VNPay keys, Grok keys, and deploy hooks out of Git.
+
+### Authentication and authorization
+
+- Frontend auth state restores from cookies and `/users/me` instead of persisting the authenticated user object in `localStorage`.
+- Browser-managed auth cookies include `SameSite=Lax`, `path=/`, and HTTPS-only `Secure` behavior when appropriate.
+- Email test endpoints are restricted to admin-authenticated users when the test controller is enabled.
+- Chatbot statistics require admin authorization.
+
+### Headers, CORS, and browser safety
+
+- Added frontend security headers for CSP, frame blocking, HSTS, and browser permissions policy.
+- Aligned backend CSP and Permissions-Policy values across Spring Security and the global security header filter.
+- Removed broad wildcard default CORS origins from backend security defaults.
+- Hardened Next.js SVG image handling with `contentDispositionType: "attachment"` and an image CSP that blocks scripts in served SVGs.
+- Replaced broad remote image patterns with explicit allowed hosts.
+
+### Input validation and uploads
+
 - Tightened request-body validation so chunked over-limit payloads are rejected instead of truncated silently.
 - Skipped multipart body scanning in the input validation filter; upload validation is handled by `StorageService`.
 - Hardened upload storage path resolution and delete handling so files must remain under the configured upload root.
-- Reduced outbound chatbot fragility by shortening shared `RestTemplate` timeouts and recording Grok fallback responses separately from provider-backed responses.
+
+### Chatbot and provider safety
+
+- Kept `GROK_ENABLED=false` by default.
+- Shortened shared `RestTemplate` timeouts to reduce provider-related storefront stalls.
+- Recorded Grok fallback responses separately from provider-backed responses.
 - Sanitized public chatbot health messages so provider failures do not expose raw exception text or provider URLs.
-- Removed user email from the context sent to the chatbot provider; the prompt now uses display name and order count only.
-- Restricted chatbot statistics with method-level admin authorization.
-- Switched the frontend to call the same-origin `/api` proxy by default, with a public Render backend fallback for standalone local/Docker Hub runs.
-- Added portfolio-safe fallback payloads for public catalog proxy endpoints so Render cold starts do not surface `429`/timeout responses to public pages or API smoke checks.
-- Added generated PNG/ICO app icons so the browser/PWA metadata no longer depends only on the legacy SVG icon.
-- Updated `follow-redirects` in frontend and mobile lockfiles to `1.16.0`.
-- Upgraded the frontend runtime/tooling from Next.js 14/React 18/ESLint 8/Vitest 2 to Next.js 16/React 19/ESLint 9/Vitest 4 and migrated the removed `next lint`/middleware conventions.
-- Added a frontend `postcss` override to keep Next's internal PostCSS dependency on the patched `8.5.10` line.
-- Upgraded the mobile app from Expo SDK 50/React Native 0.73/React 18 to Expo SDK 55/React Native 0.83/React 19.2 and installed the Reanimated 4 `react-native-worklets` peer dependency.
-- Added mobile dependency overrides for `postcss` and `uuid` so Expo's config/prebuild tooling resolves to patched versions without downgrading Expo.
-- Removed the unused legacy `expo-barcode-scanner` dependency after confirming there are no app imports.
+- Removed user email from the context sent to the chatbot provider; the prompt uses display name and order count only.
 
-## Dependency audit status
+### Frontend resilience
 
-### Frontend
+- Added same-origin API proxy fallback behavior for public storefront endpoints.
+- Added portfolio-safe fallback payloads for public catalog proxy endpoints so Render cold starts do not surface avoidable `429` or timeout responses on public pages.
+- Added frontend error reporting endpoint and client error reporter for lightweight operational visibility.
+- Added generated PNG/ICO app icons so browser/PWA metadata does not depend only on the legacy SVG icon.
 
-Current status: `npm audit --omit=dev` and full `npm audit` report 0 known vulnerabilities after the Next.js 16 upgrade and PostCSS override.
+### Dependency posture
 
-Validation run: `npm run lint`, `npm run test:run`, and `npm run build` pass locally.
+- Upgraded frontend runtime/tooling to Next.js 16, React 19, ESLint 9, and Vitest 4.
+- Added a frontend `postcss` override to keep Next's internal PostCSS dependency on the patched line.
+- Upgraded the mobile workspace to Expo SDK 55, React Native 0.83, and React 19.2.
+- Added mobile dependency overrides for `postcss` and `uuid`.
+- Removed unused legacy mobile dependencies after confirming there are no app imports.
 
-### Mobile
+## Validation Evidence
 
-Current status: `npm audit --omit=dev` and full `npm audit` report 0 known vulnerabilities after the Expo SDK 55 upgrade and dependency overrides.
+Most recent local production audit:
 
-Validation run: `npm run typecheck` and `npx expo-doctor` pass locally. A real Android/iOS EAS build should still be run before treating the mobile upgrade as store-release ready.
+- `npm run lint`: pass
+- `npm run test:run`: 150 tests passing
+- `npm run build`: pass
+- `npm audit --audit-level=moderate`: 0 vulnerabilities
+- `npm run test:e2e:portfolio-audit`: 49 tests passing
+- `npm run test:e2e:journey`: 5 passing, 1 intentional mobile-only skip
+- `npm run test:e2e:admin-portfolio`: 6 tests passing
+- `npm run monitor:health`: frontend, backend, and database `UP`
+- `mvn -q -DskipTests compile`: pass
 
-## Operational recommendations
+## Remaining Recommendations
 
-- Keep `JWT_SECRET`, database credentials, mail credentials, VNPay keys, and Grok API keys only in deployment secrets.
-- Treat `.env.test`, `docker-compose.e2e.yml`, and `docker-compose.dev.yml` values as local/CI-only fixtures; never reuse them for a public deployment.
+- Move browser auth tokens to HttpOnly cookies with CSRF protection in a future auth-flow change.
+- Tighten frontend CSP further by removing `unsafe-inline` and `unsafe-eval` once the app has nonce/hash support for Next runtime scripts.
 - Keep `management.endpoint.health.show-details=when-authorized` or stricter in public environments.
-- Move browser auth tokens to HttpOnly cookies in a future auth-flow change with CSRF protection; this was not done here because it changes API/browser contracts.
-- Tighten frontend CSP further in a framework upgrade pass by removing `unsafe-inline`/`unsafe-eval` once the app has nonce/hash support for Next runtime scripts.
-- Keep the chatbot in `GROK_ENABLED=false` mode unless `GROK_API_KEY` is present and provider latency is acceptable for the storefront.
-- Keep Docker Hub repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` configured before expecting Docker Hub publish jobs to push real images.
+- Keep chatbot provider integration disabled unless `GROK_API_KEY` is present and provider latency is acceptable.
+- Run a real Android/iOS EAS build before treating the mobile workspace as store-release ready.
+- Rotate deploy hooks immediately if they are copied into screenshots, logs, tickets, or chat.
+
+## What Not To Commit
+
+- `.env` files with real credentials
+- Render deploy hook URLs
+- JWT secrets
+- Mail provider credentials
+- VNPay credentials
+- Grok or other AI provider API keys
+- Production database URLs or passwords
+- Exported user data, order data, or logs containing customer information

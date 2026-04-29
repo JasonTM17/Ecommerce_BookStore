@@ -1,73 +1,117 @@
-# BookStore
+# BookStore Commerce Platform
 
-Portfolio full-stack bookstore built with Spring Boot, Next.js, MySQL, Docker Compose, Vitest, Playwright, and GitHub Actions.
+BookStore is a production-style full-stack e-commerce portfolio project for selling books online. It combines a Spring Boot API, a Next.js storefront, a PostgreSQL/MySQL data layer, an admin surface, flash-sale automation, chatbot support, monitoring, and automated quality gates.
 
-## Stack
+The project is built to demonstrate real product engineering: clear commerce flows, resilient local production checks, documented Render deployment, and repeatable test evidence.
 
-- `backend/`: Spring Boot 3.2, JPA/Hibernate, JWT auth, MySQL, Swagger, Actuator
-- `frontend/`: Next.js 16 App Router, Tailwind CSS, Vitest, Playwright
-- `mobile/`: mobile app workspace kept for future expansion
+## Portfolio Preview
 
-## Portfolio preview
+These preview images are lightweight assets tracked in the repository. Full-size generated screenshots are kept out of Git and can be regenerated locally.
 
-These screenshots are generated from the production-like local build so the README reflects what reviewers actually see in the browser.
+![BookStore home](./docs/portfolio/previews/home.webp)
+![BookStore flash sale](./docs/portfolio/previews/flash-sale.webp)
+![BookStore chatbot](./docs/portfolio/previews/chatbot-mobile.webp)
 
-![BookStore home](./docs/portfolio/screenshots/desktop/home.png)
-![BookStore flash sale](./docs/portfolio/screenshots/desktop/flash-sale.png)
-![BookStore chatbot](./docs/portfolio/screenshots/mobile/chatbot.png)
-
-Refresh the assets after UI changes:
+Refresh the full screenshot set after UI changes:
 
 ```bash
 cd frontend
 BASE_URL=http://localhost:3001 npm run portfolio:screenshots
 ```
 
-## Demo-first quick start
+PowerShell:
 
-1. Create local environment variables:
+```powershell
+cd frontend
+$env:BASE_URL = "http://localhost:3001"
+npm run portfolio:screenshots
+```
 
-   ```bash
-   copy .env.example .env
-   ```
+## Product Scope
 
-2. Update `.env` if needed:
-   - database credentials
-   - `GROK_ENABLED=true` and `GROK_API_KEY=...` if you want Grok enabled locally
-   - `FLASHSALE_AUTO_*` if you want to tune the weekly flash sale rotation
-   - `NEXT_PUBLIC_VNPAY_ENABLED=true` plus valid `VNPAY_*` credentials if you want VNPay enabled in checkout
+- Public storefront with categories, product detail pages, promotions, wishlist, cart, checkout, and order history.
+- Timed flash-sale experience with active and upcoming sale windows.
+- Same-origin API proxy so local, Docker, and Render paths behave consistently.
+- Chatbot widget with provider health handling and safe public fallback behavior.
+- Admin dashboard for products, orders, users, and operational review.
+- SEO metadata, Open Graph image, sitemap, robots, JSON-LD, and web-vitals hooks.
+- Health monitoring for frontend, backend, and database readiness.
 
-3. Start the full stack:
+## Technology Stack
 
-   ```bash
-   docker compose up -d --build
-   ```
+| Area | Stack |
+| --- | --- |
+| Frontend | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS, React Query, Zustand |
+| Backend | Spring Boot 3.2, Java 17, Spring Security, JWT, Spring Data JPA, Actuator |
+| Data | MySQL for local and CI, PostgreSQL for Render |
+| Testing | Vitest, Playwright, Maven, npm audit |
+| DevOps | Docker Compose, Render Blueprint, GitHub Actions, GHCR, optional Docker Hub publish |
+| Mobile | Expo workspace maintained for future app release work |
 
-4. Open the demo:
-   - Frontend: [http://localhost:3001](http://localhost:3001)
-   - Backend API: [http://localhost:8080/api](http://localhost:8080/api)
-   - Swagger UI: [http://localhost:8080/api/swagger-ui.html](http://localhost:8080/api/swagger-ui.html)
-   - Health check: [http://localhost:8080/api/actuator/health/liveness](http://localhost:8080/api/actuator/health/liveness)
+## Verified Quality Gates
 
-## Local development
+Last full local production audit: **April 29, 2026**.
 
-### Backend
+| Gate | Command | Current result |
+| --- | --- | --- |
+| Frontend build | `cd frontend && npm run build` | Pass |
+| Frontend lint | `cd frontend && npm run lint` | Pass |
+| Frontend unit tests | `cd frontend && npm run test:run` | 150 tests passing |
+| Public UI/SEO audit | `cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio-audit` | 49 tests passing |
+| Storefront journey | `cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:journey` | 5 passing, 1 intentional mobile-only skip |
+| Admin smoke audit | `cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:admin-portfolio` | 6 tests passing |
+| Dependency audit | `cd frontend && npm audit --audit-level=moderate` | 0 vulnerabilities |
+| Health monitor | `cd frontend && npm run monitor:health` | Frontend, backend, and database UP |
+| Backend compile | `cd backend && mvn -q -DskipTests compile` | Pass |
+
+## Quick Start
+
+### 1. Create local environment
+
+```powershell
+copy .env.example .env
+```
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Update `.env` only when you need non-default local behavior, such as private database credentials, Grok, mail, VNPay, or flash-sale tuning.
+
+### 2. Start with Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+Local services:
+
+- Frontend: [http://localhost:3001](http://localhost:3001)
+- Backend API: [http://localhost:8080/api](http://localhost:8080/api)
+- Swagger UI: [http://localhost:8080/api/swagger-ui.html](http://localhost:8080/api/swagger-ui.html)
+- Backend readiness: [http://localhost:8080/api/health/ready](http://localhost:8080/api/health/ready)
+
+### 3. Run a production-like frontend locally
+
+```bash
+cd frontend
+npm run start:local
+```
+
+`start:local` rebuilds the standalone Next.js output, prepares static assets, stops stale processes on port `3001`, and starts the same server shape used by Docker and Render.
+
+## Local Development
+
+Backend:
 
 ```bash
 cd backend
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-To use the `dev` profile instead:
-
-```bash
-cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-Backend local/dev reads the repo-root `.env` file through Spring config import, so you do not need to manually export `GROK_*`, mail, flash-sale automation, or VNPay variables first.
-
-### Frontend
+Frontend:
 
 ```bash
 cd frontend
@@ -75,117 +119,52 @@ npm install
 npm run dev
 ```
 
-For a production-like local check, use the standalone runner. It rebuilds the
-Next output, prepares `public` and `.next/static` inside the standalone bundle,
-stops any stale process on port `3001`, then starts the same server shape used
-by Docker/Render:
+The backend `local` and `dev` profiles read the repo-root `.env` file through Spring config import, so environment variables do not need to be exported manually for normal development.
 
-```bash
-cd frontend
-npm run start:local
-```
+## Render Deployment
 
-## Weekly flash sale automation
+The project includes `render.yaml` for a three-resource Render deployment:
 
-The backend now supports a weekly auto-rotation for flash sale campaigns.
+- `bookstore-db`: PostgreSQL database
+- `bookstore-api`: Spring Boot backend
+- `bookstore-web`: Next.js frontend
 
-- Default schedule: `00:05` every Monday
-- Timezone: `Asia/Bangkok`
-- Default batch size: `4` books
-- Default discount range: `15% - 30%`
-- Default stock window: `20 - 60`
-- Safety rule: skip generation if an active or upcoming campaign already overlaps the next week window
+Auto deploy is intentionally disabled in the Blueprint (`autoDeployTrigger: off`) to avoid unintended free-tier pipeline usage. Deploy manually from the Render dashboard or through configured deploy hooks when pipeline minutes are available.
 
-Supported environment variables:
+See [Render Deployment Guide](./docs/render-deployment-guide.md) for setup, environment variables, health checks, deploy hooks, and post-deploy verification.
 
-- `FLASHSALE_AUTO_ENABLED`
-- `FLASHSALE_AUTO_CRON`
-- `FLASHSALE_AUTO_TIMEZONE`
-- `FLASHSALE_AUTO_BATCH_SIZE`
-- `FLASHSALE_AUTO_DISCOUNT_MIN`
-- `FLASHSALE_AUTO_DISCOUNT_MAX`
-- `FLASHSALE_AUTO_STOCK_MIN`
-- `FLASHSALE_AUTO_STOCK_MAX`
-- `FLASHSALE_AUTO_MAX_PER_USER`
+## Security Notes
 
-## Automated marketing services
+- Real secrets are never committed. Use `.env` locally and deployment secrets in Render/GitHub.
+- `JWT_SECRET`, database credentials, mail credentials, VNPay keys, and Grok API keys must be private.
+- Public health and chatbot responses are sanitized so provider errors and private user details are not exposed.
+- Demo account passwords are generated through environment values for Render and should not be logged or documented as plain text.
 
-The backend includes scheduled services to drive customer engagement:
-
-- Abandoned cart reminders for carts inactive longer than 24 hours
-- Birthday greetings with a promotional coupon gift
-- Service monitoring via `/api/actuator/health`
-
-## Testing
-
-```bash
-# Backend
-cd backend && mvn test
-
-# Frontend unit tests
-cd frontend && npm run test:run
-
-# Frontend production build
-cd frontend && npm run build
-```
-
-Portfolio smoke path:
-
-```bash
-docker compose up -d --build
-cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
-```
-
-Full storefront journey:
-
-```bash
-cd frontend
-BASE_URL=http://localhost:3001 npm run test:e2e:journey
-```
-
-## Chatbot and Grok
-
-- `GROK_ENABLED=false` by default
-- Set `GROK_ENABLED=true` together with `GROK_API_KEY` to enable Grok in local/dev or Docker
-- Frontend chatbot health is driven by `/api/chatbot/health`
-- Public health responses are sanitized; raw provider errors and user email addresses are not returned to the browser.
-
-## CI/CD registry secrets
-
-The GitHub Actions pipeline publishes to GHCR automatically. Docker Hub publish is enabled when these repository secrets exist:
-
-- `DOCKERHUB_USERNAME`
-- `DOCKERHUB_TOKEN`
-
-If `DOCKERHUB_NAMESPACE` is not set as a repository variable, the workflow uses `DOCKERHUB_USERNAME` as the Docker Hub namespace.
-
-## Payments
-
-- `COD` is always available in the portfolio checkout flow.
-- `VNPay` is only shown when `NEXT_PUBLIC_VNPAY_ENABLED=true` and the backend has valid `VNPAY_*` configuration.
-- Default local return route: [http://localhost:3001/payment/return](http://localhost:3001/payment/return)
+See [Security Audit Notes](./docs/security-audit.md) for the full hardening record.
 
 ## Documentation
 
-Please refer to the `docs/` folder for comprehensive guides:
-- [System Architecture & CI/CD Pipeline](./docs/architecture-and-cicd.md)
-- [Render.com Deployment Guide](./docs/render-deployment-guide.md)
+- [Documentation Index](./docs/README.md)
+- [System Architecture and CI/CD](./docs/architecture-and-cicd.md)
+- [Render Deployment Guide](./docs/render-deployment-guide.md)
+- [Production Runbook](./docs/production-runbook.md)
+- [Portfolio Assets](./docs/portfolio/README.md)
+- [Vietnamese README](./README_VN.md)
 
-## Repository layout
+## Repository Layout
 
 ```text
 Ecommerce_BookStore/
 |-- backend/          # Spring Boot REST API
-|-- frontend/         # Next.js 16 App Router
-|-- docs/             # Project documentation
-|-- scripts/          # CI/E2E helper scripts
+|-- frontend/         # Next.js storefront and admin UI
+|-- mobile/           # Expo mobile workspace
+|-- docs/             # Architecture, deployment, security, runbook, portfolio assets
+|-- scripts/          # Health monitoring and CI helpers
 |-- docker-compose.yml
 |-- Dockerfile.backend
 +-- Dockerfile.frontend
 ```
 
-## Notes
+## Project Status
 
-- This repository is optimized for portfolio and demo flows first.
-- CI coverage gates are kept honest against the current baseline.
-- Do not commit real secrets - always use `.env` (gitignored) for local overrides.
+The codebase is locally production-verified and ready for the next Render deployment window. The remaining external step is to redeploy on Render when pipeline minutes are available, then repeat the post-deploy checks against the live URLs.

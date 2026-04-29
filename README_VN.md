@@ -1,93 +1,170 @@
-# Ecommerce BookStore - Nền tảng Thương mại Điện tử Sách Chuyên nghiệp
+# BookStore Commerce Platform
 
-[![CI/CD Pipeline](https://github.com/JasonTM17/Ecommerce_BookStore/actions/workflows/ci.yml/badge.svg)](https://github.com/JasonTM17/Ecommerce_BookStore/actions/workflows/ci.yml)
-[![Codecov](https://codecov.io/gh/JasonTM17/Ecommerce_BookStore/branch/master/graph/badge.svg)](https://codecov.io/gh/JasonTM17/Ecommerce_BookStore)
+BookStore là dự án portfolio thương mại điện tử bán sách được xây theo hướng production-style. Dự án kết hợp Spring Boot API, Next.js storefront, database PostgreSQL/MySQL, admin dashboard, flash sale, chatbot, monitoring và bộ kiểm thử tự động.
 
-Đây là một dự án thương mại điện tử hoàn chỉnh (Full-stack) được xây dựng dành cho Portfolio, tập trung vào tính chuyên nghiệp, hiệu năng cao và các tính năng tự động hóa Marketing hiện đại.
+Mục tiêu của repo không chỉ là “chạy được”, mà là thể hiện tư duy làm sản phẩm: luồng mua hàng rõ ràng, UI/UX đủ chỉn chu, kiểm thử có bằng chứng, deploy Render có tài liệu, và vận hành có checklist.
 
-## Công nghệ Sử dụng
+## Ảnh Preview Portfolio
 
-Dự án được xây dựng trên mô hình Micro-monolith hiện đại:
+Các ảnh dưới đây là bản preview nhẹ được track trong repo. Bộ screenshot full-size được generate local và không commit để tránh làm repo nặng.
 
-- **Backend**: Spring Boot 3.2, Java 17, Spring Security (JWT), Spring Data JPA.
-- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, React Query.
-- **Mobile**: Expo SDK 55, React Native 0.83, Lucide Icons, Zustand.
-- **Database & DevOps**: MySQL 8, Docker, Docker Compose, GitHub Actions (CI/CD).
-- **Security**: Rate limiting, JWT stateless auth, CSP/HSTS/Permissions-Policy headers.
+![Trang chủ BookStore](./docs/portfolio/previews/home.webp)
+![Flash sale BookStore](./docs/portfolio/previews/flash-sale.webp)
+![Chatbot BookStore](./docs/portfolio/previews/chatbot-mobile.webp)
 
-## Tính năng Nổi bật
-
-### 1. Tự động hóa Marketing (Marketing Automation)
-- **Email Chào mừng**: Tự động gửi email khi người dùng đăng ký mới.
-- **Nhắc nhở Giỏ hàng bỏ quên**: Tự động quét và gửi email khuyến mãi 10% cho các giỏ hàng không hoạt động trên 24 giờ.
-- **Chúc mừng Sinh nhật**: Gửi mã giảm giá 20% tự động vào ngày sinh nhật của người dùng.
-- **Flash Sale Hàng tuần**: Hệ thống tự động xoay vòng các chiến dịch Flash Sale vào 00:05 mỗi thứ Hai.
-
-### 2. Trải nghiệm Người dùng (UX/UI)
-- **Đa ngôn ngữ (i18n)**: Hỗ trợ đầy đủ Tiếng Việt và Tiếng Anh.
-- **Thiết kế Hiện đại**: Giao diện Responsive, hỗ trợ Dark Mode, Skeleton Loaders cho trải nghiệm mượt mà.
-- **Chatbot thông minh**: Tích hợp chatbot hỗ trợ khách hàng.
-
-### 3. Hệ thống Quản trị (Admin Dashboard)
-- Thống kê doanh thu theo thời gian thực.
-- Biểu đồ xu hướng doanh thu (Monthly Trend).
-- Quản lý kho hàng (Cảnh báo tồn kho thấp).
-
-## Ảnh demo Portfolio
-
-Các ảnh dưới đây được chụp từ bản build local giống production để người xem portfolio thấy đúng giao diện thật.
-
-![Trang chủ BookStore](./docs/portfolio/screenshots/desktop/home.png)
-![Flash sale BookStore](./docs/portfolio/screenshots/desktop/flash-sale.png)
-![Chatbot BookStore](./docs/portfolio/screenshots/mobile/chatbot.png)
-
-Cập nhật lại ảnh sau khi chỉnh UI:
+Cập nhật lại screenshot sau khi chỉnh UI:
 
 ```bash
 cd frontend
 BASE_URL=http://localhost:3001 npm run portfolio:screenshots
 ```
 
-## Hướng dẫn Cài đặt
+PowerShell:
 
-### Yêu cầu Hệ thống
-- Docker & Docker Compose
-- Node.js 20+ (nếu chạy local)
-- Java 17 (nếu chạy local)
-
-### Chạy nhanh với Docker
-```bash
-# Clone dự án
-git clone https://github.com/JasonTM17/Ecommerce_BookStore.git
-cd Ecommerce_BookStore
-
-# Chạy toàn bộ hệ thống (Backend, Frontend, DB)
-docker compose up -d
+```powershell
+cd frontend
+$env:BASE_URL = "http://localhost:3001"
+npm run portfolio:screenshots
 ```
 
-Hệ thống sẽ khả dụng tại:
-- Frontend: `http://localhost:3001`
-- Backend API: `http://localhost:8080/api`
-- Swagger UI: `http://localhost:8080/api/swagger-ui.html`
+## Phạm vi sản phẩm
 
-## Bảo mật & Độ tin cậy
-- **Rate Limiting**: Chống tấn công brute-force ở các điểm nhạy cảm (Login, Register, Chatbot).
-- **CI/CD**: Tự động chạy Unit Test, Integration Test (MySQL), E2E Test (Playwright) và Security Scan (Trivy) trên mỗi lần push.
-- **Chatbot an toàn**: Health endpoint công khai không trả lỗi provider thô; context gửi sang Grok không kèm email người dùng.
-- **Docker Hub**: Pipeline publish thật khi repository secrets `DOCKERHUB_USERNAME` và `DOCKERHUB_TOKEN` đã được cấu hình.
+- Storefront public: danh mục, chi tiết sách, khuyến mãi, wishlist, giỏ hàng, checkout và lịch sử đơn hàng.
+- Flash sale theo khung giờ với deal đang bán và chiến dịch sắp mở.
+- API proxy cùng origin để local, Docker và Render hoạt động nhất quán.
+- Chatbot hỗ trợ khách hàng, có health handling và fallback an toàn khi provider chưa bật.
+- Admin dashboard cho sản phẩm, đơn hàng, người dùng và kiểm tra vận hành.
+- SEO metadata, Open Graph image, sitemap, robots, JSON-LD và web vitals.
+- Health monitoring cho frontend, backend và database.
 
-Kiểm tra flow production chính:
+## Công nghệ
+
+| Phần | Công nghệ |
+| --- | --- |
+| Frontend | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS, React Query, Zustand |
+| Backend | Spring Boot 3.2, Java 17, Spring Security, JWT, Spring Data JPA, Actuator |
+| Database | MySQL cho local/CI, PostgreSQL cho Render |
+| Testing | Vitest, Playwright, Maven, npm audit |
+| DevOps | Docker Compose, Render Blueprint, GitHub Actions, GHCR, Docker Hub tùy chọn |
+| Mobile | Expo workspace, giữ nền tảng cho giai đoạn mobile release sau này |
+
+## Bằng chứng chất lượng
+
+Lần audit local production gần nhất: **29/04/2026**.
+
+| Gate | Command | Kết quả hiện tại |
+| --- | --- | --- |
+| Frontend build | `cd frontend && npm run build` | Pass |
+| Frontend lint | `cd frontend && npm run lint` | Pass |
+| Unit test frontend | `cd frontend && npm run test:run` | 150 test pass |
+| Audit UI/SEO public | `cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio-audit` | 49 test pass |
+| Luồng mua hàng | `cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:journey` | 5 pass, 1 skip có chủ đích cho case mobile-only |
+| Admin smoke audit | `cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:admin-portfolio` | 6 test pass |
+| Dependency audit | `cd frontend && npm audit --audit-level=moderate` | 0 vulnerability |
+| Health monitor | `cd frontend && npm run monitor:health` | Frontend, backend, database đều UP |
+| Backend compile | `cd backend && mvn -q -DskipTests compile` | Pass |
+
+## Chạy nhanh
+
+### 1. Tạo file môi trường local
+
+```powershell
+copy .env.example .env
+```
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Chỉ chỉnh `.env` khi cần cấu hình riêng như database, Grok, mail, VNPay hoặc flash-sale schedule.
+
+### 2. Chạy toàn bộ stack bằng Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+Các service local:
+
+- Frontend: [http://localhost:3001](http://localhost:3001)
+- Backend API: [http://localhost:8080/api](http://localhost:8080/api)
+- Swagger UI: [http://localhost:8080/api/swagger-ui.html](http://localhost:8080/api/swagger-ui.html)
+- Backend readiness: [http://localhost:8080/api/health/ready](http://localhost:8080/api/health/ready)
+
+### 3. Chạy frontend theo dạng production local
 
 ```bash
 cd frontend
-BASE_URL=http://localhost:3001 npm run test:e2e:journey
+npm run start:local
 ```
 
-## Tài liệu chi tiết
+`start:local` build lại Next standalone, chuẩn bị static assets, dừng process cũ ở port `3001`, rồi chạy server giống cách Docker/Render vận hành.
 
-Vui lòng tham khảo thư mục `docs/` để biết thêm chi tiết về cấu trúc hệ thống:
-- [Kiến trúc Hệ thống & CI/CD Pipeline](./docs/architecture-and-cicd-vn.md)
-- [Hướng dẫn Deploy lên Render.com (Production)](./docs/render-deployment-guide-vn.md)
+## Development local
 
----
-*Dự án được phát triển bởi **JasonTM17** cho mục đích Portfolio.*
+Backend:
+
+```bash
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Profile `local` và `dev` của backend đọc file `.env` ở root repo thông qua Spring config import, nên không cần export biến môi trường thủ công trong luồng dev bình thường.
+
+## Deploy Render
+
+Repo có sẵn `render.yaml` để tạo 3 resource:
+
+- `bookstore-db`: PostgreSQL database
+- `bookstore-api`: Spring Boot backend
+- `bookstore-web`: Next.js frontend
+
+Auto deploy đang được tắt có chủ đích (`autoDeployTrigger: off`) để tránh tiêu hao pipeline minutes ngoài ý muốn trên free tier. Khi có pipeline minutes, deploy thủ công trong Render dashboard hoặc dùng deploy hooks đã cấu hình.
+
+Xem chi tiết tại [Hướng dẫn Deploy Render](./docs/render-deployment-guide-vn.md).
+
+## Bảo mật
+
+- Không commit secret thật. Dùng `.env` cho local và deployment secrets cho Render/GitHub.
+- `JWT_SECRET`, database credentials, mail credentials, VNPay keys và Grok API key phải được giữ riêng tư.
+- Public health/chatbot response đã được sanitize để không lộ lỗi provider hoặc thông tin nhạy cảm của user.
+- Mật khẩu demo account trên Render được generate bằng env value, không hard-code và không ghi log.
+
+Xem thêm [Security Audit Notes](./docs/security-audit.md).
+
+## Tài liệu
+
+- [Mục lục tài liệu](./docs/README_VN.md)
+- [Kiến trúc hệ thống và CI/CD](./docs/architecture-and-cicd-vn.md)
+- [Hướng dẫn Deploy Render](./docs/render-deployment-guide-vn.md)
+- [Production Runbook](./docs/production-runbook-vn.md)
+- [Portfolio Assets](./docs/portfolio/README.md)
+- [README tiếng Anh](./README.md)
+
+## Cấu trúc repo
+
+```text
+Ecommerce_BookStore/
+|-- backend/          # Spring Boot REST API
+|-- frontend/         # Next.js storefront và admin UI
+|-- mobile/           # Expo mobile workspace
+|-- docs/             # Kiến trúc, deploy, bảo mật, runbook, portfolio assets
+|-- scripts/          # Health monitor và helper CI
+|-- docker-compose.yml
+|-- Dockerfile.backend
++-- Dockerfile.frontend
+```
+
+## Trạng thái hiện tại
+
+Codebase đã được verify production local và sẵn sàng cho lần deploy Render tiếp theo. Bước ngoài hệ thống còn lại là redeploy trên Render khi có pipeline minutes, sau đó chạy lại checklist post-deploy trên URL live.

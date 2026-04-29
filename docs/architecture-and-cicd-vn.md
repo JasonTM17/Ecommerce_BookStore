@@ -1,112 +1,110 @@
-# Kiến trúc Hệ thống & CI/CD Pipeline
+# Kiến trúc hệ thống và CI/CD
 
-Tài liệu này mô tả tổng quan kỹ thuật của Ecommerce BookStore và cách pipeline CI/CD đang vận hành.
+Tài liệu này mô tả kiến trúc hiện tại của BookStore, ranh giới runtime, quality gates và luồng deploy.
 
----
+## Tổng quan hệ thống
 
-## Kiến trúc hệ thống
+BookStore đi theo kiến trúc full-stack module rõ ràng:
 
-Ứng dụng đi theo mô hình **micro-monolith**:
-
-- **Frontend**: Next.js 16 App Router
-- **Backend**: Spring Boot 3.x REST API
-- **Database**: MySQL cho local/E2E, PostgreSQL cho Render production
-- **Proxy runtime**: frontend gọi backend qua `/api`
-
-### Sơ đồ thành phần
+- **Frontend**: Next.js 16 App Router, phục vụ storefront public, admin UI, SEO metadata và same-origin API proxy.
+- **Backend**: Spring Boot REST API, xử lý auth, catalog, cart, checkout, flash sale, chatbot, admin và health endpoints.
+- **Database**: MySQL cho local/CI, PostgreSQL cho Render production.
+- **Runtime proxy**: browser gọi `/api` trên frontend; frontend forward request sang backend.
 
 ```mermaid
 graph TD
-    Client[Web Browser / Mobile Client] -->|HTTP / REST| Frontend
-    Client -->|HTTP / REST| Backend
-
-    subgraph Frontend Subsystem
-        Frontend[Next.js App Router]
-        Tailwind[Tailwind CSS]
-        Zustand[State Management]
-    end
-
-    subgraph Backend Subsystem
-        Backend[Spring Boot REST API]
-        Security[Spring Security / JWT]
-        JPA[Hibernate / Spring Data JPA]
-        Actuator[Spring Actuator Monitoring]
-    end
-
-    Backend -->|JDBC| DB[(MySQL / PostgreSQL)]
-    Frontend -.->|API Proxying| Backend
+    Browser[Browser hoặc mobile client] --> Frontend[Next.js storefront và admin]
+    Frontend --> Proxy[Same-origin /api proxy]
+    Proxy --> Backend[Spring Boot API]
+    Backend --> DB[(MySQL local/CI hoặc PostgreSQL Render)]
+    Backend --> Health[Health và readiness endpoints]
+    Frontend --> SEO[SEO, sitemap, robots, JSON-LD]
 ```
 
-### Diễn giải
+## Request flow
 
-1. **Frontend**
-   - Render giao diện, SEO, điều hướng và trạng thái người dùng.
-   - Proxy các request `/api` sang backend để tránh CORS drift giữa local, Docker và production.
-2. **Backend**
-   - Xử lý auth JWT, giỏ hàng, đơn hàng, flash sale, chatbot và các nghiệp vụ thương mại điện tử.
-   - Dùng Spring Data JPA/Hibernate làm lớp ORM chính.
-3. **Database**
-   - Local và CI backend test ưu tiên MySQL 8.
-   - Render production dùng PostgreSQL thông qua profile `render`.
+1. Browser tải route Next.js từ frontend service.
+2. Các request public data đi qua `/api` trên frontend.
+3. Frontend proxy forward request tới backend được cấu hình bởi `API_PROXY_TARGET`.
+4. Backend áp dụng validation, rate limiting, security headers và business logic.
+5. Backend trả về response public đã sanitize hoặc dữ liệu authenticated theo session hiện tại.
 
----
+Cách này giúp local, Docker và Render chạy nhất quán, đồng thời tránh lệch CORS giữa các môi trường.
 
-## Pipeline CI/CD
+## Runtime profiles
 
-Pipeline chính nằm ở [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
+| Profile | Database | Mục đích |
+| --- | --- | --- |
+| `local` | Local MySQL hoặc DB local được cấu hình | Development hằng ngày |
+| `dev` | Local/dev database | Manual exploratory development |
+| `test` / CI | MySQL service trong CI | Backend và integration tests |
+| `render` | Render PostgreSQL | Public deployment |
 
-### Sơ đồ luồng CI/CD
+Trong profile `render`, `RenderDataSourceConfig` parse `DATABASE_URL` của Render thành JDBC URL với credentials tách riêng. Nếu thiếu `DATABASE_URL`, các biến `DB_*` được dùng làm fallback.
+
+## Quality gates
+
+Workflow chính nằm ở [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 ```mermaid
 stateDiagram-v2
-    [*] --> PushCode: Push lên master hoặc develop
-
-    state "Quality Gates" as Gates {
-        BackendTest: Backend tests
-        FrontendTest: Frontend tests
-        FrontendBuild: Frontend build
-        CodeQuality: Lint + format ratchet
-        SecurityScan: Trivy scan
-    }
-
-    PushCode --> Gates
-    Gates --> E2E
-
-    state "End-to-End" as E2E {
-        Playwright: Docker-first smoke tests
-    }
-
-    E2E --> Publish
-
-    state "Publish & Deploy" as Publish {
-        GHCR: Publish images to GHCR
-        DockerHub: Publish images to Docker Hub
-        Render: Trigger Render deploy hooks
-    }
-
-    Publish --> [*]
+    [*] --> Push: Push hoặc pull request
+    Push --> Backend: Backend tests và coverage
+    Push --> Frontend: Lint, unit tests, build
+    Backend --> E2E: Docker-first Playwright smoke
+    Frontend --> E2E
+    E2E --> Publish: Registry publish
+    Publish --> Deploy: Optional Render deploy hooks
+    Deploy --> Verify: Health và smoke checks
+    Verify --> [*]
 ```
 
-### Các lane chính
+Các lane chính:
 
-1. **Backend Test**
-   - Chạy Maven test trên MySQL 8 trong GitHub Actions.
-   - Kiểm tra coverage backend tối thiểu 50%.
-2. **Frontend Test / Build**
-   - Chạy Vitest, coverage, lint và Next.js build.
-3. **E2E**
-   - Dùng Playwright smoke test trên stack Docker.
-4. **Registry publish**
-   - Publish image lên GHCR và Docker Hub.
-   - Tag chuyên nghiệp theo semver:
-     - `latest`
-     - `v1.1.2`
-     - `v1`
-5. **Render deploy**
-   - Gọi deploy hooks sau khi toàn bộ gate chính đã xanh.
+- Backend test chạy bằng Maven, bao phủ service layer, controller, security và persistence behavior.
+- Frontend chạy ESLint, Vitest và Next.js production build.
+- Playwright kiểm tra UI public quan trọng cho portfolio, luồng mua hàng, chatbot, mobile menu/search/cart, checkout và admin smoke flow.
+- `npm audit` và security audit hỗ trợ kiểm soát dependency/runtime hardening.
 
-### Ghi chú vận hành
+## Mô hình deploy Render
 
-- Render hiện dùng **Blueprint/source deploy**, nên lịch sử deploy trên dashboard vẫn hiển thị theo **commit hash**.
-- Tag semver áp dụng cho artifact registry, không thay đổi cách Render hiển thị source revision.
-- Với profile `render`, `RenderDataSourceConfig` tự động parse biến `DATABASE_URL` thành JDBC URL hợp lệ. Nếu `DATABASE_URL` không có, hệ thống dùng các biến `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` làm dự phòng.
+`render.yaml` tạo:
+
+- `bookstore-db`
+- `bookstore-api`
+- `bookstore-web`
+
+Hai web service dùng Docker runtime và hiện đặt `autoDeployTrigger: off`. Đây là chủ đích để kiểm soát deploy thủ công hoặc qua deploy hook rõ ràng, đặc biệt với workspace free-tier có giới hạn pipeline minutes.
+
+Health path hiện tại trong `render.yaml`:
+
+- Backend service health check: `/api/health/live`
+- Frontend service health check: `/`
+- Frontend aggregate health endpoint: `/api/health`
+- Backend readiness endpoint cho monitoring: `/api/health/ready`
+
+## Registry và release notes
+
+GitHub Actions publish image lên GHCR tự động và có thể publish Docker Hub khi cấu hình:
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+
+Tag registry theo semver-style:
+
+- `latest`
+- `v1.1.2`
+- `v1`
+
+Lịch sử deploy của Render source deploy hiển thị commit hash, đây là hành vi bình thường của Blueprint/source deployment. Registry tags mô tả image artifact, không thay đổi revision label trên Render dashboard.
+
+## Điều kiện xem là production-ready local
+
+Codebase được xem là production-ready local khi các check sau pass:
+
+- Frontend build, lint, unit test, E2E portfolio audit, storefront journey và admin smoke test.
+- Backend compile hoặc test lane.
+- Dependency audit không có vulnerability mức moderate trở lên.
+- Health monitor báo frontend, backend và database đều `UP`.
+
+Xem [Production Runbook](./production-runbook-vn.md) để lấy command đầy đủ.

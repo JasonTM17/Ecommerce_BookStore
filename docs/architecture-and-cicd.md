@@ -1,112 +1,110 @@
-# System Architecture & CI/CD Pipeline
+# System Architecture and CI/CD
 
-This document summarizes the current technical architecture of Ecommerce BookStore and the delivery pipeline that protects the production line.
+This document summarizes the current BookStore architecture, runtime boundaries, quality gates, and deployment flow.
 
----
+## System Overview
 
-## System architecture
+BookStore follows a modular full-stack architecture:
 
-The application follows a **micro-monolith** model:
-
-- **Frontend**: Next.js 16 App Router
-- **Backend**: Spring Boot 3.x REST API
-- **Database**: MySQL for local/E2E, PostgreSQL for Render production
-- **Runtime proxy**: frontend reaches backend through `/api`
-
-### High-level view
+- **Frontend**: Next.js 16 App Router serving the public storefront, admin UI, SEO metadata, and same-origin API proxy.
+- **Backend**: Spring Boot REST API owning authentication, catalog, cart, checkout, flash sale, chatbot, admin, and health endpoints.
+- **Database**: MySQL for local and CI lanes, PostgreSQL for Render production.
+- **Runtime proxy**: the browser calls the frontend `/api` surface; the frontend forwards requests to the backend.
 
 ```mermaid
 graph TD
-    Client[Web Browser / Mobile Client] -->|HTTP / REST| Frontend
-    Client -->|HTTP / REST| Backend
-
-    subgraph Frontend Subsystem
-        Frontend[Next.js App Router]
-        Tailwind[Tailwind CSS]
-        Zustand[State Management]
-    end
-
-    subgraph Backend Subsystem
-        Backend[Spring Boot REST API]
-        Security[Spring Security / JWT]
-        JPA[Hibernate / Spring Data JPA]
-        Actuator[Spring Actuator Monitoring]
-    end
-
-    Backend -->|JDBC| DB[(MySQL / PostgreSQL)]
-    Frontend -.->|API Proxying| Backend
+    Browser[Browser or mobile client] --> Frontend[Next.js storefront and admin]
+    Frontend --> Proxy[Same-origin /api proxy]
+    Proxy --> Backend[Spring Boot API]
+    Backend --> DB[(MySQL local/CI or PostgreSQL Render)]
+    Backend --> Health[Health and readiness endpoints]
+    Frontend --> SEO[SEO, sitemap, robots, JSON-LD]
 ```
 
-### Notes
+## Request Flow
 
-1. **Frontend**
-   - Handles presentation, navigation, SEO, and client-side state.
-   - Proxies `/api` requests to the backend so local, Docker, and production stay aligned.
-2. **Backend**
-   - Owns authentication, cart, checkout, flash sale, chatbot, and core business logic.
-   - Uses Spring Data JPA/Hibernate as the main ORM layer.
-3. **Database**
-   - MySQL is the default choice for local development and CI backend test lanes.
-   - PostgreSQL is used for the Render production profile.
+1. The browser loads a Next.js route from the frontend service.
+2. Public data requests go through `/api` on the frontend.
+3. The frontend proxy forwards the request to the backend configured by `API_PROXY_TARGET`.
+4. The backend applies validation, rate limiting, security headers, and business logic.
+5. The backend returns sanitized public responses or authenticated data based on the active session.
 
----
+This keeps local, Docker, and Render behavior aligned and avoids frontend CORS drift.
 
-## CI/CD pipeline
+## Runtime Profiles
 
-The primary workflow lives in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
+| Profile | Database | Intended use |
+| --- | --- | --- |
+| `local` | Local MySQL or configured local DB | Developer workflow |
+| `dev` | Local/dev database | Manual exploratory development |
+| `test` / CI | MySQL service in CI | Backend and integration tests |
+| `render` | Render PostgreSQL | Public deployment |
 
-### Workflow shape
+In the `render` profile, `RenderDataSourceConfig` parses Render's `DATABASE_URL` into a JDBC URL with separate credentials. If `DATABASE_URL` is unavailable, the `DB_*` variables act as fallback.
+
+## Quality Gates
+
+The main workflow is [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 ```mermaid
 stateDiagram-v2
-    [*] --> PushCode: Push to master or develop
-
-    state "Quality Gates" as Gates {
-        BackendTest: Backend tests
-        FrontendTest: Frontend tests
-        FrontendBuild: Frontend build
-        CodeQuality: Lint + format ratchet
-        SecurityScan: Trivy scan
-    }
-
-    PushCode --> Gates
-    Gates --> E2E
-
-    state "End-to-End" as E2E {
-        Playwright: Docker-first smoke tests
-    }
-
-    E2E --> Publish
-
-    state "Publish & Deploy" as Publish {
-        GHCR: Publish images to GHCR
-        DockerHub: Publish images to Docker Hub
-        Render: Trigger Render deploy hooks
-    }
-
-    Publish --> [*]
+    [*] --> Push: Push or pull request
+    Push --> Backend: Backend tests and coverage
+    Push --> Frontend: Lint, unit tests, build
+    Backend --> E2E: Docker-first Playwright smoke
+    Frontend --> E2E
+    E2E --> Publish: Registry publish
+    Publish --> Deploy: Optional Render deploy hooks
+    Deploy --> Verify: Health and smoke checks
+    Verify --> [*]
 ```
 
-### Key lanes
+Key lanes:
 
-1. **Backend Test**
-   - Runs Maven tests against MySQL 8 in GitHub Actions.
-   - Enforces a minimum backend line coverage threshold.
-2. **Frontend Test / Build**
-   - Runs Vitest, coverage, lint, and the Next.js production build.
-3. **E2E**
-   - Uses Playwright against the Docker stack for portfolio-critical smoke coverage.
-4. **Registry publish**
-   - Publishes images to GHCR and Docker Hub.
-   - Public tags follow semver-first naming:
-     - `latest`
-     - `v1.1.2`
-     - `v1`
-5. **Render deploy**
-   - Triggers Render deploy hooks after the required gates pass.
+- Backend tests run through Maven and exercise the service layer, controllers, security, and persistence behavior.
+- Frontend lanes run ESLint, Vitest, and Next.js production build.
+- Playwright covers portfolio-critical public UI, storefront journey, chatbot behavior, mobile menu/search/cart, checkout, and admin smoke flows.
+- `npm audit` and the documented security audit support dependency and runtime hardening.
 
-### Operational notes
+## Render Deployment Model
 
-- Render currently uses **Blueprint/source deploy**, so Render's deploy history naturally displays **commit hashes** rather than release tags.
-- Semver tags apply to registry artifacts, not to the Render event history UI.
-- In the `render` Spring profile, `RenderDataSourceConfig` auto-parses the `DATABASE_URL` env var into a valid JDBC URL. If `DATABASE_URL` is absent, the individual `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, and `DB_PASSWORD` properties are used as fallback.
+`render.yaml` provisions:
+
+- `bookstore-db`
+- `bookstore-api`
+- `bookstore-web`
+
+Both web services use Docker runtime and currently set `autoDeployTrigger: off`. This is intentional so deploys can be controlled manually or through explicit deploy hooks, especially on free-tier workspaces where pipeline minutes are limited.
+
+Current Render health paths from `render.yaml`:
+
+- Backend service health check: `/api/health/live`
+- Frontend service health check: `/`
+- Frontend aggregate health endpoint: `/api/health`
+- Backend readiness endpoint for monitoring: `/api/health/ready`
+
+## Registry and Release Notes
+
+GitHub Actions publishes images to GHCR automatically and can publish to Docker Hub when these secrets are configured:
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+
+Registry tags use semver-style names such as:
+
+- `latest`
+- `v1.1.2`
+- `v1`
+
+Render source deploy history displays commit hashes, which is expected for Blueprint/source deployments. Registry tags describe image artifacts, not Render dashboard revision labels.
+
+## Operational Guarantees
+
+The codebase is considered locally production-ready when these checks pass:
+
+- Frontend build, lint, unit tests, E2E portfolio audit, storefront journey, and admin smoke tests.
+- Backend compile or test lane.
+- Dependency audit with no moderate or higher vulnerabilities.
+- Health monitor reports frontend, backend, and database as `UP`.
+
+See [Production Runbook](./production-runbook.md) for the exact command sequence.
