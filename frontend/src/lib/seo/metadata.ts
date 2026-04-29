@@ -42,7 +42,9 @@ export function buildMetadata(params: PageSeoParams): Metadata {
 
   const base: Metadata = {
     metadataBase: new URL(BASE_URL),
-    title: fullTitle,
+    title: {
+      absolute: fullTitle,
+    },
     description,
     keywords: tags,
     authors: authors ? [{ name: authors.join(", ") }] : undefined,
