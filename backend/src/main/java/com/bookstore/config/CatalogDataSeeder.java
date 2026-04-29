@@ -430,7 +430,7 @@ public final class CatalogDataSeeder {
                         .soldCount(rand.nextInt(2400) + 50)
                         .viewCount(rand.nextInt(12000) + 500)
                         .imageUrl(imageUrl)
-                        .images(List.of(imageUrl))
+                        .images(new ArrayList<>(List.of(imageUrl)))
                         .build();
                 products.add(product);
             }
@@ -487,7 +487,7 @@ public final class CatalogDataSeeder {
                 .soldCount(1800 - slotIndex * 80)
                 .viewCount(9000 - slotIndex * 240)
                 .imageUrl(showcaseBook.coverUrl())
-                .images(List.of(showcaseBook.coverUrl()))
+                .images(new ArrayList<>(List.of(showcaseBook.coverUrl())))
                 .build();
     }
 
@@ -647,7 +647,7 @@ public final class CatalogDataSeeder {
             images.add(normalizedImageUrl);
         }
 
-        return List.copyOf(images);
+        return new ArrayList<>(images);
     }
 
     private static String resolveGeneratedCoverPath(Category category, String title) {

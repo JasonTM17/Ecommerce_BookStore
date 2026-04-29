@@ -28,9 +28,10 @@ services:
     plan: free
     region: singapore
     runtime: docker
+    autoDeployTrigger: off
     dockerfilePath: ./Dockerfile.backend
     dockerContext: .
-    healthCheckPath: /api/actuator/health/liveness
+    healthCheckPath: /api/health/live
     envVars:
       # Spring profile
       - key: SPRING_PROFILES_ACTIVE
@@ -111,6 +112,7 @@ services:
     plan: free
     region: singapore
     runtime: docker
+    autoDeployTrigger: off
     dockerfilePath: ./Dockerfile.frontend
     dockerContext: .
     healthCheckPath: /
