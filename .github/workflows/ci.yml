@@ -366,6 +366,9 @@ jobs:
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            APP_GIT_SHA=${{ github.sha }}
+            APP_VERSION=${{ steps.frontend-version.outputs.version }}
           cache-from: type=gha,scope=frontend-image
           cache-to: type=gha,mode=max,scope=frontend-image
           platforms: linux/amd64
@@ -588,6 +591,9 @@ jobs:
           push: true
           tags: ${{ steps.meta-dockerhub-frontend.outputs.tags }}
           labels: ${{ steps.meta-dockerhub-frontend.outputs.labels }}
+          build-args: |
+            APP_GIT_SHA=${{ github.sha }}
+            APP_VERSION=${{ steps.dockerhub-frontend-version.outputs.version }}
           cache-from: type=gha,scope=frontend-dockerhub-image
           cache-to: type=gha,mode=max,scope=frontend-dockerhub-image
           platforms: linux/amd64
@@ -881,6 +887,8 @@ jobs:
     concurrency:
       group: ci-deploy-production-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
+    env:
+      PRODUCTION_FRONTEND_URL: ${{ vars.PRODUCTION_FRONTEND_URL || 'https://bookstore-web-dr1k.onrender.com' }}
 
     steps:
       - name: Trigger Render backend deploy
@@ -902,5 +910,49 @@ jobs:
             exit 0
           fi
           echo "Triggering Render frontend production deploy..."
-          curl -fsS "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}" > /dev/null
+          deploy_hook="${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}"
+          dockerhub_username="${{ secrets.DOCKERHUB_USERNAME }}"
+          dockerhub_namespace="${{ vars.DOCKERHUB_NAMESPACE }}"
+
+          if [ -n "${dockerhub_username}" ]; then
+            namespace="${dockerhub_namespace:-$dockerhub_username}"
+            image_url="docker.io/${namespace}/ecommerce-bookstore-frontend:latest"
+            encoded_image_url=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "${image_url}")
+            separator="?"
+            if [[ "${deploy_hook}" == *"?"* ]]; then
+              separator="&"
+            fi
+
+            if curl -fsS "${deploy_hook}${separator}imgURL=${encoded_image_url}" > /dev/null; then
+              echo "Frontend image-backed deploy triggered with Docker Hub latest tag."
+            else
+              echo "Image-backed deploy hook was not accepted; falling back to the plain Render deploy hook."
+              curl -fsS "${deploy_hook}" > /dev/null
+            fi
+          else
+            curl -fsS "${deploy_hook}" > /dev/null
+          fi
           echo "Frontend deploy triggered."
+
+      - name: Verify production frontend commit
+        run: |
+          health_url="${PRODUCTION_FRONTEND_URL%/}/api/health"
+          expected_commit="${GITHUB_SHA}"
+
+          echo "Waiting for production frontend to report commit ${expected_commit}..."
+          for attempt in $(seq 1 60); do
+            body=$(curl -fsS --max-time 20 "${health_url}" || true)
+            observed_commit=$(python3 -c 'import json, sys; print(json.load(sys.stdin).get("frontend", {}).get("commit", ""))' <<< "${body}" 2>/dev/null || true)
+
+            if [ "${observed_commit}" = "${expected_commit}" ]; then
+              echo "Production frontend is serving expected commit ${observed_commit}."
+              exit 0
+            fi
+
+            short_observed="${observed_commit:-missing}"
+            echo "Attempt ${attempt}/60: production frontend reports ${short_observed}; waiting..."
+            sleep 20
+          done
+
+          echo "::error::Production frontend did not report commit ${expected_commit}. Check that RENDER_DEPLOY_HOOK_FRONTEND targets the bookstore-web production service and that Render's latest deploy completed successfully."
+          exit 1

@@ -4,6 +4,18 @@ import { resolveProxyTargets } from "@/lib/server/api-proxy";
 const BACKEND_HEALTH_TIMEOUT_MS = Number(
   process.env.API_HEALTH_BACKEND_TIMEOUT_MS || "5000",
 );
+const APP_VERSION =
+  process.env.NEXT_PUBLIC_APP_VERSION ||
+  process.env.npm_package_version ||
+  "unknown";
+const APP_COMMIT =
+  process.env.RENDER_GIT_COMMIT ||
+  process.env.APP_GIT_SHA ||
+  process.env.NEXT_PUBLIC_APP_GIT_SHA ||
+  process.env.GITHUB_SHA ||
+  "unknown";
+const APP_BRANCH =
+  process.env.RENDER_GIT_BRANCH || process.env.GITHUB_REF_NAME || "unknown";
 
 type BackendHealthCheck = {
   index: number;
@@ -62,6 +74,9 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       frontend: {
         status: "UP",
+        version: APP_VERSION,
+        commit: APP_COMMIT,
+        branch: APP_BRANCH,
       },
       backend: {
         status: backendUp ? "UP" : "DEGRADED",
