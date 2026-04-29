@@ -145,9 +145,9 @@ export function ChatConversations({
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-100 flex flex-col">
-      <div className="p-3 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 text-sm">{copy.history}</h3>
+    <div className="flex w-64 shrink-0 flex-col border-r border-gray-100 bg-white">
+      <div className="flex items-center justify-between border-b border-gray-100 p-3">
+        <h3 className="text-sm font-semibold text-gray-900">{copy.history}</h3>
         <Button
           variant="ghost"
           size="icon"
@@ -160,35 +160,34 @@ export function ChatConversations({
 
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center h-32">
+          <div className="flex h-32 items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
           </div>
         ) : conversations.length === 0 ? (
           <div className="p-4 text-center text-sm text-gray-500">
-            <MessageCircle className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <MessageCircle className="mx-auto mb-2 h-8 w-8 text-gray-300" />
             <p>{copy.empty}</p>
           </div>
         ) : (
-          <div className="p-2 space-y-1">
+          <div className="space-y-1 p-2">
             {conversations.map((conversation) => (
               <div
                 key={conversation.id}
                 className={cn(
-                  "w-full rounded-xl transition-all group",
+                  "group w-full rounded-xl transition-all",
                   currentConversationId === conversation.id && "bg-red-50",
                 )}
               >
                 <button
+                  type="button"
                   onClick={() => handleSelectConversation(conversation)}
-                  className={cn(
-                    "w-full p-3 rounded-xl text-left transition-all hover:bg-gray-50",
-                  )}
+                  className="w-full rounded-xl p-3 text-left transition-all hover:bg-gray-50"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p
                         className={cn(
-                          "text-sm font-medium truncate",
+                          "truncate text-sm font-medium",
                           currentConversationId === conversation.id ||
                             selectedId === conversation.id
                             ? "text-red-700"
@@ -197,11 +196,11 @@ export function ChatConversations({
                       >
                         {conversation.title}
                       </p>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                      <p className="mt-0.5 truncate text-xs text-gray-500">
                         {conversation.lastMessage || copy.newConversation}
                       </p>
                     </div>
-                    <span className="text-[10px] text-gray-400 shrink-0">
+                    <span className="shrink-0 text-[10px] text-gray-400">
                       {formatDate(conversation.updatedAt)}
                     </span>
                   </div>
@@ -213,7 +212,7 @@ export function ChatConversations({
                     onClick={(e) =>
                       handleDeleteConversation(e, conversation.id)
                     }
-                    className="text-[10px] text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="text-[10px] text-gray-400 opacity-0 transition-colors hover:text-red-500 group-hover:opacity-100"
                   >
                     {copy.delete}
                   </button>

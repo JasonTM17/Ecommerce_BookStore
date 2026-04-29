@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   Compass,
-  Hand,
   LogIn,
   MessageCircle,
   ShieldCheck,
@@ -43,10 +42,6 @@ interface WidgetCopy {
   checkingMessage: string;
   checkingPlaceholder: string;
   checkingError: string;
-  disabledBadge: string;
-  disabledHeadline: string;
-  disabledMessage: string;
-  disabledPlaceholder: string;
   demoBadge: string;
   demoHeadline: string;
   demoMessage: string;
@@ -65,18 +60,19 @@ interface WidgetCopy {
   helperText: string;
   disabledHelperText: string;
   subtitle: string;
-  guestTitle: string;
-  guestDescription: string;
   guestLoginCta: string;
   startConversationTitle: string;
   startConversationDescription: string;
   serviceLabel: string;
   demoServiceLabel: string;
+  retryHealth: string;
   sendError: string;
   sendErrorDescription: string;
   fallbackReply: string;
   openAriaLabel: string;
   closeAriaLabel: string;
+  messagesAriaLabel: string;
+  signInHint: string;
   guestActions: Array<{
     label: string;
     icon: typeof BookOpen;
@@ -110,66 +106,60 @@ interface HealthMeta {
 const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
   vi: {
     checkingBadge: "Đang kiểm tra",
-    checkingHeadline: "Đang xác nhận kết nối Grok",
+    checkingHeadline: "Đang kiểm tra trợ lý",
     checkingMessage:
-      "BookStore đang kiểm tra trạng thái tư vấn AI để hiển thị trải nghiệm phù hợp nhất.",
+      "BookStore đang xác nhận trạng thái chatbot để chọn trải nghiệm phù hợp nhất.",
     checkingPlaceholder: "Đang kiểm tra trạng thái chatbot...",
     checkingError: "Không thể kiểm tra trạng thái chatbot.",
-    disabledBadge: "Đang tắt",
-    disabledHeadline: "Chatbot đang tạm tắt ở môi trường này",
-    disabledMessage:
-      "Bạn vẫn có thể khám phá sách, flash sale và coupon trực tiếp trên giao diện cửa hàng.",
-    disabledPlaceholder: "Chatbot đang tạm tắt",
     demoBadge: "Demo portfolio",
-    demoHeadline: "Trợ lý demo đang sẵn sàng",
+    demoHeadline: "Trợ lý demo sẵn sàng",
     demoMessage:
-      "Grok đang tắt ở môi trường này, nên BookStore dùng chế độ demo an toàn để bạn vẫn thử được luồng tư vấn.",
-    demoPlaceholder: "Hỏi thử về sách, coupon, flash sale hoặc giỏ hàng...",
+      "Bạn có thể thử hỏi về sách, coupon, flash sale hoặc giỏ hàng. Chế độ demo không gửi dữ liệu cá nhân.",
+    demoPlaceholder: "Hỏi về sách, coupon, flash sale hoặc giỏ hàng...",
     demoHelperText:
-      "Chế độ demo không gửi dữ liệu cá nhân và không truy vấn đơn hàng thật.",
-    demoNotice:
-      "Mình đang ở chế độ demo portfolio, nên chỉ đưa gợi ý chung và điều hướng nhanh trong cửa hàng.",
-    degradedBadge: "Chế độ dự phòng",
-    degradedHeadline: "Grok đã được cấu hình nhưng chưa ổn định",
+      "Demo chỉ trả lời hướng dẫn chung, không truy vấn đơn hàng thật.",
+    demoNotice: "Chế độ demo portfolio.",
+    degradedBadge: "Dự phòng",
+    degradedHeadline: "Grok chưa ổn định",
     degradedMessage:
-      "Một số phản hồi có thể quay về chế độ hỗ trợ cơ bản cho tới khi kết nối Grok ổn định hơn.",
+      "Một số câu trả lời có thể dùng trợ lý cơ bản cho tới khi kết nối Grok ổn định hơn.",
     degradedPlaceholder:
-      "Nhập tin nhắn, chatbot sẽ trả lời ở chế độ dự phòng nếu cần...",
+      "Nhập tin nhắn, chatbot sẽ dùng chế độ dự phòng nếu cần...",
     readyBadge: (model) => `Grok sẵn sàng · ${model}`,
-    readyHeadline: "Chatbot đã sẵn sàng hỗ trợ",
+    readyHeadline: "Chatbot sẵn sàng hỗ trợ",
     readyMessage:
-      "Bạn có thể hỏi về sách, tình trạng đơn hàng, khuyến mãi hoặc nhờ gợi ý sản phẩm phù hợp.",
+      "Hỏi về sách, đơn hàng, khuyến mãi hoặc gợi ý sản phẩm phù hợp.",
     readyPlaceholder: "Nhập câu hỏi về sách, đơn hàng hoặc khuyến mãi...",
     readySuccess: "Grok đã phản hồi thành công.",
-    helperText: "Nhấn Enter để gửi, Shift + Enter để xuống dòng",
+    helperText: "Enter để gửi, Shift + Enter để xuống dòng",
     disabledHelperText:
       "Chatbot đang tạm tắt. Bạn vẫn có thể duyệt sách và khuyến mãi trực tiếp.",
-    subtitle: "Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng.",
-    guestTitle: "Chào bạn!",
-    guestDescription:
-      "Đăng nhập để trò chuyện 1:1 với trợ lý BookStore, theo dõi đơn hàng của bạn và nhận gợi ý sách cá nhân hóa.",
-    guestLoginCta: "Đăng nhập để bắt đầu chat",
-    startConversationTitle: "Bắt đầu một cuộc trò chuyện mới",
+    subtitle: "Gợi ý sách, ưu đãi và hỗ trợ mua hàng.",
+    guestLoginCta: "Đăng nhập để chat cá nhân hóa",
+    startConversationTitle: "Bạn cần tìm gì hôm nay?",
     startConversationDescription:
-      "Hỏi về sách đang bán, lịch sử đơn hàng, mã giảm giá hoặc nhờ gợi ý một tủ sách phù hợp với bạn.",
+      "Thử hỏi về coupon, flash sale, gợi ý sách hoặc mở nhanh các trang mua sắm.",
     serviceLabel: "BookStore Assistant",
     demoServiceLabel: "BookStore Demo Assistant",
+    retryHealth: "Kiểm tra lại",
     sendError: "Không thể gửi tin nhắn. Vui lòng thử lại.",
     sendErrorDescription: "Lỗi",
     fallbackReply:
-      "Xin lỗi bạn, hiện tại mình đang gặp chút trục trặc kỹ thuật. Bạn có thể thử lại sau hoặc tiếp tục duyệt sách trực tiếp trong cửa hàng.",
+      "Xin lỗi, chatbot đang gặp sự cố tạm thời. Bạn có thể thử lại sau hoặc tiếp tục duyệt sách trong cửa hàng.",
     openAriaLabel: "Mở chatbot",
     closeAriaLabel: "Đóng chatbot",
+    messagesAriaLabel: "Tin nhắn chatbot",
+    signInHint: "Đăng nhập để xem lịch sử trò chuyện và đơn hàng thật.",
     guestActions: [
       { label: "Khám phá sách", icon: BookOpen, path: "/products" },
       { label: "Xem khuyến mãi", icon: TicketPercent, path: "/promotions" },
-      { label: "Tìm theo danh mục", icon: Compass, path: "/categories" },
+      { label: "Danh mục", icon: Compass, path: "/categories" },
     ],
     authenticatedSuggestions: [
       "Tìm sách về Python",
       "Gợi ý sách kỹ năng sống",
-      "Đơn hàng của tôi đang ở đâu?",
-      "Có mã giảm giá nào đang dùng được?",
+      "Đơn hàng của tôi ở đâu?",
+      "Có mã giảm giá nào dùng được không?",
     ],
     demoSuggestions: [
       "Có mã giảm giá nào?",
@@ -184,77 +174,71 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     ],
     demoReplies: {
       default:
-        "Mình đang chạy chế độ demo portfolio. Bạn có thể thử hỏi về sách, coupon, flash sale hoặc mở nhanh các trang mua sắm bằng các nút bên dưới.",
+        "Bạn có thể hỏi về sách, coupon, flash sale hoặc mở nhanh các trang mua sắm bên dưới.",
       promotion:
-        "BookStore đang có trang Khuyến mãi để xem coupon công khai. Hãy mở mục khuyến mãi, sao chép mã phù hợp rồi áp dụng ở giỏ hàng hoặc checkout.",
+        "Mở trang Khuyến mãi để xem coupon công khai, sao chép mã phù hợp rồi áp dụng ở giỏ hàng.",
       order:
-        "Trong chế độ demo, mình không đọc dữ liệu đơn hàng thật. Để kiểm tra đơn, hãy đăng nhập rồi mở trang Đơn hàng.",
-      cart: "Bạn có thể mở giỏ hàng để xem sản phẩm đã chọn, nhập coupon và tiếp tục checkout theo luồng mua sắm hiện tại.",
-      book: "Bạn có thể bắt đầu ở trang Sản phẩm hoặc Danh mục để lọc sách theo chủ đề. Với portfolio demo, mình ưu tiên gợi ý hướng duyệt thay vì gọi AI provider.",
+        "Mình không đọc đơn hàng thật trong demo. Hãy đăng nhập rồi mở trang Đơn hàng để kiểm tra.",
+      cart: "Bạn có thể mở giỏ hàng để xem sách đã chọn, nhập coupon và tiếp tục checkout.",
+      book: "Bạn có thể bắt đầu ở trang Sản phẩm hoặc Danh mục để lọc sách theo chủ đề. Mình sẽ ưu tiên hướng dẫn nhanh trong bản demo.",
     },
   },
   en: {
     checkingBadge: "Checking",
-    checkingHeadline: "Confirming the Grok connection",
+    checkingHeadline: "Checking assistant status",
     checkingMessage:
-      "BookStore is checking the AI assistant status so it can show the most relevant experience.",
+      "BookStore is checking the chatbot status to choose the right experience.",
     checkingPlaceholder: "Checking chatbot status...",
     checkingError: "Unable to check chatbot status.",
-    disabledBadge: "Disabled",
-    disabledHeadline: "Chatbot is temporarily off in this environment",
-    disabledMessage:
-      "You can still explore books, flash sales, and coupons directly in the store.",
-    disabledPlaceholder: "Chatbot is temporarily off",
     demoBadge: "Portfolio demo",
     demoHeadline: "Demo assistant is ready",
     demoMessage:
-      "Grok is disabled in this environment, so BookStore is using a safe demo mode that still lets you test the assistant flow.",
+      "You can ask about books, coupons, flash sales, or the cart. Demo mode does not send personal data.",
     demoPlaceholder: "Ask about books, coupons, flash sales, or the cart...",
     demoHelperText:
-      "Demo mode does not send personal data or query real order records.",
-    demoNotice:
-      "I am running in portfolio demo mode, so I can give general guidance and quick store navigation.",
-    degradedBadge: "Fallback mode",
-    degradedHeadline: "Grok is configured, but not fully stable",
+      "Demo mode gives general guidance and does not query real orders.",
+    demoNotice: "Portfolio demo mode.",
+    degradedBadge: "Fallback",
+    degradedHeadline: "Grok is not fully stable",
     degradedMessage:
-      "Some replies may fall back to the basic assistant experience until the Grok connection settles.",
+      "Some replies may use the basic assistant until the Grok connection settles.",
     degradedPlaceholder:
       "Type a message and the chatbot will fall back if needed...",
     readyBadge: (model) => `Grok ready · ${model}`,
     readyHeadline: "Chatbot is ready to help",
     readyMessage:
-      "Ask about books, order status, promotions, or get recommendations tailored to you.",
+      "Ask about books, orders, promotions, or product recommendations.",
     readyPlaceholder: "Ask about books, orders, or promotions...",
     readySuccess: "Grok replied successfully.",
-    helperText: "Press Enter to send, Shift + Enter for a new line",
+    helperText: "Enter to send, Shift + Enter for a new line",
     disabledHelperText:
       "The chatbot is temporarily off. You can still browse the store directly.",
-    subtitle: "Book suggestions, orders, and deals right inside the store.",
-    guestTitle: "Hello there!",
-    guestDescription:
-      "Sign in to chat one-on-one with the BookStore assistant, track your orders, and get personalized book recommendations.",
-    guestLoginCta: "Sign in to start chatting",
-    startConversationTitle: "Start a new conversation",
+    subtitle: "Book suggestions, deals, and shopping help.",
+    guestLoginCta: "Sign in for personalized chat",
+    startConversationTitle: "What can I help you find?",
     startConversationDescription:
-      "Ask about books on sale, order history, coupon codes, or get recommendations for a shelf that fits your taste.",
+      "Try coupons, flash sale, book recommendations, or quick shopping links.",
     serviceLabel: "BookStore Assistant",
     demoServiceLabel: "BookStore Demo Assistant",
+    retryHealth: "Check again",
     sendError: "Unable to send the message. Please try again.",
     sendErrorDescription: "Error",
     fallbackReply:
-      "Sorry, I’m having a small technical hiccup right now. You can try again later or keep browsing books directly in the store.",
+      "Sorry, the chatbot is having a temporary issue. You can try again later or keep browsing books in the store.",
     openAriaLabel: "Open chatbot",
     closeAriaLabel: "Close chatbot",
+    messagesAriaLabel: "Chatbot messages",
+    signInHint: "Sign in to access chat history and real order help.",
     guestActions: [
       { label: "Browse books", icon: BookOpen, path: "/products" },
       { label: "View promotions", icon: TicketPercent, path: "/promotions" },
-      { label: "Browse categories", icon: Compass, path: "/categories" },
+      { label: "Categories", icon: Compass, path: "/categories" },
     ],
     authenticatedSuggestions: [
       "Find books about Python",
       "Recommend self-help books",
       "Where is my order?",
-      "Any coupon codes I can use right now?",
+      "Any coupon codes I can use?",
     ],
     demoSuggestions: [
       "Any active coupon codes?",
@@ -269,13 +253,13 @@ const widgetCopy: Record<WidgetLocale, WidgetCopy> = {
     ],
     demoReplies: {
       default:
-        "I am running in portfolio demo mode. You can ask about books, coupons, flash sales, or jump to the shopping pages with the quick actions below.",
+        "Ask about books, coupons, flash sales, or use the quick actions below to start shopping.",
       promotion:
-        "BookStore has a Promotions page for public coupons. Open promotions, copy a matching code, then apply it in cart or checkout.",
+        "Open Promotions to view public coupons, copy a matching code, then apply it in cart.",
       order:
-        "In demo mode I do not access real order data. Sign in and open Orders to check an actual order.",
-      cart: "Open the cart to review selected books, enter a coupon, and continue through checkout.",
-      book: "Start from Products or Categories to filter books by topic. In portfolio demo mode I provide browsing guidance instead of calling the AI provider.",
+        "I do not access real orders in demo mode. Sign in and open Orders to check an actual order.",
+      cart: "Open the cart to review selected books, enter a coupon, and continue checkout.",
+      book: "Start from Products or Categories to filter books by topic. In demo mode I focus on quick shopping guidance.",
     },
   },
 };
@@ -297,46 +281,36 @@ function resolveHealthMeta(
     };
   }
 
-  if (healthError) {
+  if (healthError || health?.status === "DISABLED") {
     return {
       kind: "demo",
       badgeLabel: copy.demoBadge,
-      badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+      badgeClassName: "border-red-100 bg-red-50 text-red-700",
       headline: copy.demoHeadline,
       message: copy.demoMessage,
       inputPlaceholder: copy.demoPlaceholder,
     };
   }
 
-  switch (health?.status) {
-    case "DISABLED":
-      return {
-        kind: "demo",
-        badgeLabel: copy.demoBadge,
-        badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
-        headline: copy.demoHeadline,
-        message: copy.demoMessage,
-        inputPlaceholder: copy.demoPlaceholder,
-      };
-    case "DEGRADED":
-      return {
-        kind: "degraded",
-        badgeLabel: copy.degradedBadge,
-        badgeClassName: "border-orange-200 bg-orange-50 text-orange-700",
-        headline: copy.degradedHeadline,
-        message: copy.degradedMessage,
-        inputPlaceholder: copy.degradedPlaceholder,
-      };
-    default:
-      return {
-        kind: "ready",
-        badgeLabel: copy.readyBadge(health?.model || "grok-3"),
-        badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
-        headline: copy.readyHeadline,
-        message: copy.readyMessage,
-        inputPlaceholder: copy.readyPlaceholder,
-      };
+  if (health?.status === "DEGRADED") {
+    return {
+      kind: "degraded",
+      badgeLabel: copy.degradedBadge,
+      badgeClassName: "border-orange-200 bg-orange-50 text-orange-700",
+      headline: copy.degradedHeadline,
+      message: copy.degradedMessage,
+      inputPlaceholder: copy.degradedPlaceholder,
+    };
   }
+
+  return {
+    kind: "ready",
+    badgeLabel: copy.readyBadge(health?.model || "grok-3"),
+    badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    headline: copy.readyHeadline,
+    message: copy.readyMessage,
+    inputPlaceholder: copy.readyPlaceholder,
+  };
 }
 
 function buildDemoAssistantMessage(
@@ -359,7 +333,7 @@ function buildDemoAssistantMessage(
           : copy.demoReplies.default;
 
   return {
-    content: `${copy.demoNotice}\n\n${content}`,
+    content: `${copy.demoNotice} ${content}`,
     quickActions: copy.demoQuickActions,
   };
 }
@@ -381,6 +355,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
   const [healthError, setHealthError] = useState<string | null>(null);
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const latestAssistantMessageRef = useRef<HTMLDivElement>(null);
 
   const copy = widgetCopy[locale as WidgetLocale] ?? widgetCopy.vi;
   const healthMeta = useMemo(
@@ -388,11 +363,11 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
     [copy, health, healthError, isCheckingHealth],
   );
   const displayHealthMeta = useMemo<HealthMeta>(() => {
-    if (!isAuthenticated && !isAuthLoading && healthMeta.kind !== "checking") {
+    if (!isAuthenticated && !isAuthLoading) {
       return {
         kind: "demo",
         badgeLabel: copy.demoBadge,
-        badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+        badgeClassName: "border-red-100 bg-red-50 text-red-700",
         headline: copy.demoHeadline,
         message: copy.demoMessage,
         inputPlaceholder: copy.demoPlaceholder,
@@ -434,10 +409,20 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
   }, [copy.checkingError]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) {
+      return;
+    }
+
+    const latestMessage = messages[messages.length - 1];
+    if (latestMessage?.role === "assistant") {
+      latestAssistantMessageRef.current?.scrollIntoView?.({
+        behavior: "smooth",
+        block: "start",
+      });
+    } else {
       scrollToBottom();
     }
-  }, [isOpen, messages.length]);
+  }, [isOpen, messages]);
 
   useEffect(() => {
     if (isOpen) {
@@ -567,23 +552,23 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
           setIsMinimized(false);
         }}
         className={cn(
-          "fixed bottom-5 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] transition-all duration-300 active:scale-95 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
+          "fixed bottom-5 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black shadow-[0_14px_34px_rgba(0,0,0,0.22)] transition-all duration-200 active:scale-95 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
           "hover:scale-105 hover:bg-black/85",
         )}
         aria-label={isOpen ? copy.closeAriaLabel : copy.openAriaLabel}
       >
         {isOpen ? (
-          <X className="h-6 w-6 text-white" />
+          <X className="h-5 w-5 text-white" />
         ) : (
           <>
-            <MessageCircle className="h-6 w-6 text-white" />
+            <MessageCircle className="h-5 w-5 text-white" />
             <span
               className={cn(
-                "absolute -right-1 -top-1 h-4 w-4 rounded-full border-2 border-white",
+                "absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white",
                 displayHealthMeta.kind === "ready"
                   ? "bg-emerald-400"
                   : displayHealthMeta.kind === "demo"
-                    ? "bg-sky-400"
+                    ? "bg-red-500"
                     : "bg-amber-400",
               )}
             />
@@ -594,10 +579,10 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
       <div
         data-testid="chatbot-panel"
         className={cn(
-          "fixed bottom-20 left-3 right-3 z-50 flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[22px] bg-white shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.08)_0px_18px_42px] transition-all duration-300 ease-out sm:bottom-24 sm:left-auto sm:right-6 sm:max-h-[560px] sm:w-[360px]",
+          "fixed bottom-[76px] left-3 right-3 z-50 flex max-h-[min(440px,calc(100dvh-6.25rem))] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.20)] transition-all duration-200 ease-out sm:bottom-[88px] sm:left-auto sm:right-6 sm:w-[22rem]",
           isOpen && !isMinimized
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
-            : "pointer-events-none translate-y-4 scale-95 opacity-0",
+            : "pointer-events-none translate-y-3 scale-95 opacity-0",
         )}
       >
         <ChatHeader
@@ -617,7 +602,7 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
         />
 
         {!isMinimized ? (
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 overflow-hidden">
             {isAuthenticated && showConversations ? (
               <ChatConversations
                 currentConversationId={currentConversationId}
@@ -626,23 +611,21 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
               />
             ) : null}
 
-            <div className="flex flex-1 flex-col bg-[#f5f5f5]">
-              <div className="border-b border-black/[0.05] bg-white px-3 py-2.5">
-                <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-col bg-[#f7f7f7]">
+              <div className="border-b border-black/[0.06] bg-white px-3 py-2.5">
+                <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       {displayHealthMeta.kind === "ready" ? (
-                        <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                      ) : displayHealthMeta.kind === "demo" ? (
-                        <Sparkles className="h-4 w-4 text-sky-500" />
+                        <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
                       ) : (
-                        <Sparkles className="h-4 w-4 text-amber-500" />
+                        <Sparkles className="h-3.5 w-3.5 shrink-0 text-red-500" />
                       )}
-                      <p className="text-xs font-semibold text-black sm:text-sm">
+                      <p className="truncate text-xs font-semibold text-black">
                         {displayHealthMeta.headline}
                       </p>
                     </div>
-                    <p className="mt-1 max-h-10 overflow-hidden text-xs leading-5 tracking-[0.14px] text-[#777169]">
+                    <p className="mt-1 hidden text-[11px] leading-4 text-[#6f6a64] sm:line-clamp-2">
                       {displayHealthMeta.message}
                     </p>
                   </div>
@@ -652,96 +635,83 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => void loadHealth()}
-                    className="h-8 shrink-0 rounded-full bg-[rgba(245,242,239,0.8)] px-3 text-[11px] text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] hover:bg-[#eee8e2]"
+                    className="h-7 shrink-0 rounded-full bg-[#f4f1ee] px-2.5 text-[11px] text-black hover:bg-[#ece5df]"
                   >
-                    {locale === "vi" ? "Kiểm tra lại" : "Check again"}
+                    {copy.retryHealth}
                   </Button>
                 </div>
               </div>
 
               <div
-                className="flex-1 space-y-3 overflow-y-auto p-3"
+                className="min-h-[160px] flex-1 space-y-3 overflow-y-auto p-3"
                 role="log"
                 aria-live="polite"
-                aria-label={
-                  locale === "vi" ? "Tin nhắn chatbot" : "Chatbot messages"
-                }
+                aria-label={copy.messagesAriaLabel}
               >
-                {!isAuthenticated && !isDemoMode ? (
-                  <div className="flex min-h-[360px] flex-col justify-between gap-4 rounded-[20px] bg-white p-4 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
-                    <div>
-                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(245,242,239,0.8)] shadow-[rgba(78,50,23,0.04)_0px_6px_16px]">
-                        <MessageCircle className="h-6 w-6 text-black" />
+                {messages.length === 0 ? (
+                  <div className="rounded-2xl bg-white p-4 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)]">
+                    <div className="mb-3 flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black">
+                        <MessageCircle className="h-5 w-5 text-white" />
                       </div>
-                      <h3 className="mb-1.5 flex items-center justify-center gap-2 text-base font-semibold text-slate-900">
-                        {copy.guestTitle}{" "}
-                        <Hand className="h-4 w-4 text-red-500" />
-                      </h3>
-                      <p className="text-xs leading-5 tracking-[0.14px] text-[#4e4e4e]">
-                        {copy.guestDescription}
-                      </p>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-slate-950">
+                          {copy.startConversationTitle}
+                        </h3>
+                        <p className="mt-1 text-xs leading-5 text-[#55504a]">
+                          {copy.startConversationDescription}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {copy.guestActions.map((action) => (
-                          <button
-                            key={action.path}
-                            type="button"
-                            onClick={() => handleGuestAction(action.path)}
-                            className="inline-flex items-center gap-2 rounded-full bg-[#f5f5f5] px-3 py-2 text-xs font-medium text-slate-800 shadow-[rgba(0,0,0,0.075)_0px_0px_0px_0.5px_inset] transition-colors hover:bg-[#f5f2ef]"
-                          >
-                            <action.icon className="h-3.5 w-3.5 text-black" />
-                            <span>{action.label}</span>
-                          </button>
-                        ))}
-                      </div>
-
-                      <Button
-                        type="button"
-                        data-testid="chatbot-login-cta"
-                        onClick={goToLogin}
-                        className="h-11 w-full rounded-full bg-black text-sm text-white shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] hover:bg-black/85"
-                      >
-                        <LogIn className="mr-2 h-4 w-4" />
-                        {copy.guestLoginCta}
-                      </Button>
-                    </div>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="flex min-h-[360px] flex-col justify-between gap-4 rounded-[20px] bg-white p-4 text-center shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
-                    <div>
-                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]">
-                        <MessageCircle className="h-6 w-6 text-white" />
-                      </div>
-                      <h3 className="mb-1.5 text-base font-semibold text-slate-900">
-                        {copy.startConversationTitle}
-                      </h3>
-                      <p className="text-xs leading-5 tracking-[0.14px] text-[#4e4e4e]">
-                        {copy.startConversationDescription}
-                      </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(isDemoMode
+                        ? copy.demoSuggestions
+                        : copy.authenticatedSuggestions
+                      ).map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => {
+                            void handleSendMessage(suggestion);
+                          }}
+                          className="rounded-full bg-[#f4f1ee] px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-[#ebe3dc]"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
                     </div>
 
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {(isDemoMode
-                          ? copy.demoSuggestions
-                          : copy.authenticatedSuggestions
-                        ).map((suggestion) => (
-                          <button
-                            key={suggestion}
-                            type="button"
-                            onClick={() => {
-                              void handleSendMessage(suggestion);
-                            }}
-                            className="rounded-full bg-[rgba(245,242,239,0.8)] px-3 py-1.5 text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] transition-colors hover:bg-[#eee8e2]"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      {copy.guestActions.map((action) => (
+                        <button
+                          key={action.path}
+                          type="button"
+                          onClick={() => handleGuestAction(action.path)}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-slate-800 transition-colors hover:bg-[#f8f3ef]"
+                        >
+                          <action.icon className="h-3.5 w-3.5 text-black" />
+                          <span>{action.label}</span>
+                        </button>
+                      ))}
+                    </div>
 
-                      <div className="flex items-center justify-center gap-2 text-xs text-[#777169]">
+                    {!isAuthenticated ? (
+                      <div className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-xs leading-5 text-red-800">
+                        <p>{copy.signInHint}</p>
+                        <Button
+                          type="button"
+                          data-testid="chatbot-login-cta"
+                          onClick={goToLogin}
+                          variant="ghost"
+                          className="mt-1 h-7 rounded-full px-0 text-xs font-semibold text-red-700 hover:bg-transparent hover:text-red-800"
+                        >
+                          <LogIn className="mr-1.5 h-3.5 w-3.5" />
+                          {copy.guestLoginCta}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mt-4 flex items-center gap-2 text-xs text-[#777169]">
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>
                           {isDemoMode
@@ -749,20 +719,30 @@ export function ChatbotWidget({ defaultOpen = false }: ChatbotWidgetProps) {
                             : health?.service || copy.serviceLabel}
                         </span>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ) : (
                   <>
                     {messages.map((msg, index) => (
-                      <ChatMessage key={msg.id || index} message={msg} />
+                      <div
+                        key={msg.id || index}
+                        ref={
+                          index === messages.length - 1 &&
+                          msg.role === "assistant"
+                            ? latestAssistantMessageRef
+                            : undefined
+                        }
+                      >
+                        <ChatMessage message={msg} />
+                      </div>
                     ))}
 
                     {isTyping ? (
                       <div className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black">
                           <MessageCircle className="h-4 w-4 text-white" />
                         </div>
-                        <div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]">
+                        <div className="rounded-2xl rounded-tl-md bg-white px-4 py-3 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)]">
                           <div className="flex gap-1">
                             <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:0ms]" />
                             <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:150ms]" />

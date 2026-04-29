@@ -470,6 +470,7 @@ export default function ProductDetailPage() {
                   fill
                   sizes="(min-width: 1280px) 42vw, (min-width: 768px) 50vw, 100vw"
                   className="object-cover"
+                  loading="eager"
                   priority
                 />
                 {hasActiveFlashSale ? (

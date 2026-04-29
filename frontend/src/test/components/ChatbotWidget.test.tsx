@@ -160,16 +160,16 @@ describe("ChatbotWidget", () => {
     fireEvent.click(screen.getByTestId("chatbot-launcher"));
 
     expect(
-      await screen.findByText("Trợ lý demo đang sẵn sàng"),
+      await screen.findByText("Trợ lý demo sẵn sàng"),
     ).toBeInTheDocument();
     expect(screen.getByTestId("chat-header-subtitle")).toHaveTextContent(
-      "Gợi ý sách, đơn hàng và ưu đãi ngay trong cửa hàng.",
+      "Gợi ý sách, ưu đãi và hỗ trợ mua hàng.",
     );
     expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent(
       "Demo portfolio",
     );
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Hỏi thử về sách, coupon, flash sale hoặc giỏ hàng...",
+      "Hỏi về sách, coupon, flash sale hoặc giỏ hàng...",
     );
     expectNoMojibake();
 
@@ -205,7 +205,7 @@ describe("ChatbotWidget", () => {
       screen.getByText("What is in flash sale today?"),
     ).toBeInTheDocument();
     expect(screen.getByTestId("chat-header-subtitle")).toHaveTextContent(
-      "Book suggestions, orders, and deals right inside the store.",
+      "Book suggestions, deals, and shopping help.",
     );
     expect(screen.getByTestId("chatbot-status-badge")).toHaveTextContent(
       "Portfolio demo",
@@ -239,7 +239,7 @@ describe("ChatbotWidget", () => {
       "Ask about books, orders, or promotions...",
     );
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
-      "Press Enter to send, Shift + Enter for a new line",
+      "Enter to send, Shift + Enter for a new line",
     );
     expect(screen.getByText("Find books about Python")).toBeInTheDocument();
     expectNoMojibake();
@@ -259,7 +259,7 @@ describe("ChatbotWidget", () => {
     fireEvent.click(screen.getByTestId("chatbot-launcher"));
 
     expect(
-      await screen.findByText("Trợ lý demo đang sẵn sàng"),
+      await screen.findByText("Trợ lý demo sẵn sàng"),
     ).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByTestId("chat-input")).toHaveAttribute(
@@ -268,10 +268,10 @@ describe("ChatbotWidget", () => {
       );
     });
     expect(screen.getByTestId("chat-input-placeholder")).toHaveTextContent(
-      "Hỏi thử về sách, coupon, flash sale hoặc giỏ hàng...",
+      "Hỏi về sách, coupon, flash sale hoặc giỏ hàng...",
     );
     expect(screen.getByTestId("chat-input-helper")).toHaveTextContent(
-      "Chế độ demo không gửi dữ liệu cá nhân và không truy vấn đơn hàng thật.",
+      "Demo chỉ trả lời hướng dẫn chung, không truy vấn đơn hàng thật.",
     );
 
     fireEvent.click(screen.getByTestId("chat-input-demo-send"));

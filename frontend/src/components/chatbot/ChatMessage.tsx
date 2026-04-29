@@ -38,10 +38,10 @@ function BookSuggestionCard({ book }: { book: BookSuggestion }) {
   return (
     <Link
       href={`/products/${book.productId}`}
-      className="flex items-center gap-3 rounded-[18px] bg-white p-2 shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px] transition-all hover:bg-[#f5f2ef]"
+      className="flex items-center gap-3 rounded-2xl bg-white p-2 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:bg-[#f8f3ef]"
     >
       {book.imageUrl ? (
-        <div className="w-12 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
+        <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-gray-100">
           <ProductImage
             src={book.imageUrl}
             fallbackSrc={getCategoryPlaceholderImage()}
@@ -52,16 +52,16 @@ function BookSuggestionCard({ book }: { book: BookSuggestion }) {
           />
         </div>
       ) : (
-        <div className="w-12 h-16 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+        <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-100">
           <BookOpen className="h-6 w-6 text-gray-400" />
         </div>
       )}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-gray-900">
           {book.title}
         </p>
-        <p className="text-xs text-gray-500 truncate">{book.author}</p>
-        <div className="flex items-center gap-2 mt-1">
+        <p className="truncate text-xs text-gray-500">{book.author}</p>
+        <div className="mt-1 flex items-center gap-2">
           <span className="text-sm font-semibold text-black">
             {new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", {
               currency: "VND",
@@ -69,14 +69,14 @@ function BookSuggestionCard({ book }: { book: BookSuggestion }) {
               style: "currency",
             }).format(book.price || 0)}
           </span>
-          {book.averageRating && book.averageRating > 0 && (
+          {book.averageRating && book.averageRating > 0 ? (
             <div className="flex items-center gap-0.5">
-              <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
               <span className="text-xs text-gray-500">
                 {book.averageRating.toFixed(1)}
               </span>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </Link>
@@ -91,18 +91,19 @@ function QuickActionButton({
   onClick: (action: QuickAction) => void;
 }) {
   const iconMap: Record<string, React.ReactNode> = {
-    search: <Search className="h-4 w-4" />,
-    track_order: <Package className="h-4 w-4" />,
-    view_cart: <ShoppingCart className="h-4 w-4" />,
-    view_promotions: <Tag className="h-4 w-4" />,
+    search: <Search className="h-3.5 w-3.5" />,
+    track_order: <Package className="h-3.5 w-3.5" />,
+    view_cart: <ShoppingCart className="h-3.5 w-3.5" />,
+    view_promotions: <Tag className="h-3.5 w-3.5" />,
   };
 
   return (
     <button
+      type="button"
       onClick={() => onClick(action)}
-      className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(245,242,239,0.8)] px-3 py-1.5 text-xs text-black shadow-[rgba(78,50,23,0.04)_0px_6px_16px] transition-colors hover:bg-[#eee8e2]"
+      className="inline-flex items-center gap-1.5 rounded-full bg-[#f4f1ee] px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-[#ebe3dc]"
     >
-      {iconMap[action.action] || <MessageCircle className="h-4 w-4" />}
+      {iconMap[action.action] || <MessageCircle className="h-3.5 w-3.5" />}
       {action.label}
     </button>
   );
@@ -198,67 +199,70 @@ export function ChatMessage({
       data-testid={
         isUser ? "chatbot-user-message" : "chatbot-assistant-message"
       }
-      className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}
+      className={cn("flex items-start gap-2.5", isUser && "flex-row-reverse")}
     >
       {isUser ? (
-        <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] shrink-0">
-          <span className="text-white text-xs font-medium">B</span>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+          <span className="text-xs font-medium text-white">B</span>
         </div>
       ) : (
-        <div className="w-8 h-8 rounded-full bg-[rgba(245,242,239,0.8)] flex items-center justify-center shadow-[rgba(78,50,23,0.04)_0px_6px_16px] shrink-0">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f4f1ee]">
           <MessageCircle className="h-4 w-4 text-black" />
         </div>
       )}
 
       <div
-        className={cn("max-w-[75%] flex flex-col gap-1", isUser && "items-end")}
+        className={cn(
+          "flex max-w-[82%] flex-col gap-1",
+          isUser && "items-end",
+        )}
       >
         <div
           className={cn(
-            "px-4 py-3 rounded-2xl tracking-[0.14px]",
+            "rounded-2xl px-3.5 py-2.5",
             isUser
-              ? "bg-black text-white rounded-tr-md shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px]"
-              : "bg-white text-[#4e4e4e] rounded-tl-md shadow-[rgba(0,0,0,0.06)_0px_0px_0px_1px,rgba(0,0,0,0.04)_0px_1px_2px]",
+              ? "rounded-tr-md bg-black text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)]"
+              : "rounded-tl-md bg-white text-[#4e4e4e] shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)]",
           )}
         >
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
             {message.content}
           </p>
         </div>
 
         {isAssistant &&
-          message.bookSuggestions &&
-          message.bookSuggestions.length > 0 && (
-            <div className="mt-2 space-y-2">
-              <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                <BookOpen className="h-3 w-3" />
-                {copy.suggestions}
-              </p>
-              <div className="space-y-1">
-                {message.bookSuggestions.map((book) => (
-                  <BookSuggestionCard key={book.productId} book={book} />
-                ))}
-              </div>
-            </div>
-          )}
-
-        {isAssistant &&
-          message.quickActions &&
-          message.quickActions.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {message.quickActions.map((action, index) => (
-                <QuickActionButton
-                  key={`${action.action}-${index}`}
-                  action={action}
-                  onClick={handleQuickAction}
-                />
+        message.bookSuggestions &&
+        message.bookSuggestions.length > 0 ? (
+          <div className="mt-2 space-y-2">
+            <p className="flex items-center gap-1 text-xs font-medium text-gray-500">
+              <BookOpen className="h-3 w-3" />
+              {copy.suggestions}
+            </p>
+            <div className="space-y-1">
+              {message.bookSuggestions.map((book) => (
+                <BookSuggestionCard key={book.productId} book={book} />
               ))}
             </div>
-          )}
+          </div>
+        ) : null}
+
+        {isAssistant &&
+        message.quickActions &&
+        message.quickActions.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {message.quickActions.map((action, index) => (
+              <QuickActionButton
+                key={`${action.action}-${index}`}
+                action={action}
+                onClick={handleQuickAction}
+              />
+            ))}
+          </div>
+        ) : null}
 
         <div
           className={cn(
-            "flex items-center gap-2 mt-1",
+            "mt-1 flex items-center gap-2",
             isUser ? "flex-row-reverse" : "flex-row",
           )}
         >
@@ -266,7 +270,7 @@ export function ChatMessage({
             {formatTime(message.createdAt)}
           </span>
 
-          {isAssistant && showFeedback && (
+          {isAssistant && showFeedback ? (
             <div className="flex items-center gap-1">
               {isSubmittingFeedback ? (
                 <div className="p-1">
@@ -274,32 +278,36 @@ export function ChatMessage({
                 </div>
               ) : feedbackGiven === "up" ? (
                 <button
+                  type="button"
                   disabled
                   aria-label={copy.helpfulDone}
-                  className="p-1 text-green-500 cursor-default"
+                  className="cursor-default p-1 text-green-500"
                 >
                   <ThumbsUp className="h-3 w-3 fill-green-500" />
                 </button>
               ) : feedbackGiven === "down" ? (
                 <button
+                  type="button"
                   disabled
                   aria-label={copy.unhelpfulDone}
-                  className="p-1 text-red-500 cursor-default"
+                  className="cursor-default p-1 text-red-500"
                 >
                   <ThumbsDown className="h-3 w-3 fill-red-500" />
                 </button>
               ) : (
                 <>
                   <button
+                    type="button"
                     onClick={() => handleFeedback(true)}
-                    className="p-1 text-gray-400 hover:text-green-500 transition-colors"
+                    className="p-1 text-gray-400 transition-colors hover:text-green-500"
                     title={copy.helpful}
                   >
                     <ThumbsUp className="h-3 w-3" />
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleFeedback(false)}
-                    className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                    className="p-1 text-gray-400 transition-colors hover:text-red-500"
                     title={copy.unhelpful}
                   >
                     <ThumbsDown className="h-3 w-3" />
@@ -307,7 +315,7 @@ export function ChatMessage({
                 </>
               )}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

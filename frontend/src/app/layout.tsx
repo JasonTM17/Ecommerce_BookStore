@@ -143,7 +143,7 @@ export default async function RootLayout({
   const meta = getLayoutMeta(locale);
 
   return (
-    <html lang={locale}>
+    <html lang={locale} data-scroll-behavior="smooth">
       <body className={beVietnamPro.className}>
         <SkipLink
           label={

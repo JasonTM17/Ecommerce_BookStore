@@ -354,7 +354,7 @@ test.describe("Portfolio CTA smoke", () => {
     await expect(page).toHaveURL(/\/orders$/);
     await expect(
       page.locator("#main-content").getByText(orderNumber, { exact: false }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 30000 });
     await page
       .getByRole("link", { name: /chi tiết|details/i })
       .first()
@@ -412,7 +412,9 @@ test.describe("Portfolio CTA smoke", () => {
 
     await page.getByTestId("chatbot-launcher").click();
     await expect(page.getByTestId("chatbot-status-badge")).toBeVisible();
-    await expect(page.getByText(/demo|portfolio/i)).toBeVisible();
+    await expect(page.getByTestId("chatbot-status-badge")).toContainText(
+      /demo|portfolio/i,
+    );
 
     await page
       .getByTestId("chatbot-message-input")

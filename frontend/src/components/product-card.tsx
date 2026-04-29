@@ -89,7 +89,7 @@ export function ProductCard({
           href={productHref}
           scroll
           onClick={handleProductNavigation}
-          className="block h-full"
+          className="relative block h-full"
         >
           {!imageLoaded && (
             <div className="absolute inset-0 animate-pulse bg-[#e8dfd6]" />
