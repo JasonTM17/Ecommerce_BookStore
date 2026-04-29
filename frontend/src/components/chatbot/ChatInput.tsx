@@ -46,6 +46,8 @@ export function ChatInput({
       <div className="flex items-end gap-2">
         <div className="relative flex-1">
           <textarea
+            data-testid="chatbot-message-input"
+            aria-label={placeholder}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -72,6 +74,8 @@ export function ChatInput({
 
         <Button
           type="submit"
+          data-testid="chatbot-send-message"
+          aria-label="Send message"
           size="icon"
           disabled={!message.trim() || isTyping || disabled}
           className={cn(

@@ -297,6 +297,7 @@ function LoginContent() {
 
             <button
               type="submit"
+              data-testid="login-submit"
               disabled={isLoading}
               className="w-full h-12 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold rounded-md transition-colors disabled:cursor-not-allowed"
             >

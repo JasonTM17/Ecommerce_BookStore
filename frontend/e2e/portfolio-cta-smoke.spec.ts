@@ -7,10 +7,13 @@ declare global {
   }
 }
 
-const CUSTOMER_EMAIL = process.env.TEST_USER_EMAIL || "customer@example.com";
+const CUSTOMER_EMAIL =
+  process.env.TEST_USER_EMAIL || `portfolio-e2e-${Date.now()}@example.com`;
 const CUSTOMER_PASSWORD =
-  process.env.TEST_USER_PASSWORD || "E2ETestDemoCustomerPasswordForBookStore123!";
+  process.env.TEST_USER_PASSWORD ||
+  "E2ETestDemoCustomerPasswordForBookStore123!";
 const API_URL = process.env.API_URL || "http://localhost:3001/api";
+let customerAccountSeeded = false;
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -47,6 +50,32 @@ async function installBrowserActionSpies(page: Page) {
       return null;
     };
   });
+}
+
+async function ensureCustomerAccount(page: Page) {
+  if (customerAccountSeeded) {
+    return;
+  }
+
+  const response = await page
+    .context()
+    .request.post(`${API_URL}/auth/register`, {
+      data: {
+        email: CUSTOMER_EMAIL,
+        password: CUSTOMER_PASSWORD,
+        firstName: "Portfolio",
+        lastName: "Customer",
+        phoneNumber: "0901231234",
+      },
+    });
+
+  if (!response.ok() && ![400, 409].includes(response.status())) {
+    throw new Error(
+      `Unable to prepare the portfolio customer account. Status: ${response.status()}`,
+    );
+  }
+
+  customerAccountSeeded = true;
 }
 
 async function expectImageLoaded(image: Locator) {
@@ -93,6 +122,7 @@ async function getFlashSaleCard(page: Page, index = 0) {
 }
 
 async function login(page: Page) {
+  await ensureCustomerAccount(page);
   await page.waitForLoadState("networkidle");
 
   let loginSucceeded = false;
@@ -108,7 +138,7 @@ async function login(page: Page) {
       );
     });
 
-    await page.locator('button[type="submit"]').click();
+    await page.getByTestId("login-submit").click();
 
     const loginResponse = await loginResponsePromise;
     if (loginResponse.ok()) {
@@ -381,20 +411,17 @@ test.describe("Portfolio CTA smoke", () => {
     expect(openCalls[0]?.[0]).toContain("mailto:contact@bookstore.com");
 
     await page.getByTestId("chatbot-launcher").click();
-    await expect(page.getByTestId("chatbot-login-cta")).toBeVisible();
     await expect(page.getByTestId("chatbot-status-badge")).toBeVisible();
+    await expect(page.getByText(/demo|portfolio/i)).toBeVisible();
 
-    await Promise.all([
-      page.waitForURL(/\/login\?redirect=%2F$/),
-      page.getByTestId("chatbot-login-cta").click(),
-    ]);
-
-    await login(page);
-    await expect(page).toHaveURL(/\/$/);
-
-    await page.getByTestId("chatbot-launcher").click();
-    await expect(page.getByTestId("chatbot-status-badge")).toContainText(
-      /grok|dự phòng|fallback|degraded/i,
-    );
+    await page
+      .getByTestId("chatbot-message-input")
+      .fill("Có coupon nào đang dùng được không?");
+    await page.getByTestId("chatbot-send-message").click();
+    await expect(
+      page
+        .getByTestId("chatbot-assistant-message")
+        .filter({ hasText: /Khuyến mãi|Promotions/i }),
+    ).toBeVisible({ timeout: 10000 });
   });
 });

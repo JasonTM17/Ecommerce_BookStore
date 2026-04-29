@@ -194,7 +194,12 @@ export function ChatMessage({
   };
 
   return (
-    <div className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}>
+    <div
+      data-testid={
+        isUser ? "chatbot-user-message" : "chatbot-assistant-message"
+      }
+      className={cn("flex items-start gap-3", isUser && "flex-row-reverse")}
+    >
       {isUser ? (
         <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center shadow-[rgba(0,0,0,0.4)_0px_0px_1px,rgba(0,0,0,0.04)_0px_4px_4px] shrink-0">
           <span className="text-white text-xs font-medium">B</span>
