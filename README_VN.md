@@ -33,6 +33,21 @@ Dự án được xây dựng trên mô hình Micro-monolith hiện đại:
 - Biểu đồ xu hướng doanh thu (Monthly Trend).
 - Quản lý kho hàng (Cảnh báo tồn kho thấp).
 
+## Ảnh demo Portfolio
+
+Các ảnh dưới đây được chụp từ bản build local giống production để người xem portfolio thấy đúng giao diện thật.
+
+![Trang chủ BookStore](./docs/portfolio/screenshots/desktop/home.png)
+![Flash sale BookStore](./docs/portfolio/screenshots/desktop/flash-sale.png)
+![Chatbot BookStore](./docs/portfolio/screenshots/mobile/chatbot.png)
+
+Cập nhật lại ảnh sau khi chỉnh UI:
+
+```bash
+cd frontend
+BASE_URL=http://localhost:3001 npm run portfolio:screenshots
+```
+
 ## Hướng dẫn Cài đặt
 
 ### Yêu cầu Hệ thống
@@ -60,6 +75,13 @@ Hệ thống sẽ khả dụng tại:
 - **CI/CD**: Tự động chạy Unit Test, Integration Test (MySQL), E2E Test (Playwright) và Security Scan (Trivy) trên mỗi lần push.
 - **Chatbot an toàn**: Health endpoint công khai không trả lỗi provider thô; context gửi sang Grok không kèm email người dùng.
 - **Docker Hub**: Pipeline publish thật khi repository secrets `DOCKERHUB_USERNAME` và `DOCKERHUB_TOKEN` đã được cấu hình.
+
+Kiểm tra flow production chính:
+
+```bash
+cd frontend
+BASE_URL=http://localhost:3001 npm run test:e2e:journey
+```
 
 ## Tài liệu chi tiết
 

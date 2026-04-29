@@ -1,32 +1,68 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="ogTitle ogDesc">
   <title id="ogTitle">BookStore Vietnam portfolio preview</title>
-  <desc id="ogDesc">Portfolio preview image for the BookStore Vietnam full-stack project.</desc>
+  <desc id="ogDesc">A polished social preview for the BookStore Vietnam full-stack bookstore portfolio.</desc>
   <defs>
-    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="55%" stop-color="#1d4ed8" />
-      <stop offset="100%" stop-color="#38bdf8" />
+    <linearGradient id="background" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff8ed" />
+      <stop offset="52%" stop-color="#fffdf7" />
+      <stop offset="100%" stop-color="#f3ebe1" />
     </linearGradient>
-    <linearGradient id="card" x1="0%" x2="100%" y1="0%" y2="100%">
-      <stop offset="0%" stop-color="#eff6ff" stop-opacity="0.95" />
-      <stop offset="100%" stop-color="#dbeafe" stop-opacity="0.92" />
+    <linearGradient id="hero" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#1f1a17" />
+      <stop offset="55%" stop-color="#4a1712" />
+      <stop offset="100%" stop-color="#b42318" />
     </linearGradient>
+    <linearGradient id="sale" x1="0%" x2="100%" y1="0%" y2="0%">
+      <stop offset="0%" stop-color="#b42318" />
+      <stop offset="60%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#facc15" />
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="20" stdDeviation="22" flood-color="#4e3217" flood-opacity="0.16" />
+    </filter>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)" />
-  <circle cx="1030" cy="110" r="180" fill="#ffffff" fill-opacity="0.08" />
-  <circle cx="110" cy="560" r="220" fill="#ffffff" fill-opacity="0.08" />
-  <rect x="88" y="86" width="1024" height="458" rx="40" fill="#0f172a" fill-opacity="0.18" stroke="#ffffff" stroke-opacity="0.18" />
-  <g transform="translate(120 150)">
-    <rect width="180" height="180" rx="36" fill="url(#card)" />
-    <path d="M44 44c0-10.493 8.507-19 19-19h85c10.493 0 19 8.507 19 19v95c0 10.493-8.507 19-19 19H63c-10.493 0-19-8.507-19-19V44Z" fill="#2563eb" fill-opacity="0.12"/>
-    <path d="M63 25h19v133H63c-10.493 0-19-8.507-19-19V44c0-10.493 8.507-19 19-19Z" fill="#2563eb"/>
-    <path d="M96 70h46M96 96h46M96 122h34" stroke="#2563eb" stroke-linecap="round" stroke-width="10"/>
+
+  <rect width="1200" height="630" fill="url(#background)" />
+  <rect x="42" y="42" width="1116" height="546" rx="44" fill="#ffffff" stroke="#eadfce" stroke-width="2" filter="url(#softShadow)" />
+
+  <g transform="translate(86 84)">
+    <rect width="1028" height="462" rx="34" fill="url(#hero)" />
+    <rect x="28" y="28" width="972" height="406" rx="28" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.10" />
+
+    <g transform="translate(62 62)">
+      <rect width="92" height="92" rx="26" fill="#fff8ed" />
+      <path d="M30 28c0-5.5 4.5-10 10-10h26c9.4 0 17 7.6 17 17v39c0 2.8-2.2 5-5 5H40c-5.5 0-10-4.5-10-10V28Z" fill="#1f1a17" />
+      <path d="M47 25v48M60 33h15M60 46h15M60 59h11" stroke="#fff8ed" stroke-width="6" stroke-linecap="round" />
+    </g>
+
+    <text x="62" y="214" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="800" fill="#ffffff">BookStore Vietnam</text>
+    <text x="64" y="274" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="500" fill="#ffe7d6">Production-ready bookstore portfolio</text>
+    <text x="64" y="318" font-family="Arial, Helvetica, sans-serif" font-size="25" fill="#f9d2bd">Next.js storefront, Spring Boot API, cart, checkout, orders, flash sale, admin and monitoring.</text>
+
+    <g transform="translate(64 356)">
+      <rect width="158" height="48" rx="24" fill="#ffffff" />
+      <text x="79" y="32" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" text-anchor="middle" fill="#1f1a17">Live Catalog</text>
+    </g>
+    <g transform="translate(238 356)">
+      <rect width="148" height="48" rx="24" fill="#fff1e6" />
+      <text x="74" y="32" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" text-anchor="middle" fill="#b42318">Flash Sale</text>
+    </g>
+    <g transform="translate(402 356)">
+      <rect width="156" height="48" rx="24" fill="#dcfce7" />
+      <text x="78" y="32" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" text-anchor="middle" fill="#166534">Health Check</text>
+    </g>
   </g>
-  <text x="350" y="235" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">BookStore Vietnam</text>
-  <text x="350" y="310" font-family="Arial, sans-serif" font-size="34" fill="#dbeafe">Full-stack bookstore portfolio with Spring Boot, Next.js, MySQL, Docker, and live demo flows.</text>
-  <g transform="translate(350 390)">
-    <rect width="236" height="64" rx="32" fill="#facc15" />
-    <text x="118" y="41" font-family="Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle" fill="#111827">Portfolio Ready</text>
+
+  <g transform="translate(790 142)">
+    <rect width="248" height="326" rx="28" fill="#fffdf7" filter="url(#softShadow)" />
+    <rect x="24" y="24" width="84" height="126" rx="14" fill="#f8f5f1" stroke="#eadfce" />
+    <rect x="38" y="42" width="56" height="88" rx="6" fill="#1f1a17" />
+    <rect x="126" y="32" width="88" height="16" rx="8" fill="#1f1a17" />
+    <rect x="126" y="62" width="72" height="12" rx="6" fill="#b7a99b" />
+    <rect x="126" y="92" width="60" height="22" rx="11" fill="#b42318" />
+    <rect x="24" y="178" width="200" height="14" rx="7" fill="#eadfce" />
+    <rect x="24" y="178" width="146" height="14" rx="7" fill="url(#sale)" />
+    <rect x="24" y="220" width="200" height="54" rx="18" fill="#1f1a17" />
+    <text x="124" y="254" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" text-anchor="middle" fill="#ffffff">-22% today</text>
   </g>
-  <text x="350" y="510" font-family="Arial, sans-serif" font-size="28" fill="#bfdbfe">Catalog • Cart • Orders • Promotions • Flash Sale • Admin</text>
 </svg>

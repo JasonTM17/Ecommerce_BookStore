@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useLanguage } from "@/components/providers/language-provider";
+import { logClientError } from "@/lib/monitoring";
 
 export default function ErrorPage({
   error,
@@ -15,6 +16,13 @@ export default function ErrorPage({
 
   useEffect(() => {
     console.error(error);
+    logClientError({
+      component: "app/error",
+      digest: error.digest,
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    });
   }, [error]);
 
   return (

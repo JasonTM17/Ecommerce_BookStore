@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL || "https://bookstore-web-dr1k.onrender.com";
 const SITE_NAME = "BookStore Vietnam";
+const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
 const DEFAULT_DESCRIPTION =
   "Mua sách trực tuyến với giá tốt nhất. Hơn 10.000 đầu sách từ nhiều thể loại: văn học, khoa học, kỹ năng sống, sách ngoại văn.";
 const LOGO_URL = `${BASE_URL}/logo.png`;
@@ -28,7 +29,7 @@ export function buildMetadata(params: PageSeoParams): Metadata {
     title,
     description = DEFAULT_DESCRIPTION,
     path,
-    image = `${BASE_URL}/og-image.jpg`,
+    image = DEFAULT_OG_IMAGE,
     type = "website",
     publishedTime,
     modifiedTime,

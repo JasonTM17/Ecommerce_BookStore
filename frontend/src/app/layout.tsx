@@ -7,6 +7,7 @@ import { WebVitals } from "@/components/seo/WebVitals";
 import { OrganizationSchema, WebSiteSchema } from "@/components/seo/JsonLd";
 import { SkipLink } from "@/components/a11y/SkipLink";
 import { ClientChrome } from "@/components/layout/client-chrome";
+import { ClientErrorReporter } from "@/components/monitoring/ClientErrorReporter";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { getRequestLocale } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n";
@@ -79,7 +80,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: meta.description,
       images: [
         {
-          url: `${BASE_URL}/og-image.svg`,
+          url: `${BASE_URL}/og-image.png`,
           width: 1200,
           height: 630,
           alt: "BookStore Vietnam",
@@ -90,7 +91,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: meta.title,
       description: meta.description,
-      images: [`${BASE_URL}/og-image.svg`],
+      images: [`${BASE_URL}/og-image.png`],
     },
     robots: {
       index: true,
@@ -155,6 +156,7 @@ export default async function RootLayout({
         <OrganizationSchema />
         <WebSiteSchema />
         <WebVitals />
+        <ClientErrorReporter />
         <ServiceWorkerRegistration />
         <Providers initialLocale={locale}>
           <main id="main-content" role="main" aria-label={meta.mainAriaLabel}>

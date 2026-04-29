@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home } from "lucide-react";
 import Link from "next/link";
 import { getLocaleFromCookie, getTranslation } from "@/lib/i18n";
+import { logClientError } from "@/lib/monitoring";
 
 export default function GlobalError({
   error,
@@ -18,6 +19,13 @@ export default function GlobalError({
 
   useEffect(() => {
     console.error("Global error:", error);
+    logClientError({
+      component: "app/global-error",
+      digest: error.digest,
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    });
   }, [error]);
 
   return (

@@ -60,6 +60,7 @@ agency-agents/
 *.temp
 *.tsbuildinfo
 .codex-artifacts/
+.codex-run/
 tmp-*
 tmp_*
 .cache/

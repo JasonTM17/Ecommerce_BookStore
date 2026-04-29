@@ -8,6 +8,21 @@ Portfolio full-stack bookstore built with Spring Boot, Next.js, MySQL, Docker Co
 - `frontend/`: Next.js 16 App Router, Tailwind CSS, Vitest, Playwright
 - `mobile/`: mobile app workspace kept for future expansion
 
+## Portfolio preview
+
+These screenshots are generated from the production-like local build so the README reflects what reviewers actually see in the browser.
+
+![BookStore home](./docs/portfolio/screenshots/desktop/home.png)
+![BookStore flash sale](./docs/portfolio/screenshots/desktop/flash-sale.png)
+![BookStore chatbot](./docs/portfolio/screenshots/mobile/chatbot.png)
+
+Refresh the assets after UI changes:
+
+```bash
+cd frontend
+BASE_URL=http://localhost:3001 npm run portfolio:screenshots
+```
+
 ## Demo-first quick start
 
 1. Create local environment variables:
@@ -119,6 +134,13 @@ Portfolio smoke path:
 ```bash
 docker compose up -d --build
 cd frontend && BASE_URL=http://localhost:3001 npm run test:e2e:portfolio
+```
+
+Full storefront journey:
+
+```bash
+cd frontend
+BASE_URL=http://localhost:3001 npm run test:e2e:journey
 ```
 
 ## Chatbot and Grok
