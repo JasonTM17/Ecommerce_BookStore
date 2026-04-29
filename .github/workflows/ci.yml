@@ -889,6 +889,7 @@ jobs:
       cancel-in-progress: false
     env:
       PRODUCTION_FRONTEND_URL: ${{ vars.PRODUCTION_FRONTEND_URL || 'https://bookstore-web-dr1k.onrender.com' }}
+      RENDER_FRONTEND_DEPLOY_MODE: ${{ vars.RENDER_FRONTEND_DEPLOY_MODE || 'source' }}
 
     steps:
       - name: Trigger Render backend deploy
@@ -913,8 +914,9 @@ jobs:
           deploy_hook="${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}"
           dockerhub_username="${{ secrets.DOCKERHUB_USERNAME }}"
           dockerhub_namespace="${{ vars.DOCKERHUB_NAMESPACE }}"
+          deploy_mode="${RENDER_FRONTEND_DEPLOY_MODE:-source}"
 
-          if [ -n "${dockerhub_username}" ]; then
+          if [ "${deploy_mode}" = "image" ] && [ -n "${dockerhub_username}" ]; then
             namespace="${dockerhub_namespace:-$dockerhub_username}"
             image_url="docker.io/${namespace}/ecommerce-bookstore-frontend:latest"
             encoded_image_url=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "${image_url}")
@@ -923,13 +925,14 @@ jobs:
               separator="&"
             fi
 
-            if curl -fsS "${deploy_hook}${separator}imgURL=${encoded_image_url}" > /dev/null; then
-              echo "Frontend image-backed deploy triggered with Docker Hub latest tag."
-            else
-              echo "Image-backed deploy hook was not accepted; falling back to the plain Render deploy hook."
-              curl -fsS "${deploy_hook}" > /dev/null
-            fi
+            echo "Using Render image-backed deploy mode with Docker Hub latest tag."
+            curl -fsS "${deploy_hook}${separator}imgURL=${encoded_image_url}" > /dev/null
           else
+            if [ "${deploy_mode}" = "image" ]; then
+              echo "WARNING: RENDER_FRONTEND_DEPLOY_MODE=image but Docker Hub credentials are unavailable; falling back to source deploy hook."
+            else
+              echo "Using Render source/Blueprint deploy mode."
+            fi
             curl -fsS "${deploy_hook}" > /dev/null
           fi
           echo "Frontend deploy triggered."

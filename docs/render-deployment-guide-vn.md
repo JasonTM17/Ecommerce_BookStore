@@ -45,6 +45,11 @@ Nếu muốn GitHub Actions tự kích hoạt redeploy sau khi push lên `master
 5. Lặp lại với service `bookstore-web`:
    - `RENDER_DEPLOY_HOOK_FRONTEND`
 
+Hãy chắc chắn `RENDER_DEPLOY_HOOK_FRONTEND` được copy từ đúng service
+production `bookstore-web`, không phải từ `bookstore-api`, preview service,
+hoặc một frontend service cũ. CI sẽ kiểm tra điều này bằng cách đợi
+`/api/health` trả về đúng Git commit hiện tại sau khi deploy.
+
 Nếu có môi trường staging theo nhánh `develop`, có thể cấu hình thêm:
 
 - `RENDER_DEPLOY_HOOK_BACKEND_STAGING`
@@ -78,6 +83,12 @@ Nếu không đặt repository variable `DOCKERHUB_NAMESPACE`, workflow sẽ dù
 
 Những tag này dành cho artifact registry. Riêng lịch sử deploy trong Render Blueprint/source deploy vẫn sẽ hiển thị theo **commit hash**, đây là hành vi bình thường của Render khi deploy từ source.
 
+Mặc định GitHub Actions kích hoạt Render theo chế độ **source/Blueprint deploy**.
+Nếu sau này đổi frontend Render service sang image-backed service, hãy đặt
+repository variable `RENDER_FRONTEND_DEPLOY_MODE=image`. Ở image mode, Render
+yêu cầu `imgURL` trong deploy hook phải khớp registry/name đang cấu hình trong
+service và chỉ thay đổi tag hoặc digest.
+
 ## Xác minh sau deploy
 
 Sau khi deploy xong, kiểm tra:
@@ -90,7 +101,10 @@ Sau khi deploy xong, kiểm tra:
    - Kỳ vọng: giao diện Next.js BookStore hiện tại tải lên đúng
 3. **Proxy API**
    - Frontend phải gọi backend qua `/api` ổn định
-4. **Smoke các route chính**
+4. **Frontend commit health**
+   - `https://bookstore-web.onrender.com/api/health`
+   - `frontend.commit` phải khớp GitHub Actions commit SHA của lần deploy đó
+5. **Smoke các route chính**
    - `/products`
    - `/products/[id]`
    - `/flash-sale`

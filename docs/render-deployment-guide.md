@@ -45,6 +45,11 @@ If you want GitHub Actions to trigger redeploys on pushes to `master`:
 5. Repeat the process for `bookstore-web`:
    - `RENDER_DEPLOY_HOOK_FRONTEND`
 
+Make sure `RENDER_DEPLOY_HOOK_FRONTEND` is copied from the production
+`bookstore-web` service, not from `bookstore-api`, a preview service, or an old
+frontend service. The CI pipeline verifies this by waiting for
+`/api/health` to report the current Git commit after deployment.
+
 Optional staging secrets for `develop`:
 
 - `RENDER_DEPLOY_HOOK_BACKEND_STAGING`
@@ -78,6 +83,12 @@ If `DOCKERHUB_NAMESPACE` is not set as a repository variable, the workflow uses 
 
 These tags are intended for registry artifacts. Render Blueprint/source deploy history will still display **commit hashes**, which is expected behavior for source-based deployments.
 
+By default, GitHub Actions triggers Render in **source/Blueprint deploy** mode.
+If the Render frontend service is changed to an image-backed service later, set
+the repository variable `RENDER_FRONTEND_DEPLOY_MODE=image`. In image mode,
+Render requires the deploy hook `imgURL` value to match the service's configured
+image registry/name and only change the tag or digest.
+
 ## Post-deploy verification
 
 After deployment completes, verify:
@@ -90,7 +101,10 @@ After deployment completes, verify:
    - Expected result: the current Next.js BookStore portfolio UI
 3. **API proxy**
    - Frontend requests through `/api` should resolve against the backend
-4. **Smoke key routes**
+4. **Frontend commit health**
+   - `https://bookstore-web.onrender.com/api/health`
+   - `frontend.commit` should match the GitHub Actions commit SHA for the deployment
+5. **Smoke key routes**
    - `/products`
    - `/products/[id]`
    - `/flash-sale`
