@@ -50,7 +50,7 @@ npm run portfolio:screenshots
 
 ## Bằng chứng chất lượng
 
-Lần audit local production gần nhất: **29/04/2026**.
+Lần audit local production gần nhất: **30/04/2026**.
 
 | Gate | Command | Kết quả hiện tại |
 | --- | --- | --- |

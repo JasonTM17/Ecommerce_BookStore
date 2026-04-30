@@ -1,6 +1,6 @@
 # Security Audit Notes
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-04-30
 
 BookStore is a portfolio-oriented commerce project, but the public deployment is treated like a production surface: secrets stay outside Git, public responses are sanitized, dependency audits are run, and health checks avoid leaking operational detail.
 

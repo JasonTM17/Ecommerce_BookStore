@@ -50,7 +50,7 @@ npm run portfolio:screenshots
 
 ## Verified Quality Gates
 
-Last full local production audit: **April 29, 2026**.
+Last full local production audit: **April 30, 2026**.
 
 | Gate | Command | Current result |
 | --- | --- | --- |

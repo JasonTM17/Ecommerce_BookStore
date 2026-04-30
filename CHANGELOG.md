@@ -4,6 +4,8 @@ All notable portfolio, product, deployment, and documentation changes are record
 
 ## Unreleased
 
+- Added route-level SEO metadata for auth, account, admin, wishlist, orders, and static information pages.
+- Re-ran the full local production audit on 2026-04-30.
 - Reworked project documentation into a production-style portfolio case study.
 - Added production runbooks, portfolio asset documentation, and clearer Render deployment troubleshooting.
 - Aligned documentation with current Render health paths and manual deploy strategy.
