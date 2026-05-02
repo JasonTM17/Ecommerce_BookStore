@@ -1,5 +1,7 @@
 package com.bookstore.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @DisplayName("HealthController Tests")
 class HealthControllerTest {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
     private MockMvc mockMvc;
@@ -52,13 +56,19 @@ class HealthControllerTest {
     void healthCheck_returnsFullStatus() throws Exception {
         MvcResult result = mockMvc.perform(get("/health"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.status").exists())
                 .andExpect(jsonPath("$.service").exists())
                 .andExpect(jsonPath("$.version").exists())
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
+        JsonNode health = OBJECT_MAPPER.readTree(content);
+        boolean allComponentsUp = "UP".equals(health.at("/database/status").asText())
+                && "UP".equals(health.at("/memory/status").asText())
+                && "UP".equals(health.at("/disk/status").asText());
+
+        assertThat(health.path("status").asText()).isEqualTo(allComponentsUp ? "UP" : "DEGRADED");
         assertThat(content).contains("database");
         assertThat(content).contains("memory");
         assertThat(content).contains("disk");

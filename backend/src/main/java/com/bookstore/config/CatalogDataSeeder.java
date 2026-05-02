@@ -112,16 +112,13 @@ public final class CatalogDataSeeder {
         return products;
     }
 
-    public static List<Product> normalizeExistingProductImages(
-            ProductRepository productRepository,
-            List<Product> products,
-            Logger log) {
+    public static List<Product> normalizeExistingProductImages(List<Product> products, Logger log) {
 
         if (products == null || products.isEmpty()) {
             return List.of();
         }
 
-        List<Product> updatedProducts = new ArrayList<>();
+        int updatedCount = 0;
         for (Product product : products) {
             String normalizedImageUrl = resolveNormalizedImageUrl(product);
             List<String> normalizedImages = resolveNormalizedImages(product, normalizedImageUrl);
@@ -131,14 +128,13 @@ public final class CatalogDataSeeder {
 
             if (imageUrlChanged || imagesChanged) {
                 product.setImageUrl(normalizedImageUrl);
-                product.setImages(normalizedImages);
-                updatedProducts.add(product);
+                product.setImages(new ArrayList<>(normalizedImages));
+                updatedCount++;
             }
         }
 
-        if (!updatedProducts.isEmpty()) {
-            productRepository.saveAll(updatedProducts);
-            log.info("Normalized image paths for {} existing products", updatedProducts.size());
+        if (updatedCount > 0) {
+            log.info("Normalized image paths for {} existing products", updatedCount);
         }
 
         return products;

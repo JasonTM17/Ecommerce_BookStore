@@ -20,6 +20,6 @@ public class ProductImageNormalizationService {
     @Transactional
     public List<Product> normalizeExistingProductImages() {
         List<Product> products = productRepository.findAllWithCategoryAndImages();
-        return CatalogDataSeeder.normalizeExistingProductImages(productRepository, products, log);
+        return CatalogDataSeeder.normalizeExistingProductImages(products, log);
     }
 }
