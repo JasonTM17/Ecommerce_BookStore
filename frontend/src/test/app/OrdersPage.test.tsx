@@ -24,8 +24,10 @@ vi.mock("@/components/providers/language-provider", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
+    push: vi.fn(),
     replace: vi.fn(),
   }),
+  usePathname: () => "/orders",
 }));
 
 vi.mock("@/lib/store", async () => {

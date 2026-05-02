@@ -53,6 +53,7 @@ vi.mock("@/components/providers/language-provider", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: testState.replaceMock, push: testState.pushMock }),
+  usePathname: () => "/checkout",
 }));
 
 vi.mock("sonner", () => ({

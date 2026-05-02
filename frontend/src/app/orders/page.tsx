@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { useAuthStore } from "@/lib/store";
+import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { buildLoginRedirect, formatCurrency } from "@/lib/utils";
@@ -113,7 +113,7 @@ function OrderStatusBadge({
 export default function OrdersPage() {
   const { locale } = useLanguage();
   const copy = COPY[locale];
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuth(true);
   const router = useRouter();
 
   const { data: ordersData, isLoading } = useQuery({

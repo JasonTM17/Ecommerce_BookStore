@@ -32,12 +32,12 @@ import {
   resolveProductImageSource,
 } from "@/lib/product-images";
 import {
-  useAuthStore,
   useCartStore,
   type Address,
   type CartResponse,
   type Order,
 } from "@/lib/store";
+import { useAuth } from "@/hooks/useAuth";
 import { buildLoginRedirect, formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -217,7 +217,7 @@ export default function CheckoutPage() {
   const copy = COPY[locale];
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuth(true);
   const { items, clearCart, setCart } = useCartStore();
   const [step, setStep] = useState(1);
   const [shippingMethod, setShippingMethod] = useState("STANDARD");
