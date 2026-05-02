@@ -13,8 +13,7 @@ permissions:
 env:
   JAVA_VERSION: "17"
   NODE_VERSION: "20"
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  DOCKERHUB_NAMESPACE_DEFAULT: nguyenson1710
 
 jobs:
   backend-test:
@@ -209,11 +208,11 @@ jobs:
           fail_ci_if_error: false
 
   docker-publish-backend:
-    name: Docker Publish Backend (GHCR)
+    name: Docker Publish Backend (GHCR disabled)
     runs-on: ubuntu-latest
     timeout-minutes: 75
     needs: [backend-test, frontend-test, frontend-build, e2e-test, code-quality, security]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+    if: ${{ false }}
     concurrency:
       group: ci-docker-publish-backend-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
@@ -274,7 +273,7 @@ jobs:
         id: meta-backend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
+          images: ${{ env.GHCR_BACKEND_IMAGE }}
           tags: ${{ steps.backend-version.outputs.tags }}
           labels: |
             org.opencontainers.image.version=${{ steps.backend-version.outputs.version }}
@@ -292,11 +291,11 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
   docker-publish-frontend:
-    name: Docker Publish Frontend (GHCR)
+    name: Docker Publish Frontend (GHCR disabled)
     runs-on: ubuntu-latest
     timeout-minutes: 75
     needs: [backend-test, frontend-test, frontend-build, e2e-test, code-quality, security]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master')
+    if: ${{ false }}
     concurrency:
       group: ci-docker-publish-frontend-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
@@ -353,7 +352,7 @@ jobs:
         id: meta-frontend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
+          images: ${{ env.GHCR_FRONTEND_IMAGE }}
           tags: ${{ steps.frontend-version.outputs.tags }}
           labels: |
             org.opencontainers.image.version=${{ steps.frontend-version.outputs.version }}
@@ -403,7 +402,7 @@ jobs:
             exit 0
           fi
 
-          namespace="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_USERNAME}"
+          namespace="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_NAMESPACE_DEFAULT}"
           echo "enabled=true" >> "$GITHUB_OUTPUT"
           echo "namespace=${namespace}" >> "$GITHUB_OUTPUT"
 
@@ -525,7 +524,7 @@ jobs:
             exit 0
           fi
 
-          namespace="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_USERNAME}"
+          namespace="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_NAMESPACE_DEFAULT}"
           echo "enabled=true" >> "$GITHUB_OUTPUT"
           echo "namespace=${namespace}" >> "$GITHUB_OUTPUT"
 
@@ -873,7 +872,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging (Render)
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test, code-quality, docker-publish-backend, docker-publish-frontend]
+    needs: [backend-test, frontend-test, code-quality, dockerhub-publish-backend, dockerhub-publish-frontend]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     concurrency:
       group: ci-deploy-staging-${{ github.workflow }}-${{ github.ref }}
@@ -903,7 +902,7 @@ jobs:
   deploy-production:
     name: Deploy to Production (Render)
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test, e2e-test, code-quality, security, docker-publish-backend, docker-publish-frontend]
+    needs: [backend-test, frontend-test, e2e-test, code-quality, security, dockerhub-publish-backend, dockerhub-publish-frontend]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     concurrency:
       group: ci-deploy-production-${{ github.workflow }}-${{ github.ref }}
@@ -938,7 +937,7 @@ jobs:
           deploy_mode="${RENDER_FRONTEND_DEPLOY_MODE:-source}"
 
           if [ "${deploy_mode}" = "image" ] && [ -n "${dockerhub_username}" ]; then
-            namespace="${dockerhub_namespace:-$dockerhub_username}"
+            namespace="${dockerhub_namespace:-$DOCKERHUB_NAMESPACE_DEFAULT}"
             image_url="docker.io/${namespace}/ecommerce-bookstore-frontend:latest"
             encoded_image_url=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "${image_url}")
             separator="?"

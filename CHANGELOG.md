@@ -4,6 +4,7 @@ All notable portfolio, product, deployment, and documentation changes are record
 
 ## Unreleased
 
+- Made Docker Hub `nguyenson1710/ecommerce-bookstore-backend` and `nguyenson1710/ecommerce-bookstore-frontend` the canonical public image packages, and disabled legacy GHCR publishing.
 - Added route-level SEO metadata for auth, account, admin, wishlist, orders, and static information pages.
 - Re-ran the full local production audit on 2026-04-30.
 - Reworked project documentation into a production-style portfolio case study.
