@@ -11,6 +11,15 @@ All notable portfolio, product, deployment, and documentation changes are record
 - Aligned documentation with current Render health paths and manual deploy strategy.
 - Replaced generic design inspiration notes with BookStore-specific design system guidance.
 
+## 1.1.3 - 2026-05-02
+
+- Recovered the existing Render production deployment for `bookstore-api` and `bookstore-web` without deleting service history.
+- Fixed backend demo catalog image normalization so deferred portfolio seeding no longer fails during Render startup.
+- Stabilized backend health tests against host disk and memory warning states.
+- Pinned the Trivy GitHub Action and enforced the high/critical vulnerability baseline in CI.
+- Fixed protected checkout and order routes so guest redirects are covered by the portfolio E2E smoke suite.
+- Verified GitHub Actions, Render production deploy, backend live/readiness health, and frontend aggregate health on commit `10eccae`.
+
 ## 1.1.2 - 2026-04-29
 
 - Stabilized backend demo runtime and catalog seed data for local production verification.

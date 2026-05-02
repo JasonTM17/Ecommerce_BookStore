@@ -42,7 +42,7 @@ npm run portfolio:screenshots
 | Area | Stack |
 | --- | --- |
 | Frontend | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS, React Query, Zustand |
-| Backend | Spring Boot 3.2, Java 17, Spring Security, JWT, Spring Data JPA, Actuator |
+| Backend | Spring Boot 3.5, Java 17, Spring Security, JWT, Spring Data JPA, Actuator |
 | Data | MySQL for local and CI, PostgreSQL for Render |
 | Testing | Vitest, Playwright, Maven, npm audit |
 | DevOps | Docker Compose, Render Blueprint, GitHub Actions, GHCR, optional Docker Hub publish |
@@ -50,7 +50,7 @@ npm run portfolio:screenshots
 
 ## Verified Quality Gates
 
-Last full local production audit: **April 30, 2026**.
+Last full production recovery audit: **May 2, 2026**.
 
 | Gate | Command | Current result |
 | --- | --- | --- |
@@ -63,6 +63,16 @@ Last full local production audit: **April 30, 2026**.
 | Dependency audit | `cd frontend && npm audit --audit-level=moderate` | 0 vulnerabilities |
 | Health monitor | `cd frontend && npm run monitor:health` | Frontend, backend, and database UP |
 | Backend compile | `cd backend && mvn -q -DskipTests compile` | Pass |
+
+## Latest Production Recovery
+
+On **May 2, 2026**, commit [`10eccae`](https://github.com/JasonTM17/Ecommerce_BookStore/commit/10eccae0a8be15d0aac124fd85b05622eae80b4c) completed the Render, CI/CD, and security recovery pass for the existing production services.
+
+- CI/CD: [GitHub Actions run 25247620492](https://github.com/JasonTM17/Ecommerce_BookStore/actions/runs/25247620492) completed successfully across backend tests, frontend tests, build, code quality, security scan, E2E, image publish, and production deploy.
+- Render: the existing `bookstore-api` and `bookstore-web` services were redeployed without deleting or recreating service history.
+- Backend health: [`/api/health/live`](https://bookstore-api-a1xl.onrender.com/api/health/live) and [`/api/health/ready`](https://bookstore-api-a1xl.onrender.com/api/health/ready) return `UP`.
+- Frontend health: [`/api/health`](https://bookstore-web-dr1k.onrender.com/api/health) reports frontend `UP`, backend `UP`, and production commit `10eccae0a8be15d0aac124fd85b05622eae80b4c`.
+- Security: npm audits remain clean and the Trivy high/critical baseline is enforced in CI with a pinned action.
 
 ## Quick Start
 
@@ -167,4 +177,4 @@ Ecommerce_BookStore/
 
 ## Project Status
 
-The codebase is locally production-verified and ready for the next Render deployment window. The remaining external step is to redeploy on Render when pipeline minutes are available, then repeat the post-deploy checks against the live URLs.
+The codebase is production-verified on GitHub Actions and Render. The latest recovery deploy is live on the existing Render backend and frontend services, with health checks reporting the storefront, API, and database as available.
