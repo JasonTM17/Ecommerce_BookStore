@@ -103,12 +103,19 @@ Important:
 
 ## Registry Publishing
 
-GitHub Actions publishes images to GHCR automatically. Docker Hub publish is enabled when these secrets exist:
+GitHub Actions publishes the canonical public images to Docker Hub when these secrets exist:
 
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_TOKEN`
 
-If the repository variable `DOCKERHUB_NAMESPACE` is missing, the workflow uses `DOCKERHUB_USERNAME` as the namespace.
+If the repository variable `DOCKERHUB_NAMESPACE` is missing, the workflow uses `nguyenson1710` as the namespace.
+
+Canonical image packages:
+
+- `nguyenson1710/ecommerce-bookstore-backend`
+- `nguyenson1710/ecommerce-bookstore-frontend`
+
+Legacy GHCR publishing is disabled so public install commands stay aligned with the Docker Hub namespace.
 
 Semver-style registry tags:
 

@@ -45,7 +45,7 @@ npm run portfolio:screenshots
 | Backend | Spring Boot 3.5, Java 17, Spring Security, JWT, Spring Data JPA, Actuator |
 | Data | MySQL for local and CI, PostgreSQL for Render |
 | Testing | Vitest, Playwright, Maven, npm audit |
-| DevOps | Docker Compose, Render Blueprint, GitHub Actions, GHCR, optional Docker Hub publish |
+| DevOps | Docker Compose, Render Blueprint, GitHub Actions, Docker Hub publish |
 | Mobile | Expo workspace maintained for future app release work |
 
 ## Verified Quality Gates

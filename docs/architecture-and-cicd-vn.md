@@ -85,10 +85,17 @@ Health path hiện tại trong `render.yaml`:
 
 ## Registry và release notes
 
-GitHub Actions publish image lên GHCR tự động và có thể publish Docker Hub khi cấu hình:
+GitHub Actions publish public image chính thức lên Docker Hub khi cấu hình:
 
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_TOKEN`
+
+Docker Hub namespace mặc định là `nguyenson1710`, tạo ra:
+
+- `nguyenson1710/ecommerce-bookstore-backend`
+- `nguyenson1710/ecommerce-bookstore-frontend`
+
+Legacy GHCR publishing đã tắt để public install command không trỏ tới package name sinh từ repo.
 
 Tag registry theo semver-style:
 

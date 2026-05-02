@@ -85,10 +85,17 @@ Current Render health paths from `render.yaml`:
 
 ## Registry and Release Notes
 
-GitHub Actions publishes images to GHCR automatically and can publish to Docker Hub when these secrets are configured:
+GitHub Actions publishes the canonical public images to Docker Hub when these secrets are configured:
 
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_TOKEN`
+
+The default Docker Hub namespace is `nguyenson1710`, producing:
+
+- `nguyenson1710/ecommerce-bookstore-backend`
+- `nguyenson1710/ecommerce-bookstore-frontend`
+
+Legacy GHCR publishing is disabled so public install commands do not point to repo-derived package names.
 
 Registry tags use semver-style names such as:
 

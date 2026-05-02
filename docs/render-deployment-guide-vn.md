@@ -103,12 +103,19 @@ Lưu ý:
 
 ## Registry publishing
 
-GitHub Actions publish image lên GHCR tự động. Docker Hub publish được bật khi có secrets:
+GitHub Actions publish public image chính thức lên Docker Hub khi có secrets:
 
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_TOKEN`
 
-Nếu repository variable `DOCKERHUB_NAMESPACE` không tồn tại, workflow dùng `DOCKERHUB_USERNAME` làm namespace.
+Nếu repository variable `DOCKERHUB_NAMESPACE` không tồn tại, workflow dùng `nguyenson1710` làm namespace.
+
+Canonical image packages:
+
+- `nguyenson1710/ecommerce-bookstore-backend`
+- `nguyenson1710/ecommerce-bookstore-frontend`
+
+Legacy GHCR publishing đã tắt để public install command luôn khớp Docker Hub namespace.
 
 Tag registry theo semver-style:
 
