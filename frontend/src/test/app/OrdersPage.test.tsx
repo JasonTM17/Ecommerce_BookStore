@@ -31,7 +31,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/store", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/store")>("@/lib/store");
+  const actual =
+    await vi.importActual<typeof import("@/lib/store")>("@/lib/store");
   return {
     ...actual,
     useAuthStore: () => ({
@@ -47,7 +48,9 @@ function renderWithQueryClient(ui: ReactElement) {
     },
   });
 
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
 }
 
 describe("OrdersPage", () => {
@@ -63,7 +66,9 @@ describe("OrdersPage", () => {
   it("renders the English empty-state copy", async () => {
     renderWithQueryClient(<OrdersPage />);
 
-    expect(await screen.findByRole("heading", { name: "My Orders" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "My Orders" }),
+    ).toBeInTheDocument();
     expect(await screen.findByText("No Orders Yet")).toBeInTheDocument();
   });
 });

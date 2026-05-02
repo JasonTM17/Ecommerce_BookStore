@@ -13,7 +13,11 @@ const testState = vi.hoisted(() => ({
   setCartMock: vi.fn(),
   toastErrorMock: vi.fn(),
   authState: {
-    user: { fullName: "Test User", phoneNumber: "0901234567", email: "test@example.com" },
+    user: {
+      fullName: "Test User",
+      phoneNumber: "0901234567",
+      email: "test@example.com",
+    },
     isAuthenticated: true,
   },
   cartState: {
@@ -21,7 +25,12 @@ const testState = vi.hoisted(() => ({
       id: number;
       quantity: number;
       subtotal: number;
-      product: { id: number; name: string; imageUrl?: string; currentPrice: number };
+      product: {
+        id: number;
+        name: string;
+        imageUrl?: string;
+        currentPrice: number;
+      };
     }>,
   },
   addressState: {
@@ -40,19 +49,29 @@ const testState = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/components/layout/header", () => ({ Header: () => <div>Header</div> }));
-vi.mock("@/components/layout/footer", () => ({ Footer: () => <div>Footer</div> }));
+vi.mock("@/components/layout/header", () => ({
+  Header: () => <div>Header</div>,
+}));
+vi.mock("@/components/layout/footer", () => ({
+  Footer: () => <div>Footer</div>,
+}));
 
 vi.mock("@/components/coupon", () => ({
   CouponInput: () => <div>CouponInput</div>,
 }));
 
 vi.mock("@/components/providers/language-provider", () => ({
-  useLanguage: () => ({ locale: testState.localeState.locale, isLoading: false }),
+  useLanguage: () => ({
+    locale: testState.localeState.locale,
+    isLoading: false,
+  }),
 }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: testState.replaceMock, push: testState.pushMock }),
+  useRouter: () => ({
+    replace: testState.replaceMock,
+    push: testState.pushMock,
+  }),
   usePathname: () => "/checkout",
 }));
 
@@ -68,7 +87,8 @@ vi.mock("@/lib/api", () => ({
 }));
 
 vi.mock("@/lib/store", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/store")>("@/lib/store");
+  const actual =
+    await vi.importActual<typeof import("@/lib/store")>("@/lib/store");
   return {
     ...actual,
     useAuthStore: () => ({
@@ -91,7 +111,9 @@ function renderWithQueryClient(ui: ReactElement) {
     },
   });
 
-  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
 }
 
 describe("CheckoutPage", () => {
@@ -112,9 +134,18 @@ describe("CheckoutPage", () => {
           data: {
             id: 1,
             items: testState.cartState.items,
-            totalItems: testState.cartState.items.reduce((sum, item) => sum + item.quantity, 0),
-            subtotal: testState.cartState.items.reduce((sum, item) => sum + item.subtotal, 0),
-            total: testState.cartState.items.reduce((sum, item) => sum + item.subtotal, 0),
+            totalItems: testState.cartState.items.reduce(
+              (sum, item) => sum + item.quantity,
+              0,
+            ),
+            subtotal: testState.cartState.items.reduce(
+              (sum, item) => sum + item.subtotal,
+              0,
+            ),
+            total: testState.cartState.items.reduce(
+              (sum, item) => sum + item.subtotal,
+              0,
+            ),
           },
         };
       }
@@ -134,8 +165,14 @@ describe("CheckoutPage", () => {
   it("renders the English empty-cart checkout copy", async () => {
     renderWithQueryClient(<CheckoutPage />);
 
-    expect(await screen.findByRole("heading", { name: "Your cart is empty" })).toBeInTheDocument();
-    expect(screen.getByText("Please add items to your cart before placing an order.")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Your cart is empty" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Please add items to your cart before placing an order.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("submits a checkout order with a new address", async () => {
@@ -169,19 +206,29 @@ describe("CheckoutPage", () => {
       target: { value: "123 Nguyen Hue" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Continue to payment" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm information" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue to payment" }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Confirm information" }),
+    );
     fireEvent.click(await screen.findByRole("button", { name: "Place order" }));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith("/orders", expect.objectContaining({
-        shippingAddress: "123 Nguyen Hue, Ben Nghe, District 1, Ho Chi Minh City",
-        shippingPhone: "0987654321",
-        shippingReceiverName: "Alice Nguyen",
-      }));
+      expect(api.post).toHaveBeenCalledWith(
+        "/orders",
+        expect.objectContaining({
+          shippingAddress:
+            "123 Nguyen Hue, Ben Nghe, District 1, Ho Chi Minh City",
+          shippingPhone: "0987654321",
+          shippingReceiverName: "Alice Nguyen",
+        }),
+      );
     });
 
-    expect(await screen.findByText("Order placed successfully!")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Order placed successfully!"),
+    ).toBeInTheDocument();
     expect(testState.clearCartMock).toHaveBeenCalled();
   });
 
@@ -191,7 +238,11 @@ describe("CheckoutPage", () => {
         id: 1,
         quantity: 1,
         subtotal: 99000,
-        product: { id: 22, name: "The Pragmatic Programmer", currentPrice: 99000 },
+        product: {
+          id: 22,
+          name: "The Pragmatic Programmer",
+          currentPrice: 99000,
+        },
       },
     ];
     testState.addressState.addresses = [
@@ -212,16 +263,23 @@ describe("CheckoutPage", () => {
     renderWithQueryClient(<CheckoutPage />);
 
     fireEvent.click(await screen.findByRole("radio", { name: /saved user/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Continue to payment" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm information" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue to payment" }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Confirm information" }),
+    );
     fireEvent.click(await screen.findByRole("button", { name: "Place order" }));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith("/orders", expect.objectContaining({
-        shippingAddress: "45 Lieu Giai, Kim Ma, Ba Dinh, Ha Noi",
-        shippingPhone: "0911222333",
-        shippingReceiverName: "Saved User",
-      }));
+      expect(api.post).toHaveBeenCalledWith(
+        "/orders",
+        expect.objectContaining({
+          shippingAddress: "45 Lieu Giai, Kim Ma, Ba Dinh, Ha Noi",
+          shippingPhone: "0911222333",
+          shippingReceiverName: "Saved User",
+        }),
+      );
     });
   });
 
@@ -264,11 +322,19 @@ describe("CheckoutPage", () => {
       target: { value: "123 Nguyen Hue" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Continue to payment" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm information" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue to payment" }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Confirm information" }),
+    );
     fireEvent.click(await screen.findByRole("button", { name: "Place order" }));
 
-    expect(await screen.findByText("Insufficient flash sale stock")).toBeInTheDocument();
-    expect(testState.toastErrorMock).toHaveBeenCalledWith("Insufficient flash sale stock");
+    expect(
+      await screen.findByText("Insufficient flash sale stock"),
+    ).toBeInTheDocument();
+    expect(testState.toastErrorMock).toHaveBeenCalledWith(
+      "Insufficient flash sale stock",
+    );
   });
 });
