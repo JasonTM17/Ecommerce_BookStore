@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="ogTitle ogDesc">
-  <title id="ogTitle">BookStore Vietnam portfolio preview</title>
-  <desc id="ogDesc">A polished social preview for the BookStore Vietnam full-stack bookstore portfolio.</desc>
+  <title id="ogTitle">BookStore Vietnam learning project preview</title>
+  <desc id="ogDesc">Social preview for the BookStore Vietnam full-stack e-commerce learning project.</desc>
   <defs>
     <linearGradient id="background" x1="0%" x2="100%" y1="0%" y2="100%">
       <stop offset="0%" stop-color="#fff8ed" />
@@ -36,20 +36,21 @@
     </g>
 
     <text x="62" y="214" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="800" fill="#ffffff">BookStore Vietnam</text>
-    <text x="64" y="274" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="500" fill="#ffe7d6">Production-ready bookstore portfolio</text>
-    <text x="64" y="318" font-family="Arial, Helvetica, sans-serif" font-size="25" fill="#f9d2bd">Next.js storefront, Spring Boot API, cart, checkout, orders, flash sale, admin and monitoring.</text>
+    <text x="64" y="274" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="500" fill="#ffe7d6">Full-stack e-commerce learning project</text>
+    <text x="64" y="314" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#f9d2bd">Next.js storefront &#183; Spring Boot API &#183; PostgreSQL</text>
+    <text x="64" y="344" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#f9d2bd">Cart &#183; checkout &#183; flash sale &#183; admin &#183; monitoring</text>
 
-    <g transform="translate(64 356)">
+    <g transform="translate(64 370)">
       <rect width="158" height="48" rx="24" fill="#ffffff" />
       <text x="79" y="32" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" text-anchor="middle" fill="#1f1a17">Live Catalog</text>
     </g>
-    <g transform="translate(238 356)">
+    <g transform="translate(238 370)">
       <rect width="148" height="48" rx="24" fill="#fff1e6" />
       <text x="74" y="32" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" text-anchor="middle" fill="#b42318">Flash Sale</text>
     </g>
-    <g transform="translate(402 356)">
+    <g transform="translate(402 370)">
       <rect width="156" height="48" rx="24" fill="#dcfce7" />
-      <text x="78" y="32" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" text-anchor="middle" fill="#166534">Health Check</text>
+      <text x="78" y="31" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="800" text-anchor="middle" fill="#166534">Automated Tests</text>
     </g>
   </g>
 

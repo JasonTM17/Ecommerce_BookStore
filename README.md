@@ -1,8 +1,12 @@
 # BookStore Commerce Platform
 
-BookStore is a production-style full-stack e-commerce portfolio project for selling books online. It combines a Spring Boot API, a Next.js storefront, a PostgreSQL/MySQL data layer, an admin surface, flash-sale automation, chatbot support, monitoring, and automated quality gates.
+BookStore is a full-stack e-commerce learning project for selling books online. It combines a Spring Boot API, a Next.js storefront, a PostgreSQL/MySQL data layer, an admin surface, flash-sale automation, chatbot support, monitoring, and automated quality gates.
 
-The project is built to demonstrate real product engineering: clear commerce flows, resilient local production checks, documented Render deployment, and repeatable test evidence.
+The project is built to practice end-to-end product engineering through clear commerce flows, resilient local checks, documented Render deployment, and repeatable test evidence.
+
+[**Open the live storefront →**](https://bookstore-web-dr1k.onrender.com)
+
+> Hosted on Render; the first request after an idle period may need a cold start.
 
 ## Portfolio Preview
 
@@ -177,4 +181,4 @@ Ecommerce_BookStore/
 
 ## Project Status
 
-The codebase is production-verified on GitHub Actions and Render. The latest recovery deploy is live on the existing Render backend and frontend services, with health checks reporting the storefront, API, and database as available.
+This learning project is deployed on the existing Render backend and frontend services. The **May 2, 2026** recovery evidence above recorded the storefront, API, and database as available; use the [live frontend health endpoint](https://bookstore-web-dr1k.onrender.com/api/health) for the current state because Render dependencies can sleep or degrade independently.
